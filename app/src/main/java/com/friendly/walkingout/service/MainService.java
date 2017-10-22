@@ -9,6 +9,9 @@ import android.widget.Toast;
 
 import com.friendly.walkingout.GlobalConstantID;
 import com.friendly.walkingout.notification.NotificationUtil;
+//import com.google.android.gms.location.Geofence;
+
+import java.util.ArrayList;
 
 /**
  * Created by Administrator on 2017-10-22.
@@ -16,6 +19,7 @@ import com.friendly.walkingout.notification.NotificationUtil;
 
 public class MainService extends Service {
     ServiceThread thread;
+//    ArrayList<Geofence> mGeofenceList = new ArrayList<Geofence>();
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -28,6 +32,9 @@ public class MainService extends Service {
         ServiceHandler handler = new ServiceHandler();
 //        thread = new ServiceThread(handler);
 //        thread.start();
+
+
+
         return START_STICKY;
     }
 
