@@ -9,6 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.friendly.walkingout.MainActivity">
 
+
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
@@ -31,13 +32,13 @@
 
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="30dp"
             android:id="@+id/login_id"/>
 
         <EditText
             android:layout_marginTop="20dp"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="30dp"
             android:id="@+id/login_password"/>
 
         <Button
@@ -57,5 +58,18 @@
             android:layout_height="wrap_content"
             android:id="@+id/loaded_textView"/>
 
+        <Button
+            android:id="@+id/login"
+            android:layout_width="300dp"
+            android:layout_height="50dp"
+            android:text="로그인"/>
+
+        <Button
+            android:id="@+id/logout"
+            android:layout_width="300dp"
+            android:layout_height="50dp"
+            android:text="로그아웃"/>
+
     </LinearLayout>
+
 </RelativeLayout>
