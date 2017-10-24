@@ -1,10 +1,10 @@
-package com.friendly.walkingout;
+package com.friendly.walkingout.landing;
 
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.widget.TextView;import com.friendly.walkingout.R;
 
 /**
  * Created by Administrator on 2017-10-21.

@@ -1,4 +1,4 @@
-package com.friendly.walkingout.notification;
+package com.friendly.walkingout.dataSet;
 
 import android.util.Log;
 

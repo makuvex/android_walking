@@ -1,3 +1,4 @@
+/*
 package com.friendly.walkingout;
 
 import android.content.Intent;
@@ -246,3 +247,4 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         }
     }
 }
+*/

@@ -10,7 +10,7 @@ import android.graphics.BitmapFactory;
 import android.support.v7.app.NotificationCompat;
 
 import com.friendly.walkingout.GlobalConstantID;
-import com.friendly.walkingout.NotificationSomething;
+import com.friendly.walkingout.landing.NotificationSomething;
 import com.friendly.walkingout.R;
 
 /**
