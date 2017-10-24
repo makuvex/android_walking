@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">댕댕이와</string>
+    <string name="app_name" translatable="false">댕댕이랑</string>
     <string name="action_settings" translatable="false">Settings</string>
     <string name="section_format" translatable="false">Hello World from section: %1$d</string>
 
@@ -7,4 +7,17 @@
     <string name="setting" translatable="false">설정</string>
     <string name="loginInfo" translatable="false">로그인 정보</string>
     <string name="autoLogin" translatable="false">자동 로그인</string>
+
+    <string name="notification_setting" translatable="false">알림 설정</string>
+    <string name="notification_accept" translatable="false">알림 받기</string>
+
+    <string name="permission_setting" translatable="false">권한 설정</string>
+    <string name="accepted_permission" translatable="false">위치, 사진등의 권한</string>
+
+    <string name="location_setting" translatable="false">위치 서비스</string>
+    <string name="use_location" translatable="false">위치 정보 사용</string>
+
+    <string name="version_information" translatable="false">버전 정보</string>
+    <string name="current_version" translatable="false">현재 버전</string>
+    <string name="latest_version" translatable="false">최신 버전</string>
 </resources>

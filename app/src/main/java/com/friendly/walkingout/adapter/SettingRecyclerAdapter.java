@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.friendly.walkingout.R;
 import com.friendly.walkingout.adapter.viewHolder.BaseViewHolder;
 import com.friendly.walkingout.adapter.viewHolder.LoginSettingViewHolder;
+import com.friendly.walkingout.adapter.viewHolder.NotificationSettingViewHolder;
 import com.friendly.walkingout.adapter.viewHolder.SettingViewHolder;
 import com.friendly.walkingout.util.JWLog;
 
@@ -37,7 +38,8 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }
 
         layoutMap.put(0, R.layout.login_setting_row);
-        layoutMap.put(1, R.layout.setting_recycle_row);
+        //layoutMap.put(1, R.layout.setting_recycle_row);
+        layoutMap.put(1, R.layout.notification_setting_row);
 
         holderMap.put(0, LoginSettingViewHolder.class);
         holderMap.put(1, SettingViewHolder.class);
@@ -56,11 +58,11 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutMap.get(viewType), viewGroup,false);
         if(viewType == 0) {
             return new LoginSettingViewHolder(view).setLayout();
+        } else if(viewType == 1) {
+            return new NotificationSettingViewHolder(view).setLayout();
         } else {
-            return new SettingViewHolder(view).setLayout();
+            return null;
         }
-
-
     }
 
     /**
