@@ -50,11 +50,12 @@ public class SignUpActivity extends Activity {
     public void onClickCallback(View v) {
         JWLog.e("","next_button");
 
-        if(mCheckCompletedEmail == null || TextUtils.isEmpty(mCheckCompletedEmail) || !mCheckCompletedEmail.equals(mEmailText.getText().toString())) {
-            Toast.makeText(this, R.string.require_check_email, Toast.LENGTH_SHORT).show();
-            return ;
-        }
         if(v == mNextButton) {
+            if(mCheckCompletedEmail == null || TextUtils.isEmpty(mCheckCompletedEmail) || !mCheckCompletedEmail.equals(mEmailText.getText().toString())) {
+                Toast.makeText(this, R.string.require_check_email, Toast.LENGTH_SHORT).show();
+                return ;
+            }
+
             if(isValidEmail(mEmailText.getText().toString())) {
                 if(mPasswordText.getText().toString().equals(mConfirmPasswordText.getText().toString())) {
                     if(isValidPasswd(mPasswordText.getText().toString())) {
@@ -82,12 +83,13 @@ public class SignUpActivity extends Activity {
     private boolean isValidPasswd(String target) {
         Pattern p = Pattern.compile("(^.*(?=.{6,100})(?=.*[0–9])(?=.*[a-zA-Z]).*$)");
 
-        Matcher m = p.matcher(target);
-        if (m.find() && !target.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")){
-            return true;
-        }else{
-            return false;
-        }
+        return true;
+//        Matcher m = p.matcher(target);
+//        if (m.find() && !target.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")){
+//            return true;
+//        }else{
+//            return false;
+//        }
     }
 
     private boolean isValidEmail(String target) {

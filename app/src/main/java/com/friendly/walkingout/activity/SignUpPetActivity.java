@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -43,7 +44,7 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
     private ImageButton                         mAddProfile;
     private ImageButton                         mMaleCheck;
     private ImageButton                         mFemaleCheck;
-    private ImageButton                         mSignUp;
+    private Button                              mSignUp;
 
     private static PetData[]                    mPetData;
     private static PetRelationData[]            mRelationData;
@@ -63,6 +64,7 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
         mPetBirthDate = (EditText) findViewById(R.id.pet_birth_date);
         mPetSpecies = (EditText) findViewById(R.id.pet_species);
         mPetRelation = (EditText) findViewById(R.id.pet_relation);
+        mSignUp = (Button) findViewById(R.id.sign_up);
 
         mPetName.setOnFocusChangeListener(this);
         mPetBirthDate.setOnFocusChangeListener(this);
@@ -110,7 +112,7 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
             FirebaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FirebaseNetworkManager.FirebaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result) {
-                    Toast.makeText(SignUpPetActivity.this, String.format("create account result : %d", result), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(SignUpPetActivity.this, String.format("create account result : %d", result), Toast.LENGTH_SHORT).show();
                 }
             });
         }
