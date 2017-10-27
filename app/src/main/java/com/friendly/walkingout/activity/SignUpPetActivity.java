@@ -2,6 +2,7 @@ package com.friendly.walkingout.activity;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.DatePicker;
@@ -9,9 +10,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.friendly.walkingout.GlobalConstantID;
 import com.friendly.walkingout.R;
 import com.friendly.walkingout.dataSet.PetData;
 import com.friendly.walkingout.dataSet.PetRelationData;
+import com.friendly.walkingout.firabaseManager.FirebaseNetworkManager;
 import com.friendly.walkingout.util.CommonUtil;
 import com.friendly.walkingout.util.JWLog;
 
@@ -30,6 +33,8 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
     public static final int                     PICKER_DATA_TYPE_SPECIES = 0;
     public static final int                     PICKER_DATA_TYPE_RELATION = 1;
 
+    private String                              mEmail;
+    private String                              mPassword;
     private EditText                            mPetName;
     private EditText                            mPetBirthDate;
     private EditText                            mPetSpecies;
@@ -43,10 +48,13 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
     private static PetData[]                    mPetData;
     private static PetRelationData[]            mRelationData;
 
+
+
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_signup_pet);
+
 
         mAddProfile = (ImageButton) findViewById(R.id.add_profile);
         mPetName = (EditText) findViewById(R.id.pet_name);
@@ -78,6 +86,11 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
                 new PetRelationData(7, "할머니"),
                 new PetRelationData(8, "할아버지"),
                 new PetRelationData(9, "친구")};
+
+        Intent intent = getIntent();
+        mEmail = intent.getStringExtra(GlobalConstantID.SIGN_UP_EMAIL);
+        mPassword = intent.getStringExtra(GlobalConstantID.SIGN_UP_PASSWORD);
+
     }
 
     public void onClickCallback(View v) {
@@ -93,6 +106,13 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
             showPetSpeciesDialog();
         } else if(v == mPetRelation) {
             showPetRelationDialog();
+        } else if(v == mSignUp) {
+            FirebaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FirebaseNetworkManager.FirebaseNetworkCallback() {
+                @Override
+                public void onCompleted(boolean result) {
+                    Toast.makeText(SignUpPetActivity.this, String.format("create account result : %d", result), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -162,9 +182,14 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
 
         if(selectedValues[0] == PICKER_DATA_TYPE_SPECIES) {
             data = mPetData[selectedValues[0]].getSpecies();
+            mPetSpecies.setText(data);
         } else if(selectedValues[0] == PICKER_DATA_TYPE_RELATION) {
             data = mRelationData[selectedValues[0]].getName();
+            mPetRelation.setText(data);
         }
         Toast.makeText(getApplicationContext(), data, Toast.LENGTH_SHORT).show();
     }
+
+
+
 }
