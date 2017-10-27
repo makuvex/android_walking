@@ -1,8 +1,6 @@
 package com.friendly.walkingout.dataSet;
 
-import android.util.Log;
-
-import com.friendly.walkingout.adapter.BaseSettingDataSetInterface;
+import com.friendly.walkingout.adapter.baseInterface.BaseSettingDataSetInterface;
 
 /**
  * Created by Administrator on 2017-10-22.

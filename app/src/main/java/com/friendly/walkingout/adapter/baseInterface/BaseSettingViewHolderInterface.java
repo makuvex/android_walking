@@ -1,4 +1,4 @@
-package com.friendly.walkingout.adapter;
+package com.friendly.walkingout.adapter.baseInterface;
 
 /**
  * Created by jungjiwon on 2017. 10. 23..

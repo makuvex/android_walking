@@ -1,15 +1,19 @@
 package com.friendly.walkingout.adapter;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.friendly.walkingout.R;
-import com.friendly.walkingout.adapter.viewHolder.BaseViewHolder;
+import com.friendly.walkingout.adapter.baseInterface.BaseSettingDataSetInterface;
+import com.friendly.walkingout.adapter.baseInterface.BaseSettingViewHolderInterface;
+import com.friendly.walkingout.adapter.viewHolder.LocationSettingViewHolder;
 import com.friendly.walkingout.adapter.viewHolder.LoginSettingViewHolder;
 import com.friendly.walkingout.adapter.viewHolder.NotificationSettingViewHolder;
-import com.friendly.walkingout.adapter.viewHolder.SettingViewHolder;
+import com.friendly.walkingout.adapter.viewHolder.PermissionSettingViewHolder;
+import com.friendly.walkingout.adapter.viewHolder.VersionInfoSettingViewHolder;
 import com.friendly.walkingout.util.JWLog;
 
 import java.util.HashMap;
@@ -22,13 +26,15 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private HashMap<Integer, Class<?>> holderMap;
     private List<BaseSettingDataSetInterface> dataList;
     private int itemLayout;
+    private Context mContext;
 
     /**
      * 생성자
      * @param items
      */
-    public SettingRecyclerAdapter(List<BaseSettingDataSetInterface> items){
+    public SettingRecyclerAdapter(Context context, List<BaseSettingDataSetInterface> items){
 
+        mContext = context;
         this.dataList = items;
         if(layoutMap == null) {
             layoutMap = new HashMap<Integer, Integer>();
@@ -40,9 +46,12 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         layoutMap.put(0, R.layout.login_setting_row);
         //layoutMap.put(1, R.layout.setting_recycle_row);
         layoutMap.put(1, R.layout.notification_setting_row);
+        layoutMap.put(2, R.layout.permission_setting_row);
+        layoutMap.put(3, R.layout.location_setting_row);
+        layoutMap.put(4, R.layout.version_info_setting_row);
 
-        holderMap.put(0, LoginSettingViewHolder.class);
-        holderMap.put(1, SettingViewHolder.class);
+//        holderMap.put(0, LoginSettingViewHolder.class);
+//        holderMap.put(1, SettingViewHolder.class);
     }
 
     /**
@@ -57,9 +66,15 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         JWLog.e("","");
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutMap.get(viewType), viewGroup,false);
         if(viewType == 0) {
-            return new LoginSettingViewHolder(view).setLayout();
+            return new LoginSettingViewHolder(mContext, view).setLayout(mContext);
         } else if(viewType == 1) {
-            return new NotificationSettingViewHolder(view).setLayout();
+            return new NotificationSettingViewHolder(mContext, view).setLayout(mContext);
+        } else if(viewType == 2) {
+            return new PermissionSettingViewHolder(mContext, view).setLayout(mContext);
+        } else if(viewType == 3) {
+            return new LocationSettingViewHolder(mContext, view).setLayout(mContext);
+        } else if(viewType == 4) {
+            return new VersionInfoSettingViewHolder(mContext, view).setLayout(mContext);
         } else {
             return null;
         }

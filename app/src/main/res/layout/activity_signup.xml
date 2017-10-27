@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:background="#ffffff"
+    tools:context="com.friendly.walkingout.activity.SignUpActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffffff"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:textSize="20dp"
+            android:typeface="sans"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="@string/sign_up" />
+
+
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginBottom="10dp"
+        android:background="@color/colorPrimary"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_margin="9dp"
+                android:background="#bce1f2" />
+
+            <EditText
+                android:id="@+id/email_id"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:paddingLeft="5dp"
+                android:background="#ffffff"
+                android:layout_margin="10dp"
+                android:textSize="14dp"
+                android:hint="@string/email_hint"
+                android:gravity="center_vertical" />
+        </FrameLayout>
+
+        <Button
+            android:id="@+id/check_duplication_button"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_margin="9dp"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:text="@string/check_duplication"
+            android:background="@color/colorPrimaryLighten"/>
+
+    </LinearLayout>
+    
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginRight="9dp"
+            android:layout_marginLeft="9dp"
+            android:layout_marginTop="1dp"
+
+            android:background="#bce1f2" />
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:paddingLeft="5dp"
+            android:background="#ffffff"
+            android:layout_marginTop="2dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:textSize="14dp"
+            android:hint="@string/password_hint"
+            android:gravity="center_vertical" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginRight="9dp"
+            android:layout_marginLeft="9dp"
+            android:layout_marginTop="11dp"
+
+            android:background="#bce1f2" />
+
+        <EditText
+            android:id="@+id/confirm_password"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:paddingLeft="5dp"
+            android:background="#ffffff"
+            android:layout_marginTop="12dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:textSize="14dp"
+            android:hint="@string/confirm_password_hint"
+            android:gravity="center_vertical" />
+
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/next_button"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorPrimary"
+        android:layout_margin="10dp"
+        android:text="@string/next"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:onClick="onClickCallback"/>
+
+</LinearLayout>

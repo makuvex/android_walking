@@ -1,12 +1,11 @@
 package com.friendly.walkingout.adapter.viewHolder;
 
+import android.content.Context;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import com.friendly.walkingout.R;
-import com.friendly.walkingout.adapter.BaseSettingViewHolderInterface;
-import com.friendly.walkingout.dataSet.LoginSettingListData;
+import com.friendly.walkingout.adapter.baseInterface.BaseSettingViewHolderInterface;
 import com.friendly.walkingout.dataSet.NotificationSettingListData;
 import com.friendly.walkingout.util.JWLog;
 
@@ -17,30 +16,34 @@ import com.friendly.walkingout.util.JWLog;
 public class NotificationSettingViewHolder extends BaseViewHolder implements BaseSettingViewHolderInterface {
 
     public ImageButton acceptButton;
+    public ImageButton acceptGeofenceButton;
 
     public boolean isAccepted;
+    public boolean isGeoAccepted;
 
     private View.OnClickListener mOnClickListener;
 
-    public NotificationSettingViewHolder(View itemView) {
-        super(itemView);
+    public NotificationSettingViewHolder(Context context, View itemView) {
+        super(context, itemView);
         JWLog.e("", "");
 
         acceptButton = (ImageButton) itemView.findViewById(R.id.accept_notification);
+        acceptGeofenceButton = (ImageButton) itemView.findViewById(R.id.accept_geofence_notification);
 
         mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JWLog.e("","acceptButton");
+                v.setSelected(!v.isSelected());
             }
         };
 
         acceptButton.setOnClickListener(mOnClickListener);
+        acceptGeofenceButton.setOnClickListener(mOnClickListener);
     }
 
     @Override
-    public NotificationSettingViewHolder setLayout() {
-        return new NotificationSettingViewHolder(mView);
+    public NotificationSettingViewHolder setLayout(Context context) {
+        return new NotificationSettingViewHolder(context, mView);
     }
 
     @Override
@@ -49,6 +52,11 @@ public class NotificationSettingViewHolder extends BaseViewHolder implements Bas
             NotificationSettingListData data = (NotificationSettingListData)object;
 
             this.isAccepted = data.getAcceptedState();
+            this.isGeoAccepted = data.getGeofenceAcceptedState();
+
+            acceptButton.setSelected(isAccepted);
+            acceptGeofenceButton.setSelected(isGeoAccepted);
+
             this.itemView.setTag(data);
         }
     }

@@ -1,6 +1,6 @@
 package com.friendly.walkingout.dataSet;
 
-import com.friendly.walkingout.adapter.BaseSettingDataSetInterface;
+import com.friendly.walkingout.adapter.baseInterface.BaseSettingDataSetInterface;
 
 /**
  * Created by Administrator on 2017-10-22.
@@ -9,12 +9,15 @@ import com.friendly.walkingout.adapter.BaseSettingDataSetInterface;
 public class NotificationSettingListData implements BaseSettingDataSetInterface {
 
     private boolean isAccepted;
+    private boolean isGeofenceAccepted;
+
 
     public NotificationSettingListData() {
     }
 
-    public NotificationSettingListData(boolean isAccepted) {
+    public NotificationSettingListData(boolean isAccepted, boolean isGeofenceAccepted) {
         this.isAccepted = isAccepted;
+        this.isGeofenceAccepted = isGeofenceAccepted;
     }
 
     public boolean getAcceptedState() {
@@ -23,6 +26,14 @@ public class NotificationSettingListData implements BaseSettingDataSetInterface 
 
     public void setAcceptedState(boolean isAccepted) {
         this.isAccepted = isAccepted;
+    }
+
+    public boolean getGeofenceAcceptedState() {
+        return isGeofenceAccepted;
+    }
+
+    public void setGeofenceAcceptedState(boolean geofenceAccepted) {
+        this.isGeofenceAccepted = geofenceAccepted;
     }
 
     @Override

@@ -3,19 +3,46 @@
     <string name="action_settings" translatable="false">Settings</string>
     <string name="section_format" translatable="false">Hello World from section: %1$d</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
+
+    <string name="login" translatable="false">로그인</string>
+    <string name="email_hint" translatable="false">이메일 입력</string>
+    <string name="password_hint" translatable="false">비밀번호 입력</string>
+    <string name="confirm_password_hint" translatable="false">비밀번호 확인</string>
+
+    <string name="find_id" translatable="false">아이디 찾기</string>
+    <string name="find_password" translatable="false">패스워드 찾기</string>
+    <string name="sign_up" translatable="false">회원 가입</string>
+    <string name="sign_up_with_sns" translatable="false">SNS계정 회원 가입</string>
+    <string name="check_duplication" translatable="false">중복확인</string>
+    <string name="next" translatable="false">다음 ></string>
+
+    <string name="input_pet_info" translatable="false">반려동물 정보를 입력해주세요</string>
+    <string name="name" translatable="false">이름</string>
+    <string name="pet_name_hint" translatable="false">반려동물 이름</string>
+    <string name="birthday" translatable="false">생년월일</string>
+    <string name="pet_species" translatable="false">반려동물 종류</string>
+    <string name="pet_relation" translatable="false">반려동물과의 관계</string>
+    <string name="pet_input_info_description" translatable="false">반려동물의 입력 정보는 해당 앱에서 생활패턴 제안이나 알림용으로만 사용됩니다.</string>
+
+    <string name="year" translatable="false">년</string>
+    <string name="month" translatable="false">월</string>
+    <string name="day" translatable="false">일</string>
+
     <string name="setting" translatable="false">설정</string>
     <string name="loginInfo" translatable="false">로그인 정보</string>
+    <string name="login_guide" translatable="false">로그인 해주세요</string>
     <string name="autoLogin" translatable="false">자동 로그인</string>
 
     <string name="notification_setting" translatable="false">알림 설정</string>
     <string name="notification_accept" translatable="false">알림 받기</string>
+    <string name="suggest_geofence_notification" translatable="false">생활패턴 알림 제안</string>
 
     <string name="permission_setting" translatable="false">권한 설정</string>
-    <string name="accepted_permission" translatable="false">위치, 사진등의 권한</string>
+    <string name="permission_infos" translatable="false">위치, 사진등의 권한</string>
 
     <string name="location_setting" translatable="false">위치 서비스</string>
     <string name="use_location" translatable="false">위치 정보 사용</string>
+    <string name="use_geofence" translatable="false">지오펜스 정보 사용</string>
 
     <string name="version_information" translatable="false">버전 정보</string>
     <string name="current_version" translatable="false">현재 버전</string>

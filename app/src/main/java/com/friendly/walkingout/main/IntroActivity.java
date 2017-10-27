@@ -14,7 +14,10 @@ public class IntroActivity extends Activity {
 
     private Handler handler = new Handler() {
         public void handleMessage(Message msg) {
-            startActivity(new Intent(IntroActivity.this, MainActivity.class));
+            Intent intent = new Intent(IntroActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
             finish();
         }
     };

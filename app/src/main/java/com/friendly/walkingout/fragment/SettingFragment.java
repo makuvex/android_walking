@@ -12,11 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.friendly.walkingout.R;
-import com.friendly.walkingout.adapter.BaseSettingDataSetInterface;
-import com.friendly.walkingout.adapter.BaseSettingViewHolderInterface;
+import com.friendly.walkingout.adapter.baseInterface.BaseSettingDataSetInterface;
 import com.friendly.walkingout.adapter.SettingRecyclerAdapter;
+import com.friendly.walkingout.dataSet.LocationSettingListData;
 import com.friendly.walkingout.dataSet.LoginSettingListData;
-import com.friendly.walkingout.dataSet.SettingListData;
+import com.friendly.walkingout.dataSet.NotificationSettingListData;
+import com.friendly.walkingout.dataSet.PermissionSettingListData;
+import com.friendly.walkingout.dataSet.VersionInfoSettingListData;
+import com.friendly.walkingout.preference.PreferencePhoneShared;
 import com.friendly.walkingout.views.DividerItemDecoration;
 
 import java.util.ArrayList;
@@ -27,7 +30,8 @@ public class SettingFragment extends Fragment {
     private static String[] contentTitle = {"로그인 정보", "알림 설정", "권한 설정", "위치 서비스", "생활패턴 인식", "버전 정보"};
     private static String[] contentTitleDesc = {"로그인 정보", "알림 받기", "", "위치 서비스", "생활패턴 인식", "버전 정보"};
 
-    private RecyclerView mRecyclerView = null;
+    private RecyclerView    mRecyclerView = null;
+    private Context         mContext;
 
     public SettingFragment() {
     }
@@ -40,6 +44,7 @@ public class SettingFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = getActivity();
     }
 
     @Override
@@ -67,26 +72,23 @@ public class SettingFragment extends Fragment {
 
     private void initData() {
 
-
-
         List<BaseSettingDataSetInterface> list = new ArrayList<BaseSettingDataSetInterface>();
 
-        LoginSettingListData data = new LoginSettingListData("makuvex7@gmail", true);
-        list.add(data);
+        String loginText = PreferencePhoneShared.getLoginID(mContext);
+        if(!PreferencePhoneShared.getLoginYn(mContext)) {
+            loginText = getString(R.string.login_guide);
+        }
 
-        SettingListData album = new SettingListData("타이틀 ", "설명2 ", R.mipmap.stroll);
-        list.add(album);
-
-
-//        for (int i =0; i<20; i ++){
-//            SettingListData album = new SettingListData("타이틀 " + i, "설명 " + i, R.mipmap.stroll);
-//            albumList.add(album);
-//        }
+        list.add(new LoginSettingListData(loginText, true));
+        list.add(new NotificationSettingListData(false, true));
+        list.add(new PermissionSettingListData());
+        list.add(new LocationSettingListData(false, true));
+        list.add(new VersionInfoSettingListData("v1.0.0", "v1.0.1"));
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext());
         mRecyclerView.addItemDecoration(dividerItemDecoration);
 
-        mRecyclerView.setAdapter(new SettingRecyclerAdapter(list));
+        mRecyclerView.setAdapter(new SettingRecyclerAdapter(getActivity(), list));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
     }

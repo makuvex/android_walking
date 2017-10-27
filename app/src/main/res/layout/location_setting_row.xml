@@ -9,7 +9,6 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -20,7 +19,7 @@
             android:textSize="15dp"
             android:typeface="sans"
             android:textStyle="bold"
-            android:text="@string/loginInfo"/>
+            android:text="@string/location_setting"/>
 
     </RelativeLayout>
     <LinearLayout
@@ -30,29 +29,28 @@
         android:background="#ffffff">
 
         <TextView
-            android:id="@+id/loginID"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_marginLeft="10dp"
-            android:textSize="17dp"
+            android:textSize="20dp"
             android:gravity="center_vertical"
             android:typeface="sans"
-            android:text="@string/login_guide"
+            android:text="@string/use_location"
             android:lines="1"
             android:layout_weight="1"
             android:ellipsize="marquee"/>
 
         <ImageButton
-            android:id="@+id/login_out_action"
-            android:layout_width="50dp"
+            android:id="@+id/accept_location"
+            android:layout_width="60dp"
             android:layout_height="40dp"
+            android:layout_marginRight="10dp"
             android:layout_marginLeft="10dp"
             android:scaleType="fitCenter"
             android:background="@color/colorTransparent"
-            android:src="@mipmap/more"/>
+            android:src="@mipmap/common_btn_toggle_off"/>
 
     </LinearLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -63,16 +61,16 @@
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_marginLeft="10dp"
-            android:textSize="17dp"
+            android:textSize="20dp"
             android:gravity="center_vertical"
             android:typeface="sans"
-            android:text="@string/autoLogin"
+            android:text="@string/use_geofence"
             android:lines="1"
             android:layout_weight="1"
             android:ellipsize="marquee"/>
 
         <ImageButton
-            android:id="@+id/autoLogin"
+            android:id="@+id/accept_geofence"
             android:layout_width="60dp"
             android:layout_height="40dp"
             android:layout_marginRight="10dp"
