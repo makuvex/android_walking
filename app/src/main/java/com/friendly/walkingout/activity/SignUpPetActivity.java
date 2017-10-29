@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -15,9 +16,13 @@ import com.friendly.walkingout.GlobalConstantID;
 import com.friendly.walkingout.R;
 import com.friendly.walkingout.dataSet.PetData;
 import com.friendly.walkingout.dataSet.PetRelationData;
+import com.friendly.walkingout.dataSet.UserData;
 import com.friendly.walkingout.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walkingout.main.MainActivity;
 import com.friendly.walkingout.util.CommonUtil;
 import com.friendly.walkingout.util.JWLog;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,14 +53,13 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
     private static PetData[]                    mPetData;
     private static PetRelationData[]            mRelationData;
-
+    private int                                 mPetGender = -1;
 
 
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_signup_pet);
-
 
         mAddProfile = (ImageButton) findViewById(R.id.add_profile);
         mPetName = (EditText) findViewById(R.id.pet_name);
@@ -99,9 +103,17 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         JWLog.e("","v : "+v.getId());
 
         if(v.getId() == R.id.male_check) {
+            if(mFemaleCheck.isSelected()) {
+                mFemaleCheck.setSelected(false);
+            }
             mMaleCheck.setSelected(!mMaleCheck.isSelected());
+            mPetGender = 0;
         } else if(v.getId() == R.id.female_check) {
+            if(mMaleCheck.isSelected()) {
+                mMaleCheck.setSelected(false);
+            }
             mFemaleCheck.setSelected(!mFemaleCheck.isSelected());
+            mPetGender = 1;
         } else if(v == mPetBirthDate) {
             showDatePicker();
         } else if(v == mPetSpecies) {
@@ -109,16 +121,44 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         } else if(v == mPetRelation) {
             showPetRelationDialog();
         } else if(v == mSignUp) {
-            FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                @Override
-                public void onCompleted(boolean result) {
-                    if(result) {
-                        Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
+            if(checkEmptyFields()) {
+                Toast.makeText(SignUpPetActivity.this, "비어있는 항목을 입력해 주세요.", Toast.LENGTH_SHORT).show();
+            } else {
+                FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                    @Override
+                    public void onCompleted(boolean result, Task<AuthResult> task) {
+                        if (result) {
+                            Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
+
+                            // public UserData(String email, String uid, String petName, boolean petGender, String birthDay, String petSpecies, String petRelation) {
+                            UserData data = new UserData(mEmail,
+                                    task.getResult().getUser().getUid(),
+                                    mPetName.getText().toString(),
+                                    mPetGender == 0 ? false : true,
+                                    mPetBirthDate.getText().toString(),
+                                    mPetSpecies.getText().toString(),
+                                    mPetRelation.getText().toString());
+
+                            FireBaseNetworkManager.getInstance(getApplicationContext()).createUserData(data, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                @Override
+                                public void onCompleted(boolean result, Task<AuthResult> task) {
+                                    if (result) {
+                                        Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                    Intent intent = new Intent(SignUpPetActivity.this, MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                    startActivity(intent);
+                                }
+                            });
+                        } else {
+                            Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -196,6 +236,33 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         Toast.makeText(getApplicationContext(), data, Toast.LENGTH_SHORT).show();
     }
 
+    private boolean checkEmptyFields() {
+        boolean checkEmpty = false;
 
+        if(TextUtils.isEmpty(mPetName.getText().toString())) {
+            checkEmpty = true;
+            mPetName.setHint(R.string.pet_name_hint);
+        }
+        if(TextUtils.isEmpty(mPetBirthDate.getText().toString())) {
+            checkEmpty = true;
+            mPetBirthDate.setHint(R.string.birthday);
+        }
+        if(TextUtils.isEmpty(mPetSpecies.getText().toString())) {
+            checkEmpty = true;
+            mPetSpecies.setHint(R.string.pet_species);
+        }
+        if(TextUtils.isEmpty(mPetRelation.getText().toString())) {
+            checkEmpty = true;
+            mPetRelation.setHint(R.string.pet_relation);
+        }
+        if(mPetGender == -1) {
+            checkEmpty = true;
+        }
+
+        if(checkEmpty) {
+            return true;
+        }
+        return false;
+    }
 
 }

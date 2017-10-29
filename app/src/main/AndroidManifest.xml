@@ -27,7 +27,7 @@
 
         <activity
             android:name="com.friendly.walkingout.main.MainActivity"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:screenOrientation="portrait">
 
             <intent-filter>

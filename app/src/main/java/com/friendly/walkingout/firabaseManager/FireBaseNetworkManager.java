@@ -38,7 +38,7 @@ public class FireBaseNetworkManager {
     private FirebaseAuth.AuthStateListener      mAuthListener;
 
     public interface FireBaseNetworkCallback {
-        public void onCompleted(boolean result);
+        public void onCompleted(boolean result, Task<AuthResult> task);
     }
 
     public static FireBaseNetworkManager getInstance(Context context) {
@@ -86,9 +86,9 @@ public class FireBaseNetworkManager {
                     @Override
                     public void onComplete(Task<AuthResult> task) {
                         JWLog.d("", "@@@ createUserWithEmail:onComplete:" + task.isSuccessful());
-                        callback.onCompleted(task.isSuccessful());
+                        callback.onCompleted(task.isSuccessful(), task);
 
-                        createUserData(task.getResult().getUser().getEmail(), task.getResult().getUser().getUid(), "은비", null);
+                        //createUserData(task.getResult().getUser().getEmail(), task.getResult().getUser().getUid(), "은비", null);
                     }
                 });
     }
@@ -99,21 +99,19 @@ public class FireBaseNetworkManager {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         JWLog.d("", "signInWithEmail:onComplete:" + task.isSuccessful());
-                        callback.onCompleted(task.isSuccessful());
+                        callback.onCompleted(task.isSuccessful(), null);
                     }
                 });
     }
 
-    public void createUserData(String email, String uid, String  petName, final FireBaseNetworkCallback callback) {
-        UserData data = new UserData(email, uid, petName);
-
+    public void createUserData(UserData data, final FireBaseNetworkCallback callback) {
         ValueEventListener listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 JWLog.w("", "@@@ onDataChange");
                 UserData data = dataSnapshot.getValue(UserData.class);
                 if(callback != null) {
-                    callback.onCompleted(true);
+                    callback.onCompleted(true, null);
                 }
             }
 
@@ -122,33 +120,39 @@ public class FireBaseNetworkManager {
                 // Getting Post failed, log a message
                 JWLog.w("", "error : "+ databaseError.toException());
                 if(callback != null) {
-                    callback.onCompleted(false);
+                    callback.onCompleted(false, null);
                 }
             }
         };
 
         databaseReference.addValueEventListener(listener);
-        databaseReference.child("users").child(uid).setValue(data);
+        databaseReference.child("users").child(data.getUID()).setValue(data);
     }
 
-    public void findUserEmail(final String email, FireBaseNetworkManager.FireBaseNetworkCallback callback) {
-        Query myTopPostsQuery = databaseReference.child("users");
+    public void createUserData(String email, String uid, String  petName, final FireBaseNetworkCallback callback) {
+        UserData data = new UserData(email, uid, petName);
+
+        createUserData(data, callback);
+    }
+
+    public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        Query myTopPostsQuery = databaseReference.child("users").orderByChild("loginEmail").equalTo(email);
 
         myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot data : dataSnapshot.getChildren()) {
-                    UserData user = data.getValue(UserData.class);
-
-                    JWLog.e("","@@@ email : "+user.getLoginEmail());
+                if(dataSnapshot.getChildrenCount() > 0) {
+                    callback.onCompleted(true, null);
+                } else {
+                    callback.onCompleted(false, null);
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
             }
-
         });
     }
 

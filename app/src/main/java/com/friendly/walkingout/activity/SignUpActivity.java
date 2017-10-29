@@ -16,6 +16,7 @@ import com.friendly.walkingout.R;
 import com.friendly.walkingout.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walkingout.util.JWLog;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 
 import java.util.regex.Matcher;
@@ -77,15 +78,16 @@ public class SignUpActivity extends BaseActivity {
                 Toast.makeText(this, R.string.email_error, Toast.LENGTH_SHORT).show();
             }
         } else if(v == mCheckDuplicationButton) {
+            String email = mEmailText.getText().toString();
+            FireBaseNetworkManager.getInstance(this).findUserEmail(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                @Override
+                public void onCompleted(boolean result, Task<AuthResult> task) {
 
-           FireBaseNetworkManager.getInstance(this).findUserEmail(mEmailText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
-               @Override
-               public void onCompleted(boolean result) {
-                   if(result) {
-
-                   } else {
-
-                   }
+                    if(result) {
+                        Toast.makeText(getApplicationContext(), "아이디 있음", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "아이디 없음", Toast.LENGTH_SHORT).show();
+                    }
                }
            });
 
