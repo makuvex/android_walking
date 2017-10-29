@@ -15,7 +15,7 @@ import com.friendly.walkingout.GlobalConstantID;
 import com.friendly.walkingout.R;
 import com.friendly.walkingout.dataSet.PetData;
 import com.friendly.walkingout.dataSet.PetRelationData;
-import com.friendly.walkingout.firabaseManager.FirebaseNetworkManager;
+import com.friendly.walkingout.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walkingout.util.CommonUtil;
 import com.friendly.walkingout.util.JWLog;
 
@@ -29,7 +29,7 @@ import stfalcon.universalpickerdialog.UniversalPickerDialog;
  * Created by jungjiwon on 2017. 10. 25..
  */
 
-public class SignUpPetActivity extends Activity implements View.OnFocusChangeListener, DatePickerDialog.OnDateSetListener, UniversalPickerDialog.OnPickListener {
+public class SignUpPetActivity extends BaseActivity implements View.OnFocusChangeListener, DatePickerDialog.OnDateSetListener, UniversalPickerDialog.OnPickListener {
 
     public static final int                     PICKER_DATA_TYPE_SPECIES = 0;
     public static final int                     PICKER_DATA_TYPE_RELATION = 1;
@@ -109,10 +109,14 @@ public class SignUpPetActivity extends Activity implements View.OnFocusChangeLis
         } else if(v == mPetRelation) {
             showPetRelationDialog();
         } else if(v == mSignUp) {
-            FirebaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FirebaseNetworkManager.FirebaseNetworkCallback() {
+            FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result) {
-                    //Toast.makeText(SignUpPetActivity.this, String.format("create account result : %d", result), Toast.LENGTH_SHORT).show();
+                    if(result) {
+                        Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }

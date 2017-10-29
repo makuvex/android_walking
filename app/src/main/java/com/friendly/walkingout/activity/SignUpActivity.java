@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.friendly.walkingout.GlobalConstantID;
 import com.friendly.walkingout.R;
+import com.friendly.walkingout.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walkingout.util.JWLog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.AuthResult;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
  * Created by jungjiwon on 2017. 10. 25..
  */
 
-public class SignUpActivity extends Activity {
+public class SignUpActivity extends BaseActivity {
 
     private EditText                            mEmailText;
 
@@ -76,6 +77,18 @@ public class SignUpActivity extends Activity {
                 Toast.makeText(this, R.string.email_error, Toast.LENGTH_SHORT).show();
             }
         } else if(v == mCheckDuplicationButton) {
+
+           FireBaseNetworkManager.getInstance(this).findUserEmail(mEmailText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
+               @Override
+               public void onCompleted(boolean result) {
+                   if(result) {
+
+                   } else {
+
+                   }
+               }
+           });
+
             mCheckCompletedEmail = mEmailText.getText().toString();
         }
     }

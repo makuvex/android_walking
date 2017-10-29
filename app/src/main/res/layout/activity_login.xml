@@ -171,8 +171,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/find_id"
-            android:onClick="onClickCallback"/>
+            android:text="@string/find_id"/>
 
         <View
             android:layout_width="1dp"
@@ -186,8 +185,7 @@
             android:layout_height="30dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/find_password"
-            android:onClick="onClickCallback"/>
+            android:text="@string/find_password"/>
 
         <View
             android:layout_width="1dp"
@@ -202,7 +200,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/sign_up"
-            android:onClick="onClickCallback"/>
+            android:clickable="true"/>
 
     </LinearLayout>
 

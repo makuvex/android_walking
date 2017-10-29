@@ -29,6 +29,7 @@ import android.renderscript.ScriptIntrinsicBlur;
 import android.widget.Toast;
 
 import com.friendly.walkingout.R;
+import com.friendly.walkingout.activity.BaseActivity;
 import com.friendly.walkingout.fragment.ReportFragment;
 import com.friendly.walkingout.fragment.SettingFragment;
 import com.friendly.walkingout.fragment.StrollFragment;
@@ -43,7 +44,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     public static final int PAGER_MAX_COUNT = 4;
     private SectionsPagerAdapter mSectionsPagerAdapter;

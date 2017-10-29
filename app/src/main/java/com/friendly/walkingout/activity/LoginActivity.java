@@ -16,7 +16,7 @@ import com.friendly.walkingout.util.JWLog;
  * Created by jungjiwon on 2017. 10. 25..
  */
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends BaseActivity implements View.OnClickListener {
 
     private EditText                            mEmailText;
     private EditText                            mPasswordText;
@@ -30,6 +30,9 @@ public class LoginActivity extends Activity {
         mEmailText = (EditText)findViewById(R.id.email_id);
         mPasswordText = (EditText)findViewById(R.id.password);
         mAutoLoginCheckBox = (CheckBox)findViewById(R.id.autologin_check);
+        findViewById(R.id.find_id).setOnClickListener(this);
+        findViewById(R.id.find_password).setOnClickListener(this);
+        findViewById(R.id.sign_up).setOnClickListener(this);
 
         mAutoLoginCheckBox.setChecked(true);
     }
@@ -48,13 +51,14 @@ public class LoginActivity extends Activity {
 
         } else if(v.getId() == R.id.facebook_login) {
 
-        } else if(v.getId() == R.id.find_id) {
-
-        } else if(v.getId() == R.id.find_password) {
-
-        } else if(v.getId() == R.id.sign_up) {
-            startActivity(new Intent(this, SignUpActivity.class));
         }
     }
 
+    @Override
+    public void onClick(View view) {
+        JWLog.e("","");
+        if(view.getId() == R.id.sign_up) {
+            startActivity(new Intent(this, SignUpActivity.class));
+        }
+    }
 }
