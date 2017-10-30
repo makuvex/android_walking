@@ -1,9 +1,13 @@
 package com.friendly.walking.firabaseManager;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.widget.Toast;
 
+import com.friendly.walking.R;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -55,6 +59,10 @@ public class FireBaseNetworkManager {
             mSelf = new FireBaseNetworkManager(context);
         }
         mSelf.mContext = context;
+
+        if(!mSelf.checkInternetConnection(context)) {
+            Toast.makeText(context, R.string.internet_connection_faild, Toast.LENGTH_SHORT).show();
+        }
         return mSelf;
     }
 
@@ -137,13 +145,13 @@ public class FireBaseNetworkManager {
         };
 
         databaseReference.addValueEventListener(listener);
-        databaseReference.child("users").child(data.getUID()).setValue(data);
+        databaseReference.child("users").child(data.uid).setValue(data);
     }
 
     public void createUserData(String email, String uid, String  petName, final FireBaseNetworkCallback callback) {
-        UserData data = new UserData(email, uid, petName);
-
-        createUserData(data, callback);
+//        UserData data = new UserData(email, uid, petName);
+//
+//        createUserData(data, callback);
     }
 
     public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -167,20 +175,13 @@ public class FireBaseNetworkManager {
         });
     }
 
-    public void uploadImage(Uri file) {
-
-        // File or Blob
-        //file = Uri.fromFile(new File("path/to/mountains.jpg"));
-
-// Create the file metadata
+    public void uploadProfileImage(Uri file, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
         StorageMetadata  metadata = new StorageMetadata.Builder()
                 .setContentType("image/jpeg")
                 .build();
 
-// Upload file and metadata to the path 'images/mountains.jpg'
-        UploadTask uploadTask = storageRef.child("images/"+file.getLastPathSegment()).putFile(file, metadata);
+        UploadTask uploadTask = storageRef.child("profile/"+file.getLastPathSegment()).putFile(file, metadata);
 
-// Listen for state changes, errors, and completion of the upload.
         uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
@@ -195,6 +196,7 @@ public class FireBaseNetworkManager {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
+                callback.onCompleted(false, null);
                 // Handle unsuccessful uploads
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -202,8 +204,19 @@ public class FireBaseNetworkManager {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // Handle successful uploads on complete
                 Uri downloadUrl = taskSnapshot.getMetadata().getDownloadUrl();
+                callback.onCompleted(true, null);
             }
         });
+
+    }
+
+    public boolean checkInternetConnection(Context context) {
+        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
 
     }
 

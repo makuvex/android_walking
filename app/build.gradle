@@ -42,6 +42,7 @@ dependencies {
     compile 'com.github.jakob-grabner:Circle-Progress-View:v1.3'
 
     compile 'com.github.stfalcon:universalpickerdialog:0.1.0'           // string picker
+    compile 'com.soundcloud.android:android-crop:1.0.1@aar'             // crop image
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -1,13 +1,16 @@
 <resources>
-    <string name="app_name" translatable="false">댕댕이랑</string>
+    <string name="app_name" translatable="false">누구의 산책</string>
     <string name="action_settings" translatable="false">Settings</string>
     <string name="section_format" translatable="false">Hello World from section: %1$d</string>
 
+    <string name="internet_connection_faild" translatable="false">인터넷이 연결되어 있지 않습니다.</string>
 
     <string name="login" translatable="false">로그인</string>
     <string name="email_hint" translatable="false">이메일 입력</string>
     <string name="password_hint" translatable="false">비밀번호 입력</string>
     <string name="confirm_password_hint" translatable="false">비밀번호 확인</string>
+    <string name="address_hint" translatable="false">집 주소(선택, 지번 입력)</string>
+    <string name="find_address" translatable="false">집 주소 찾기</string>
 
     <string name="find_id" translatable="false">아이디 찾기</string>
     <string name="find_password" translatable="false">패스워드 찾기</string>
@@ -15,11 +18,15 @@
     <string name="sign_up_with_sns" translatable="false">SNS계정 회원 가입</string>
     <string name="check_duplication" translatable="false">중복확인</string>
     <string name="next" translatable="false">다음 ></string>
+    <string name="find" translatable="false">찾기</string>
 
     <string name="email_error" translatable="false">올바른 이메일 형식이 아닙니다.</string>
     <string name="password_error" translatable="false">잘못된 패스워드 형식 입니다.</string>
     <string name="password_compare_error" translatable="false">패스워드가 일치하지 않습니다.</string>
     <string name="require_check_email" translatable="false">이메일 중복확인을 먼저 해주세요.</string>
+
+    <string name="available_id" translatable="false">사용 가능한 아이디 입니다.</string>
+    <string name="unavailable_id" translatable="false">해당 이메일이 이미 있습니다.</string>
 
     <string name="input_pet_info" translatable="false">반려동물 정보를 입력해주세요</string>
     <string name="name" translatable="false">이름</string>
@@ -28,6 +35,7 @@
     <string name="pet_species" translatable="false">반려동물 종류</string>
     <string name="pet_relation" translatable="false">반려동물과의 관계</string>
     <string name="pet_input_info_description" translatable="false">반려동물의 입력 정보는 해당 앱에서 생활패턴 제안이나 알림용으로만 사용됩니다.</string>
+    <string name="mem_address_input_info_description" translatable="false">주소 입력 정보는 해당 앱에서 생활패턴 제안이나 알림용으로만 사용됩니다. 미 입력시 자동 산책 모드가 비활성화 됩니다</string>
 
     <string name="year" translatable="false">년</string>
     <string name="month" translatable="false">월</string>

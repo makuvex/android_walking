@@ -2,61 +2,54 @@ package com.friendly.walking.dataSet;
 
 import android.util.Log;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by Administrator on 2017-10-22.
  */
 
 public class UserData extends Object {
-    public String loginEmail;
+
     public String uid;
 
-    public String petName;
-    public boolean petGender;
-    public String birthDay;
-    public String petSpecies;
-    public String petRelation;
+    public String mem_email;
+    public boolean mem_auto_login;
+    public boolean mem_notification_yn;
+    public boolean mem_location_yn;
+    public Map<String, String> mem_address;
+    public String mem_register_datetime;
+    public long member_index;
+    public String mem_last_login_datetime;
+    public List<PetData> pet_list;
+    public boolean mem_auto_stroll_mode;
+
 
     public UserData() {
         Log.e("","@@@ LoginData constructor @@@");
     }
 
-    public UserData(String email, String uid, String petName) {
-        this.loginEmail = email;
-        this.uid = uid;
-        this.petName = petName;
-    }
-
-    public UserData(String email, String uid, String petName, boolean petGender, String birthDay, String petSpecies, String petRelation) {
-        this.loginEmail = email;
-        this.uid = uid;
-        this.petName = petName;
-        this.petGender = petGender;
-        this.birthDay = birthDay;
-        this.petSpecies = petSpecies;
-        this.petRelation = petRelation;
-    }
-
-    public String getLoginEmail() {
-        return loginEmail;
-    }
-
-    public void setLoginEmail(String email) {
-        this.loginEmail = email;
-    }
-
-    public String getUID() {
-        return uid;
-    }
-
-    public void setUID(String uid) {
-        this.uid = uid;
-    }
-
-    public String getPetName() {
-        return petName;
-    }
-
-    public void setPetName(String petName) {
-        this.petName = petName;
-    }
+//    public String getLoginEmail() {
+//        return loginEmail;
+//    }
+//
+//    public void setLoginEmail(String email) {
+//        this.loginEmail = email;
+//    }
+//
+//    public String getUID() {
+//        return uid;
+//    }
+//
+//    public void setUID(String uid) {
+//        this.uid = uid;
+//    }
+//
+//    public String getPetName() {
+//        return petName;
+//    }
+//
+//    public void setPetName(String petName) {
+//        this.petName = petName;
+//    }
 }

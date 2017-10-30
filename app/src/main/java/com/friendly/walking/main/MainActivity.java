@@ -10,8 +10,10 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import android.graphics.Bitmap;
@@ -20,6 +22,8 @@ import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.friendly.walking.fragment.ReportFragment;
@@ -44,6 +48,7 @@ public class MainActivity extends BaseActivity {
     private View        mSettingSelected = null;
     private View        mPreviousSelectedView = null;
 
+
     private LinearLayout mProfileView = null;
 
     private long        mDoublePressInterval = 2000;
@@ -66,10 +71,12 @@ public class MainActivity extends BaseActivity {
         mMapSelected = findViewById(R.id.map_page);
         mReportSelected = findViewById(R.id.report_page);
         mSettingSelected = findViewById(R.id.setting_page);
+
         mPreviousSelectedView = mStrollSelected;
 
         mStrollSelected.setBackgroundResource(R.color.colorTapSelected);
         mProfileView = (LinearLayout)findViewById(R.id.profileBackgroundImageView);
+        //mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -138,6 +145,10 @@ public class MainActivity extends BaseActivity {
         Bitmap blurred = blurRenderScript(bitmap, 25);//second parametre is radius
         //imageview.setImageBitmap(blurred);
         mProfileView.setBackground(new BitmapDrawable(blurred));
+
+        //mProgressBar.setVisibility(View.VISIBLE);
+
+
     }
 
     @Override

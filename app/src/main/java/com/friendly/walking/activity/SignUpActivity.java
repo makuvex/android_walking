@@ -1,6 +1,7 @@
 package com.friendly.walking.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -21,12 +22,13 @@ import java.util.regex.Pattern;
  * Created by jungjiwon on 2017. 10. 25..
  */
 
-public class SignUpActivity extends BaseActivity {
+public class SignUpActivity extends BaseActivity implements View.OnFocusChangeListener {
 
     private EditText                            mEmailText;
 
     private EditText                            mPasswordText;
     private EditText                            mConfirmPasswordText;
+    private EditText                            mInputAddressText;
     private Button                              mCheckDuplicationButton;
     private Button                              mNextButton;
 
@@ -40,8 +42,14 @@ public class SignUpActivity extends BaseActivity {
         mEmailText = (EditText)findViewById(R.id.email_id);
         mPasswordText = (EditText)findViewById(R.id.password);
         mConfirmPasswordText = (EditText)findViewById(R.id.confirm_password);
+        mInputAddressText = (EditText)findViewById(R.id.address);
+
         mCheckDuplicationButton = (Button) findViewById(R.id.check_duplication_button);
         mNextButton = (Button)findViewById(R.id.next_button);
+        mNextButton.setEnabled(false);
+
+        mInputAddressText.setOnFocusChangeListener(this);
+//        BaseActivity.setProgressBar(View.VISIBLE);
     }
 
     public void onClickCallback(View v) {
@@ -73,20 +81,37 @@ public class SignUpActivity extends BaseActivity {
                 Toast.makeText(this, R.string.email_error, Toast.LENGTH_SHORT).show();
             }
         } else if(v == mCheckDuplicationButton) {
+            setProgressBar(View.VISIBLE);
+
             String email = mEmailText.getText().toString();
             FireBaseNetworkManager.getInstance(this).findUserEmail(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Task<AuthResult> task) {
+                    setProgressBar(View.INVISIBLE);
 
                     if(result) {
-                        Toast.makeText(getApplicationContext(), "아이디 있음", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.unavailable_id, Toast.LENGTH_SHORT).show();
+                        mNextButton.setEnabled(false);
                     } else {
-                        Toast.makeText(getApplicationContext(), "아이디 없음", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.available_id, Toast.LENGTH_SHORT).show();
+                        mNextButton.setEnabled(true);
                     }
                }
            });
 
             mCheckCompletedEmail = mEmailText.getText().toString();
+        } else if(v.getId() == R.id.address) {
+
+            Intent intent = new Intent(this, GoogleMapActivity.class);
+            intent.putExtra(GlobalConstantID.HOME_ADDRESS, "능동 1065-3");
+
+            startActivity(intent);
+
+//            Uri gmmIntentUri = Uri.parse("geo:0,0?q=능동 1065-3");
+//            Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+//            mapIntent.setPackage("com.google.android.apps.maps");
+//            startActivity(mapIntent);
+
         }
     }
 
@@ -110,4 +135,14 @@ public class SignUpActivity extends BaseActivity {
         }
     }
 
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(hasFocus && v == mInputAddressText) {
+            Intent intent = new Intent(this, GoogleMapActivity.class);
+            if(!TextUtils.isEmpty(mInputAddressText.getText().toString())) {
+                intent.putExtra(GlobalConstantID.HOME_ADDRESS, mInputAddressText.getText().toString());
+            }
+            startActivity(intent);
+        }
+    }
 }

@@ -9,9 +9,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -30,8 +33,10 @@ import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.soundcloud.android.crop.Crop;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -73,8 +78,9 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
     private static PetData[]                    mPetData;
     private static PetRelationData[]            mRelationData;
-    private int                                  mPetGender = -1;
-    private Uri                                  mImageCaptureUri;
+    private int                                 mPetGender = -1;
+    private Uri                                 mImageCaptureUri;
+
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -146,6 +152,8 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
             if(checkEmptyFields()) {
                 Toast.makeText(SignUpPetActivity.this, "비어있는 항목을 입력해 주세요.", Toast.LENGTH_SHORT).show();
             } else {
+                setProgressBar(View.VISIBLE);
+
                 FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                     @Override
                     public void onCompleted(boolean result, Task<AuthResult> task) {
@@ -153,19 +161,32 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                             Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
 
                             // public UserData(String email, String uid, String petName, boolean petGender, String birthDay, String petSpecies, String petRelation) {
-                            UserData data = new UserData(mEmail,
-                                    task.getResult().getUser().getUid(),
-                                    mPetName.getText().toString(),
-                                    mPetGender == 0 ? false : true,
-                                    mPetBirthDate.getText().toString(),
-                                    mPetSpecies.getText().toString(),
-                                    mPetRelation.getText().toString());
+//                            UserData data = new UserData(mEmail,
+//                                    task.getResult().getUser().getUid(),
+//                                    mPetName.getText().toString(),
+//                                    mPetGender == 0 ? false : true,
+//                                    mPetBirthDate.getText().toString(),
+//                                    mPetSpecies.getText().toString(),
+//                                    mPetRelation.getText().toString());
 
+                            UserData data = null;
                             FireBaseNetworkManager.getInstance(getApplicationContext()).createUserData(data, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                                 @Override
                                 public void onCompleted(boolean result, Task<AuthResult> task) {
+                                    setProgressBar(View.INVISIBLE);
+
                                     if (result) {
                                         Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
+                                        FireBaseNetworkManager.getInstance(SignUpPetActivity.this).uploadProfileImage(mImageCaptureUri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                            @Override
+                                            public void onCompleted(boolean result, Task<AuthResult> task) {
+                                                if(result) {
+                                                    Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                                } else {
+                                                    Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
                                     } else {
                                         Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
                                     }
@@ -176,6 +197,8 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                                 }
                             });
                         } else {
+                            setProgressBar(View.INVISIBLE);
+
                             Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -320,90 +343,20 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         }
 
         switch(requestCode) {
-            case REQ_CODE_CROP_IMAGE:  {
-                // 크롭이 된 이후의 이미지를 넘겨 받습니다.
-                // 이미지뷰에 이미지를 보여준다거나 부가적인 작업 이후에
-                // 임시 파일을 삭제합니다.
-                final Bundle extras = data.getExtras();
-
-                if(extras != null) {
-                    Bitmap photo = extras.getParcelable("data");
-                    mAddProfile.setBackground(new BitmapDrawable(photo));
-                }
-
+            case Crop.REQUEST_CROP :
+                mAddProfile.setBackground(new BitmapDrawable(Crop.getOutput(data).getPath()));
                 File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-
-
-
-
                 JWLog.e("","path :"+path.getAbsolutePath());
-                mImageCaptureUri = Uri.parse(path.getAbsolutePath() + "/pet_profile.jpg");
-                JWLog.e("","mImageCaptureUri :"+mImageCaptureUri.getPath());
-
-                saveBitmapToFileCache((Bitmap) extras.getParcelable("data"), mImageCaptureUri.getPath());
-
-//                // 임시 파일 삭제
-//                File f = new File(mImageCaptureUri.getPath());
-//                if(f.exists())  {
-//                    f.delete();
-//                }
-
-                FireBaseNetworkManager.getInstance(this).uploadImage(mImageCaptureUri);
+                mImageCaptureUri = Uri.parse(path.getAbsolutePath() + "/" + mEmail +"_pet_profile.jpg");
+                saveBitmaptoJpeg(new BitmapDrawable(Crop.getOutput(data).getPath()).getBitmap(), Environment.DIRECTORY_DOWNLOADS,  mEmail +"_pet_profile");
+                mImageCaptureUri = Uri.fromFile(new File(mImageCaptureUri.getPath()));
                 break;
-            }
-            case REQ_CODE_SELECT_IMAGE:  {
-                // 이후의 처리가 카메라와 같으므로 일단  break없이 진행합니다.
-                // 실제 코드에서는 좀더 합리적인 방법을 선택하시기 바랍니다.
+            case REQ_CODE_SELECT_IMAGE:
                 mImageCaptureUri = data.getData();
-            }
-            case REQ_CODE_CAPTURE_IMAGE:  {
-                // 이미지를 가져온 이후의 리사이즈할 이미지 크기를 결정합니다.
-                // 이후에 이미지 크롭 어플리케이션을 호출하게 됩니다.
-/*
-                Intent intent = new Intent("com.android.camera.action.CROP");
-                intent.setDataAndType(mImageCaptureUri, "image/*");
-
-                intent.putExtra("outputX", 90);
-                intent.putExtra("outputY", 90);
-                intent.putExtra("aspectX", 1);
-                intent.putExtra("aspectY", 1);
-                intent.putExtra("scale", true);
-                intent.putExtra("return-data", true);
-                startActivityForResult(intent, REQ_CODE_CROP_IMAGE);
-                */
-
-
-
-
-                mImageCaptureUri = data.getData();
-                JWLog.e("","mImageCaptureUri :"+mImageCaptureUri.getPath());
-
-                //saveBitmapToFileCache((Bitmap) extras.getParcelable("data"), mImageCaptureUri.getPath());
-
-//                // 임시 파일 삭제
-//                File f = new File(mImageCaptureUri.getPath());
-//                if(f.exists())  {
-//                    f.delete();
-//                }
-
-                FireBaseNetworkManager.getInstance(this).uploadImage(mImageCaptureUri);
-
+            case REQ_CODE_CAPTURE_IMAGE:
+                beginCrop(mImageCaptureUri);
                 break;
-            }
         }
-    }
-
-    public String getImageNameToUri(Uri data) {
-        String[] proj = { MediaStore.Images.Media.DATA };
-        Cursor cursor = managedQuery(data, proj, null, null, null);
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-
-        cursor.moveToFirst();
-
-        String imgPath = cursor.getString(column_index);
-        String imgName = imgPath.substring(imgPath.lastIndexOf("/")+1);
-
-        return imgName;
     }
 
     private void doTakePhotoAction() {
@@ -438,25 +391,33 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
     }
 
-    private void saveBitmapToFileCache(Bitmap bitmap, String strFilePath) {
-        File fileCacheItem = new File(strFilePath);
-        OutputStream out = null;
+    public static void saveBitmaptoJpeg(Bitmap bitmap,String folder, String name){
+        String ex_storage =Environment.getExternalStorageDirectory().getAbsolutePath();
+        // Get Absolute Path in External Sdcard
+        String foler_name = "/" + folder + "/";
+        String file_name = name + ".jpg";
+        String string_path = ex_storage+foler_name;
 
-        try {
-            fileCacheItem.createNewFile();
-            out = new FileOutputStream(fileCacheItem);
+        File file_path;
+        try{
+            file_path = new File(string_path);
+            if(!file_path.isDirectory()){
+                file_path.mkdirs();
+            }
+            FileOutputStream out = new FileOutputStream(string_path+file_name);
 
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            out.close();
+
+        }catch(FileNotFoundException exception){
+            JWLog.e("FileNotFoundException", exception.getMessage());
+        }catch(IOException exception){
+            JWLog.e("IOException", exception.getMessage());
         }
     }
 
+    private void beginCrop(Uri source) {
+        Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+        Crop.of(source, destination).asSquare().start(this);
+    }
 }

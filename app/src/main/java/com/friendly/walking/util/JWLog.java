@@ -18,7 +18,7 @@ public class JWLog
     public static final byte TYPE_VERBOSE     = 0x10;
     public static final byte TYPE_STACK_TRACE = 0x20;
 
-    private static final String LOG_TAG             = "walkingOut";
+    private static final String LOG_TAG             = "walking";
 
     private static void log(byte type,String tag, String message, int stackNumber) {
 

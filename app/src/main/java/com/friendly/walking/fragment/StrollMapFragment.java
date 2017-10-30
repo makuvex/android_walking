@@ -121,7 +121,7 @@ public class StrollMapFragment extends SupportMapFragment
         JWLog.e("","");
         super.onResume();
 
-        if (mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             if (!mRequestingLocationUpdates) {
                 startLocationUpdates();
             }
@@ -137,7 +137,7 @@ public class StrollMapFragment extends SupportMapFragment
             stopLocationUpdates();
         }
 
-        if ( mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient != null &&  mGoogleApiClient.isConnected()) {
 
             JWLog.d(TAG, "onStop : mGoogleApiClient disconnect");
             mGoogleApiClient.disconnect();

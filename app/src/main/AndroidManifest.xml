@@ -29,7 +29,7 @@
 
         <activity
             android:name="com.friendly.walking.main.MainActivity"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
 
             <intent-filter>
@@ -45,18 +45,22 @@
 
         <activity
             android:name="com.friendly.walking.activity.LoginActivity"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"/>
+
 
         <activity
             android:name="com.friendly.walking.activity.SignUpActivity"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"/>
+
 
         <activity
             android:name="com.friendly.walking.activity.SignUpPetActivity"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"/>
+
+
+        <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
+
+        <activity android:name="com.friendly.walking.activity.GoogleMapActivity" />
 
         <service android:name="com.friendly.walking.service.MainService" />
     </application>
