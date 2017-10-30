@@ -169,7 +169,11 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 //                                    mPetSpecies.getText().toString(),
 //                                    mPetRelation.getText().toString());
 
-                            UserData data = null;
+                            UserData data = new UserData();
+
+
+
+
                             FireBaseNetworkManager.getInstance(getApplicationContext()).createUserData(data, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                                 @Override
                                 public void onCompleted(boolean result, Task<AuthResult> task) {

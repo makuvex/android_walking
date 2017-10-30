@@ -48,7 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="42dp"
                 android:layout_margin="9dp"
-                android:background="#bce1f2" />
+                android:background="#000000" />
 
             <EditText
                 android:id="@+id/address"
@@ -64,16 +64,25 @@
                 android:gravity="center_vertical" />
         </FrameLayout>
 
-        <Button
+        <ImageButton
             android:id="@+id/find"
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_margin="9dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginRight="10dp"
+            android:layout_gravity="center_vertical"
             android:textColor="#ffffff"
             android:textStyle="bold"
-            android:typeface="sans"
-            android:text="@string/find"
-            android:background="@color/colorPrimaryLighten"/>
+            android:background="@drawable/search_selector"/>
+
+        <ImageButton
+            android:id="@+id/confirm"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginRight="15dp"
+
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/check_selector"
+            />
 
     </LinearLayout>
 
@@ -82,11 +91,17 @@
         android:layout_height="2dp"
         android:background="@color/colorPrimary"/>
 
-    <fragment
-        android:id="@+id/map"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        class="com.google.android.gms.maps.MapFragment" />
+        android:layout_weight="1">
 
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.MapFragment" />
+
+
+    </FrameLayout>
 </LinearLayout>

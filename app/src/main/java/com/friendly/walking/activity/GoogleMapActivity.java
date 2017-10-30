@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.friendly.walking.GlobalConstantID;
@@ -49,7 +50,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         GoogleApiClient.OnConnectionFailedListener {
 
     private EditText                            mAddressText;
-    private Button                              mFindButton;
+    private ImageButton                         mFindButton;
 
     private String                              mAddress;
     private Geocoder                            mGeocoder;
@@ -82,7 +83,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         }
 
         mAddressText = (EditText)findViewById(R.id.address);
-        mFindButton = (Button)findViewById(R.id.find);
+        mFindButton = (ImageButton)findViewById(R.id.find);
 
         FragmentManager fragmentManager = getFragmentManager();
         MapFragment mapFragment = (MapFragment)fragmentManager.findFragmentById(R.id.map);

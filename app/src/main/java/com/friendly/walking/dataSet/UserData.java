@@ -15,14 +15,14 @@ public class UserData extends Object {
 
     public String mem_email;
     public boolean mem_auto_login;
-    public boolean mem_notification_yn;
-    public boolean mem_location_yn;
+    public boolean mem_notification_yn = true;
+    public boolean mem_location_yn = false;
     public Map<String, String> mem_address;
     public String mem_register_datetime;
     public long member_index;
     public String mem_last_login_datetime;
     public List<PetData> pet_list;
-    public boolean mem_auto_stroll_mode;
+    public boolean mem_auto_stroll_mode = true;
 
 
     public UserData() {
