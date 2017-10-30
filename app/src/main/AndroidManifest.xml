@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.friendly.walkingout">
+    package="com.friendly.walking">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -17,9 +17,9 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBWtTTPrfX8wU7NwcxTDDi6VBFKzWOIVXk" />
+            android:value="AIzaSyAumDY-OHDxWEBAaFJLGsN9KzdO-NS9i7E" />
 
-        <activity android:name="com.friendly.walkingout.main.IntroActivity">
+        <activity android:name="com.friendly.walking.main.IntroActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -28,7 +28,7 @@
         </activity>
 
         <activity
-            android:name="com.friendly.walkingout.main.MainActivity"
+            android:name="com.friendly.walking.main.MainActivity"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait">
 
@@ -37,28 +37,28 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".landing.NotificationSomething"
+        <activity android:name="com.friendly.walking.landing.NotificationSomething"
             android:screenOrientation="portrait"
             android:launchMode="singleInstance"
             android:excludeFromRecents="true"
             android:taskAffinity=""/>
 
         <activity
-            android:name="com.friendly.walkingout.activity.LoginActivity"
+            android:name="com.friendly.walking.activity.LoginActivity"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name="com.friendly.walkingout.activity.SignUpActivity"
+            android:name="com.friendly.walking.activity.SignUpActivity"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name="com.friendly.walkingout.activity.SignUpPetActivity"
+            android:name="com.friendly.walking.activity.SignUpPetActivity"
             android:screenOrientation="portrait">
         </activity>
 
-        <service android:name=".service.MainService" />
+        <service android:name="com.friendly.walking.service.MainService" />
     </application>
 
 </manifest>

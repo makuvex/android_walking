@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
-    tools:context="com.friendly.walkingout.main.MainActivity">
+    tools:context="com.friendly.walking.main.MainActivity">
 
     <LinearLayout
         android:id="@+id/profileBackgroundImageView"

@@ -1,0 +1,28 @@
+package com.friendly.walking.preference;
+
+import android.content.Context;
+
+
+public class PreferencePhoneShared extends BasePreference {
+
+    private static final String PREFERENCE_NAME                             = "STROLL_PHONE_SHARED_PREFERENCE";
+
+    private static final String KEY_LOGIN_YN                                = "KEY_LOGIN_YN";
+    private static final String KEY_LOGIN_ID                                = "KEY_LOGIN_ID";
+
+    public static void setLoginYn(Context cxt, boolean loginYn){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_LOGIN_YN, loginYn);
+    }
+
+    public static boolean getLoginYn(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_LOGIN_YN, false);
+    }
+
+    public static void setLoginID(Context cxt, String id){
+        putString(cxt, PREFERENCE_NAME, KEY_LOGIN_ID, id);
+    }
+
+    public static String getLoginID(Context cxt){
+        return getString(cxt, PREFERENCE_NAME, KEY_LOGIN_ID, "");
+    }
+}

@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true"
     android:background="#ffffff"
-    tools:context="com.friendly.walkingout.activity.LoginActivity">
+    tools:context="com.friendly.walking.activity.LoginActivity">
 
     <FrameLayout
         android:layout_width="match_parent"

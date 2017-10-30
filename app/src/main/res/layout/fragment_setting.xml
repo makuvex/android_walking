@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.friendly.walkingout.fragment.ReportFragment">
+    tools:context="com.friendly.walking.fragment.ReportFragment">
 
     <FrameLayout
         android:layout_width="match_parent"

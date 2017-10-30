@@ -1,4 +1,4 @@
-package com.friendly.walkingout;
+package com.friendly.walking;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

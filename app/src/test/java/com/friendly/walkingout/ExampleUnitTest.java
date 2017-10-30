@@ -1,4 +1,4 @@
-package com.friendly.walkingout;
+package com.friendly.walking;
 
 import org.junit.Test;
 

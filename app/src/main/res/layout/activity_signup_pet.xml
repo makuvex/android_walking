@@ -8,7 +8,7 @@
     android:background="#ffffff"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context="com.friendly.walkingout.activity.SignUpPetActivity">
+    tools:context="com.friendly.walking.activity.SignUpPetActivity">
 
     <ScrollView
         android:layout_width="match_parent"

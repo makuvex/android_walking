@@ -5,7 +5,7 @@ android {
     buildToolsVersion '25.0.0'
 
     defaultConfig {
-        applicationId "com.friendly.walkingout"
+        applicationId "com.friendly.walking"
         minSdkVersion 18
         targetSdkVersion 24
         versionCode 1
@@ -45,3 +45,6 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+
+// sha1 DA:DE:3E:79:34:AF:23:06:85:3E:A6:52:14:4C:9E:5A:5C:E3:B8:BE
