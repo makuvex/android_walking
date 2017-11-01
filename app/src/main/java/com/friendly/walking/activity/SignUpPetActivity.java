@@ -197,6 +197,10 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                                             }
 
                                             Intent i = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
+                                            i.putExtra("email", mEmail);
+                                            i.putExtra("password", mPassword);
+                                            i.putExtra("autoLogin", mUserData.mem_auto_login);
+
                                             JWBroadCast.sendBroadcast(getApplicationContext(), i);
 
                                             Intent intent = new Intent(SignUpPetActivity.this, MainActivity.class);

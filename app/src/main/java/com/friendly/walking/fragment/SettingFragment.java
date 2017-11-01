@@ -67,7 +67,7 @@ public class SettingFragment extends Fragment {
                 JWLog.e("","action :"+intent.getAction());
 
                 if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())) {
-                    mAdapter.setDataWithIndex(0, new LoginSettingListData(intent.getStringExtra("email"), false));
+                    mAdapter.setDataWithIndex(0, new LoginSettingListData(intent.getStringExtra("email"), intent.getBooleanExtra("autoLogin", false)));
                     mAdapter.notifyDataSetChanged();
                 }
             }

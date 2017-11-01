@@ -12,6 +12,7 @@ import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.main.MainActivity;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -53,22 +54,27 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             setProgressBar(View.VISIBLE);
 
             final String email = mEmailText.getText().toString().trim();
-
             FireBaseNetworkManager.getInstance(this).loginEmailWithPassword(email, mPasswordText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Task<AuthResult> task) {
                     setProgressBar(View.INVISIBLE);
 
                     if(result) {
+                        JWLog.e("","email :"+email+", password : "+mPasswordText.getText().toString()+", autoLogin :"+mAutoLoginCheckBox.isChecked());
+
+                        PreferencePhoneShared.setLoginID(getApplicationContext(), email);
+                        PreferencePhoneShared.setLoginPassword(getApplicationContext(), mPasswordText.getText().toString());
+                        PreferencePhoneShared.setLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
+
                         Intent intent = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
                         intent.putExtra("email", email);
+                        intent.putExtra("autoLogin", mAutoLoginCheckBox.isChecked());
 
                         JWBroadCast.sendBroadcast(getApplicationContext(), intent);
                         finish();
                     }
                 }
             });
-
         } else if(v.getId() == R.id.autologin_check) {
 
         } else if(v.getId() == R.id.google_login) {

@@ -24,13 +24,18 @@ public class LoginOutReceiver extends BroadcastReceiver {
 
         if(JWBroadCast.BROAD_CAST_LOGIN.equals(intent.getAction())) {
             final String email = intent.getStringExtra("email");
-            String password = intent.getStringExtra("password");
+            final String password = intent.getStringExtra("password");
+            final boolean autoLogin = intent.getBooleanExtra("autoLogin", false);
+
+            JWLog.e("","email :"+email+", password : "+password+", autoLogin :"+autoLogin);
 
             FireBaseNetworkManager.getInstance(context).loginEmailWithPassword(email, password, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Task<AuthResult> task) {
                     if(result) {
-                        PreferencePhoneShared.setLoginYn(context, true);
+                        PreferencePhoneShared.setLoginID(context, email);
+                        PreferencePhoneShared.setLoginPassword(context, password);
+                        PreferencePhoneShared.setLoginYn(context, autoLogin);
 
                         Intent i = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
                         i.putExtra("email", email);

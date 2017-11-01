@@ -36,6 +36,7 @@
             android:layout_gravity="right|center_vertical"
             android:src="@drawable/close_selector"
             android:background="@color/colorTransparent"
+            android:visibility="gone"
             android:onClick="onClickCallback"/>
 
     </FrameLayout>
@@ -128,7 +129,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
-            android:text="@string/autoLogin" />
+            android:text="@string/auto_login" />
 
     </LinearLayout>
 
@@ -175,7 +176,7 @@
 
         <View
             android:layout_width="1dp"
-            android:layout_height="20dp"
+            android:layout_height="15dp"
             android:background="@color/colorBG"
             android:layout_gravity="center_vertical"/>
 
@@ -189,7 +190,7 @@
 
         <View
             android:layout_width="1dp"
-            android:layout_height="20dp"
+            android:layout_height="15dp"
             android:background="@color/colorBG"
             android:layout_gravity="center_vertical"/>
 
