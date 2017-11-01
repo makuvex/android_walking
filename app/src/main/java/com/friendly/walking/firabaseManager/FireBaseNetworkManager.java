@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,7 +38,11 @@ import com.google.firebase.storage.UploadTask;
 
 public class FireBaseNetworkManager {
 
-    private static FireBaseNetworkManager      mSelf;
+    public static final String                  DB_TABLE_USER                   = "user";
+    public static final String                  DB_TABLE_PET                    = "pet";
+
+
+    private static FireBaseNetworkManager       mSelf;
     private Context                             mContext;
 
     private FirebaseDatabase                    firebaseDatabase = FirebaseDatabase.getInstance();
@@ -49,6 +54,9 @@ public class FireBaseNetworkManager {
     // firebase 로그인 인증
     private FirebaseAuth                        mAuth;
     private FirebaseAuth.AuthStateListener      mAuthListener;
+
+    private long                                mUserIndex = -1;
+
 
     public interface FireBaseNetworkCallback {
         public void onCompleted(boolean result, Task<AuthResult> task);
@@ -104,7 +112,7 @@ public class FireBaseNetworkManager {
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(Task<AuthResult> task) {
-                        JWLog.d("", "@@@ createUserWithEmail:onComplete:" + task.isSuccessful());
+                        JWLog.e("", "@@@ createUserWithEmail:onComplete:" + task.isSuccessful());
                         callback.onCompleted(task.isSuccessful(), task);
 
                         //createUserData(task.getResult().getUser().getEmail(), task.getResult().getUser().getUid(), "은비", null);
@@ -117,17 +125,19 @@ public class FireBaseNetworkManager {
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        JWLog.d("", "signInWithEmail:onComplete:" + task.isSuccessful());
+                        JWLog.e("", "signInWithEmail:onComplete:" + task.isSuccessful());
+
                         callback.onCompleted(task.isSuccessful(), null);
                     }
                 });
     }
 
     public void createUserData(UserData data, final FireBaseNetworkCallback callback) {
+        JWLog.e("", "@@@ ");
         ValueEventListener listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                JWLog.w("", "@@@ onDataChange");
+                JWLog.e("", "@@@ onDataChange");
                 UserData data = dataSnapshot.getValue(UserData.class);
                 if(callback != null) {
                     callback.onCompleted(true, null);
@@ -137,7 +147,7 @@ public class FireBaseNetworkManager {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 // Getting Post failed, log a message
-                JWLog.w("", "error : "+ databaseError.toException());
+                JWLog.e("", "error : "+ databaseError.toException());
                 if(callback != null) {
                     callback.onCompleted(false, null);
                 }
@@ -155,7 +165,8 @@ public class FireBaseNetworkManager {
     }
 
     public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
-        Query myTopPostsQuery = databaseReference.child("users").orderByChild("loginEmail").equalTo(email);
+
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
 
         myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -173,6 +184,7 @@ public class FireBaseNetworkManager {
                 callback.onCompleted(false, null);
             }
         });
+
     }
 
     public void uploadProfileImage(Uri file, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -210,6 +222,31 @@ public class FireBaseNetworkManager {
 
     }
 
+    public void queryUserIndex(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email");
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getChildrenCount() > 0) {
+                    mUserIndex = dataSnapshot.getChildrenCount();
+                    callback.onCompleted(true, null);
+                } else {
+                    mUserIndex = 0;
+                    callback.onCompleted(false, null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
+
+    }
+
     public boolean checkInternetConnection(Context context) {
         ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -218,6 +255,10 @@ public class FireBaseNetworkManager {
 
         return isConnected;
 
+    }
+
+    public long getUserIndex() {
+        return mUserIndex;
     }
 
 }

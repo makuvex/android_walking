@@ -30,8 +30,7 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:layout_marginBottom="10dp"
+        android:layout_height="1dp"
         android:background="@color/colorPrimary"/>
 
     <LinearLayout
@@ -44,11 +43,12 @@
             android:layout_height="wrap_content"
             android:layout_weight="1">
 
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="42dp"
                 android:layout_margin="9dp"
-                android:background="#000000" />
+                android:background="#bce1f2" />
 
             <EditText
                 android:id="@+id/address"
@@ -58,7 +58,7 @@
                 android:background="#ffffff"
                 android:layout_margin="10dp"
                 android:textSize="14dp"
-                android:hint="@string/email_hint"
+                android:hint="@string/input_address"
                 android:inputType="textEmailAddress"
                 android:maxLength="100"
                 android:gravity="center_vertical" />
@@ -66,8 +66,8 @@
 
         <ImageButton
             android:id="@+id/find"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_marginRight="10dp"
             android:layout_gravity="center_vertical"
             android:textColor="#ffffff"
@@ -76,32 +76,19 @@
 
         <ImageButton
             android:id="@+id/confirm"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_marginRight="15dp"
-
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginRight="10dp"
             android:layout_gravity="center_vertical"
-            android:background="@drawable/check_selector"
-            />
+            android:background="@drawable/check_selector"/>
 
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/colorPrimary"/>
-
-    <FrameLayout
+    <fragment
+        android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        class="com.google.android.gms.maps.MapFragment" />
 
-        <fragment
-            android:id="@+id/map"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            class="com.google.android.gms.maps.MapFragment" />
-
-
-    </FrameLayout>
 </LinearLayout>

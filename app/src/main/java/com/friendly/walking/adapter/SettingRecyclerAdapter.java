@@ -13,6 +13,8 @@ import com.friendly.walking.adapter.viewHolder.LoginSettingViewHolder;
 import com.friendly.walking.adapter.viewHolder.NotificationSettingViewHolder;
 import com.friendly.walking.adapter.viewHolder.PermissionSettingViewHolder;
 import com.friendly.walking.adapter.viewHolder.VersionInfoSettingViewHolder;
+import com.friendly.walking.dataSet.LocationSettingListData;
+import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.util.JWLog;
 import com.friendly.walking.R;
 
@@ -21,6 +23,12 @@ import java.util.List;
 
 
 public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    public static final int INDEX_DATA_LOGIN                    = 0;
+    public static final int INDEX_DATA_NOTIFICATION             = 1;
+    public static final int INDEX_DATA_PERMISSION               = 2;
+    public static final int INDEX_DATA_LOCATION                 = 3;
+    public static final int INDEX_DATA_VERSION                  = 4;
 
     private HashMap<Integer, Integer> layoutMap;
     private HashMap<Integer, Class<?>> holderMap;
@@ -65,15 +73,15 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         JWLog.e("","");
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutMap.get(viewType), viewGroup,false);
-        if(viewType == 0) {
+        if(viewType == INDEX_DATA_LOGIN) {
             return new LoginSettingViewHolder(mContext, view).setLayout(mContext);
-        } else if(viewType == 1) {
+        } else if(viewType == INDEX_DATA_NOTIFICATION) {
             return new NotificationSettingViewHolder(mContext, view).setLayout(mContext);
-        } else if(viewType == 2) {
+        } else if(viewType == INDEX_DATA_PERMISSION) {
             return new PermissionSettingViewHolder(mContext, view).setLayout(mContext);
-        } else if(viewType == 3) {
+        } else if(viewType == INDEX_DATA_LOCATION) {
             return new LocationSettingViewHolder(mContext, view).setLayout(mContext);
-        } else if(viewType == 4) {
+        } else if(viewType == INDEX_DATA_VERSION) {
             return new VersionInfoSettingViewHolder(mContext, view).setLayout(mContext);
         } else {
             return null;
@@ -109,6 +117,13 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public int getItemViewType(int position) {
         return position;
+    }
+
+    public void setDataWithIndex(int index, Object object) {
+        if(index == INDEX_DATA_LOGIN) {
+            LoginSettingListData data = (LoginSettingListData)dataList.get(index);
+            data.setDataSet(object);
+        }
     }
 
 }

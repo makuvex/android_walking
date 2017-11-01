@@ -39,4 +39,9 @@ public class VersionInfoSettingListData implements BaseSettingDataSetInterface {
     public Object getDataSet() {
         return this;
     }
+
+    @Override
+    public void setDataSet(Object object) {
+
+    }
 }

@@ -7,10 +7,16 @@
 
     <string name="login" translatable="false">로그인</string>
     <string name="email_hint" translatable="false">이메일 입력</string>
-    <string name="password_hint" translatable="false">비밀번호 입력</string>
+    <string name="password_hint" translatable="false">비밀번호 입력(대소문자 8글자 이상, 숫자 및 특수문자 포함)</string>
     <string name="confirm_password_hint" translatable="false">비밀번호 확인</string>
-    <string name="address_hint" translatable="false">집 주소(선택, 지번 입력)</string>
+    <string name="stroll_start_time" translatable="false">산책 시작 예정 시간</string>
+    <string name="stroll_end_time" translatable="false">산책 종료 예정 시간</string>
+    <string name="stroll_time_hint" translatable="false">자동 산책 모드 체크 후 시간을 입력하시면 집 밖으로 외출 시 자동으로 산책모드가 실행됩니다.</string>
+
+    <string name="address_hint" translatable="false">집 주소(선택, 지번까지만 입력)</string>
     <string name="find_address" translatable="false">집 주소 찾기</string>
+    <string name="input_address" translatable="false">주소 입력</string>
+    <string name="optinal_input" translatable="false">선택 항목</string>
 
     <string name="find_id" translatable="false">아이디 찾기</string>
     <string name="find_password" translatable="false">패스워드 찾기</string>
@@ -25,6 +31,7 @@
     <string name="password_compare_error" translatable="false">패스워드가 일치하지 않습니다.</string>
     <string name="require_check_email" translatable="false">이메일 중복확인을 먼저 해주세요.</string>
 
+    <string name="empty_email" translatable="false">이메일을 입력해 주세요.</string>
     <string name="available_id" translatable="false">사용 가능한 아이디 입니다.</string>
     <string name="unavailable_id" translatable="false">해당 이메일이 이미 있습니다.</string>
 
@@ -44,7 +51,8 @@
     <string name="setting" translatable="false">설정</string>
     <string name="loginInfo" translatable="false">로그인 정보</string>
     <string name="login_guide" translatable="false">로그인 해주세요</string>
-    <string name="autoLogin" translatable="false">자동 로그인</string>
+    <string name="auto_login" translatable="false">자동 로그인</string>
+    <string name="auto_stroll" translatable="false">자동 산책모드</string>
 
     <string name="notification_setting" translatable="false">알림 설정</string>
     <string name="notification_accept" translatable="false">알림 받기</string>

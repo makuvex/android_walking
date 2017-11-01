@@ -48,4 +48,9 @@ public class SettingListData implements BaseSettingDataSetInterface {
     public Object getDataSet() {
         return this;
     }
+
+    @Override
+    public void setDataSet(Object object) {
+
+    }
 }

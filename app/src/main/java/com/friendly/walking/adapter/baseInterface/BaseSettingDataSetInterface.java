@@ -6,4 +6,5 @@ package com.friendly.walking.adapter.baseInterface;
 
 public interface BaseSettingDataSetInterface  {
     public Object getDataSet();
+    public void setDataSet(Object object);
 }

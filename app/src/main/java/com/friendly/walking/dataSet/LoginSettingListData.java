@@ -39,4 +39,13 @@ public class LoginSettingListData implements BaseSettingDataSetInterface {
     public Object getDataSet() {
         return this;
     }
+
+    @Override
+    public void setDataSet(Object object) {
+        if(object instanceof LoginSettingListData) {
+            LoginSettingListData data = (LoginSettingListData)object;
+            this.loginID = data.loginID;
+            this.autoLogin = data.autoLogin;
+        }
+    }
 }

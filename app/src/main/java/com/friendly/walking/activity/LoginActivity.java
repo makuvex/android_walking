@@ -5,9 +5,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.friendly.walking.R;
+import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.dataSet.UserData;
+import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.main.MainActivity;
 import com.friendly.walking.util.JWLog;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 
 /**
  * Created by jungjiwon on 2017. 10. 25..
@@ -21,6 +28,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
     @Override
     public void onCreate(Bundle bundle) {
+        JWLog.e("", "@@@ ");
         super.onCreate(bundle);
 
         setContentView(R.layout.activity_login);
@@ -32,6 +40,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         findViewById(R.id.sign_up).setOnClickListener(this);
 
         mAutoLoginCheckBox.setChecked(true);
+
     }
 
     public void onClickCallback(View v) {
@@ -41,6 +50,24 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
             finish();
         } else if(v.getId() == R.id.login_button) {
+            setProgressBar(View.VISIBLE);
+
+            final String email = mEmailText.getText().toString().trim();
+
+            FireBaseNetworkManager.getInstance(this).loginEmailWithPassword(email, mPasswordText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                @Override
+                public void onCompleted(boolean result, Task<AuthResult> task) {
+                    setProgressBar(View.INVISIBLE);
+
+                    if(result) {
+                        Intent intent = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+                        intent.putExtra("email", email);
+
+                        JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+                        finish();
+                    }
+                }
+            });
 
         } else if(v.getId() == R.id.autologin_check) {
 

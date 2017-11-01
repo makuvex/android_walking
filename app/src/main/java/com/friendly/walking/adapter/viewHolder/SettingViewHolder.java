@@ -49,4 +49,8 @@ public class SettingViewHolder extends BaseViewHolder implements BaseSettingView
             this.itemView.setTag(data);
         }
     }
+
+    public void setTitleText(String title) {
+        this.title.setText(title);
+    }
 }

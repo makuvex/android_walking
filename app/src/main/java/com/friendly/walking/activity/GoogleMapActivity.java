@@ -11,11 +11,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.friendly.walking.GlobalConstantID;
@@ -51,11 +54,13 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
     private EditText                            mAddressText;
     private ImageButton                         mFindButton;
+    private ImageButton                         mDoneButton;
 
     private String                              mAddress;
     private Geocoder                            mGeocoder;
     private Location                            mCurrentLocation;
     private GoogleMap                           mGoogleMap;
+    private String                              mGoogleMapAddressLine;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
@@ -73,17 +78,29 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     public void onCreate(Bundle bundle) {
+        JWLog.e("","");
         super.onCreate(bundle);
 
         setContentView(R.layout.activity_google_map);
 
-        Intent intent = getIntent();
-        if(intent != null) {
-            mAddress = intent.getStringExtra(GlobalConstantID.HOME_ADDRESS);
-        }
+//        Intent intent = getIntent();
+//        if(intent != null) {
+//            mAddress = intent.getStringExtra(GlobalConstantID.HOME_ADDRESS);
+//        }
 
         mAddressText = (EditText)findViewById(R.id.address);
         mFindButton = (ImageButton)findViewById(R.id.find);
+        mDoneButton = (ImageButton)findViewById(R.id.confirm);
+
+        mAddressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_DONE) {
+                    searchAddress(v);
+                }
+                return true;
+            }
+        });
 
         FragmentManager fragmentManager = getFragmentManager();
         MapFragment mapFragment = (MapFragment)fragmentManager.findFragmentById(R.id.map);
@@ -96,13 +113,15 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
                 .build();
 
         mFindButton.setOnClickListener(this);
+        mDoneButton.setOnClickListener(this);
         mGeocoder = new Geocoder(this);
     }
 
     @Override
     public void onStart() {
+        JWLog.e("","");
         if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false){
-            JWLog.d("", "onStart: mGoogleApiClient connect");
+            JWLog.e("", "onStart: mGoogleApiClient connect");
             mGoogleApiClient.connect();
         }
 
@@ -123,16 +142,14 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     public void onStop() {
-
+        JWLog.e("","");
         if (mRequestingLocationUpdates) {
-
-            JWLog.d("", "onStop : call stopLocationUpdates");
+            JWLog.e("", "onStop : call stopLocationUpdates");
             stopLocationUpdates();
         }
 
         if (mGoogleApiClient != null &&  mGoogleApiClient.isConnected()) {
-
-            JWLog.d("", "onStop : mGoogleApiClient disconnect");
+            JWLog.e("", "onStop : mGoogleApiClient disconnect");
             mGoogleApiClient.disconnect();
         }
 
@@ -140,85 +157,43 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onDestroy() {
+        JWLog.e("","");
+        if (mRequestingLocationUpdates) {
+            JWLog.e("", "onStop : call stopLocationUpdates");
+            stopLocationUpdates();
+        }
+
+        if (mGoogleApiClient != null &&  mGoogleApiClient.isConnected()) {
+            JWLog.e("", "onStop : mGoogleApiClient disconnect");
+            mGoogleApiClient.disconnect();
+        }
+
+        super.onDestroy();
+    }
+
+    @Override
     public void onClick(View view) {
         JWLog.e("","");
         if(view == mFindButton) {
-            CommonUtil.hideKeyboard(this, view);
+            searchAddress(view);
+        } else if(view == mDoneButton) {
+            Bundle bundle = new Bundle();
+            Intent intent = new Intent();
 
-            mAddress = mAddressText.getText().toString();
+            bundle.putString("address", mGoogleMapAddressLine);
+            bundle.putString("lat", ""+mCurrentLocation.getLatitude());
+            bundle.putString("lot", ""+mCurrentLocation.getLongitude());
 
-            LatLng homeLatLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            List<Address> list = null;
-            String addressLine = "집";
-
-            try {
-                list = mGeocoder.getFromLocationName( mAddress, 3);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JWLog.e("test","입출력 오류 - 서버에서 주소변환시 에러발생");
-                Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
-            }
-
-            if (list != null) {
-                if (list.size() == 0) {
-                    JWLog.e("", "해당되는 주소 정보는 없습니다");
-                    Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
-                } else {
-                    JWLog.e("", list.get(0).toString());
-
-                    homeLatLng = new LatLng(list.get(0).getLatitude(), list.get(0).getLongitude());
-                    addressLine = list.get(0).getAddressLine(0);
-                }
-            }
-
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.position(homeLatLng);
-            markerOptions.title("집 주소");
-            markerOptions.snippet(addressLine);
-            mGoogleMap.addMarker(markerOptions);
-
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, 15));
-            mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(14), 500, null);
+            intent.putExtras(bundle);
+            this.setResult(RESULT_OK, intent);
+            finish();
         }
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        /*
-        String addressLine = "";
-        List<Address> list = null;
-
-        mGoogleMap = map;
-        LatLng homeLatLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-        try {
-            list = mGeocoder.getFromLocationName( mAddress, 3);
-        } catch (Exception e) {
-            e.printStackTrace();
-            JWLog.e("test","입출력 오류 - 서버에서 주소변환시 에러발생");
-            Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
-        }
-
-        if (list != null) {
-            if (list.size() == 0) {
-                JWLog.e("", "해당되는 주소 정보는 없습니다");
-                Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
-            } else {
-                JWLog.e("", list.get(0).toString());
-
-                homeLatLng = new LatLng(list.get(0).getLatitude(), list.get(0).getLongitude());
-                addressLine = list.get(0).getAddressLine(0);
-            }
-        }
-
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(homeLatLng);
-        markerOptions.title("집 주소");
-        markerOptions.snippet(addressLine);
-        map.addMarker(markerOptions);
-
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, 15));
-        map.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-        */
+        JWLog.e("","");
 
         mGoogleMap = googleMap;
 
@@ -233,8 +208,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
             @Override
             public boolean onMyLocationButtonClick() {
-
-                JWLog.d( "", "onMyLocationButtonClick : 위치에 따른 카메라 이동 활성화");
+                JWLog.e( "", "onMyLocationButtonClick : 위치에 따른 카메라 이동 활성화");
                 mMoveMapByAPI = true;
 
                 if(mCurrentLocation != null) {
@@ -243,33 +217,38 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
                             + " 경도:" + String.valueOf(mCurrentLocation.getLongitude());
 
                     //현재 위치에 마커 생성하고 이동
+                    mAddressText.setText(markerTitle);
+                    mGoogleMapAddressLine = markerTitle;
+
                     setCurrentLocation(mCurrentLocation, markerTitle, markerSnippet);
                 }
                 return true;
             }
         });
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
             @Override
             public void onMapClick(LatLng latLng) {
+                JWLog.e( "", "onMapClick :");
+                stopLocationUpdates();
 
-                JWLog.d( "", "onMapClick :");
+                String markerTitle = getCurrentAddress(latLng);
+                String markerSnippet = "위도:" + String.valueOf(latLng.latitude) + " 경도:" + String.valueOf(latLng.longitude);
+
+                mAddressText.setText(markerTitle);
+                mGoogleMapAddressLine = markerTitle;
+                setCurrentLocation(latLng, markerTitle, markerSnippet);
             }
         });
 
         mGoogleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
-
             @Override
             public void onCameraMoveStarted(int i) {
-
                 if (mMoveMapByUser == true && mRequestingLocationUpdates){
-
-                    JWLog.d("", "onCameraMove : 위치에 따른 카메라 이동 비활성화");
+                    JWLog.e("", "onCameraMove : 위치에 따른 카메라 이동 비활성화");
                     mMoveMapByAPI = false;
                 }
 
                 mMoveMapByUser = true;
-
             }
         });
 
@@ -279,24 +258,21 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
     public void onLocationChanged(Location location) {
         JWLog.e("","");
         String markerTitle = getCurrentAddress(location);
-        String markerSnippet = "위도:" + String.valueOf(location.getLatitude())
-                + " 경도:" + String.valueOf(location.getLongitude());
-
+        String markerSnippet = "위도:" + String.valueOf(location.getLatitude()) + " 경도:" + String.valueOf(location.getLongitude());
 
         setCurrentLocation(location, markerTitle, markerSnippet);
 
         mCurrentLocation = location;
+        stopLocationUpdates();
     }
 
-    public void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
+    public void setCurrentLocation(LatLng latLng, String markerTitle, String markerSnippet) {
+        JWLog.e("","");
 
         mMoveMapByUser = false;
-
-
         if (currentMarker != null) currentMarker.remove();
 
-
-        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        LatLng currentLatLng = latLng;
 
         //구글맵의 디폴트 현재 위치는 파란색 동그라미로 표시
         //마커를 원하는 이미지로 변경하여 현재 위치 표시하도록 수정해야함.
@@ -308,26 +284,29 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         currentMarker = mGoogleMap.addMarker(markerOptions);
 
-
         if ( mMoveMapByAPI ) {
+            JWLog.e( "", "setCurrentLocation :  mGoogleMap moveCamera " + latLng.latitude + " " + latLng.longitude ) ;
 
-            JWLog.d( "", "setCurrentLocation :  mGoogleMap moveCamera "
-                    + location.getLatitude() + " " + location.getLongitude() ) ;
             // CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 15);
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
             mGoogleMap.animateCamera(cameraUpdate, 500, null);
         }
     }
 
-    private void stopLocationUpdates() {
+    public void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
+        JWLog.e("","");
 
-        JWLog.d("","stopLocationUpdates : LocationServices.FusedLocationApi.removeLocationUpdates");
+        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        setCurrentLocation(currentLatLng, markerTitle, markerSnippet);
+    }
+
+    private void stopLocationUpdates() {
+        JWLog.e("","stopLocationUpdates : LocationServices.FusedLocationApi.removeLocationUpdates");
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         mRequestingLocationUpdates = false;
     }
 
-    public String getCurrentAddress(Location location) {
-
+    public String getCurrentAddress(LatLng latLng) {
         //지오코더... GPS를 주소로 변환
         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
 
@@ -336,8 +315,8 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         try {
 
             addresses = geocoder.getFromLocation(
-                    location.getLatitude(),
-                    location.getLongitude(),
+                    latLng.latitude,
+                    latLng.longitude,
                     1);
         } catch (IOException ioException) {
             //네트워크 문제
@@ -349,7 +328,6 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
         }
 
-
         if (addresses == null || addresses.size() == 0) {
             Toast.makeText(getApplicationContext(), "주소 미발견", Toast.LENGTH_LONG).show();
             return "주소 미발견";
@@ -358,19 +336,20 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
             Address address = addresses.get(0);
             return address.getAddressLine(0).toString();
         }
+    }
 
+    public String getCurrentAddress(Location location) {
+        return getCurrentAddress(new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
     public void setDefaultLocation() {
 
         mMoveMapByUser = false;
 
-
         //디폴트 위치, Seoul
         LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
         String markerTitle = "위치정보 가져올 수 없음";
         String markerSnippet = "위치 퍼미션과 GPS 활성 요부 확인하세요";
-
 
         if (currentMarker != null) currentMarker.remove();
 
@@ -384,7 +363,6 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15);
         mGoogleMap.moveCamera(cameraUpdate);
-
     }
 
     private void showDialogForLocationServiceSetting() {
@@ -419,12 +397,12 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void startLocationUpdates() {
-
+        JWLog.e("","");
         if (!checkLocationServicesStatus()) {
-            JWLog.d("", "startLocationUpdates : call showDialogForLocationServiceSetting");
+            JWLog.e("", "startLocationUpdates : call showDialogForLocationServiceSetting");
             showDialogForLocationServiceSetting();
         }else {
-            JWLog.d("", "startLocationUpdates : call FusedLocationApi.requestLocationUpdates");
+            JWLog.e("", "startLocationUpdates : call FusedLocationApi.requestLocationUpdates");
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
             mRequestingLocationUpdates = true;
 
@@ -434,18 +412,14 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        JWLog.e("","");
         if ( mRequestingLocationUpdates == false ) {
-
-
-
-            JWLog.d("", "onConnected : 퍼미션 가지고 있음");
-            JWLog.d("", "onConnected : call startLocationUpdates");
+            JWLog.e("", "onConnected : 퍼미션 가지고 있음");
+            JWLog.e("", "onConnected : call startLocationUpdates");
             startLocationUpdates();
             mGoogleMap.setMyLocationEnabled(true);
-
-        }else{
-
-            JWLog.d("", "onConnected : call startLocationUpdates");
+        } else {
+            JWLog.e("", "onConnected : call startLocationUpdates");
             startLocationUpdates();
             mGoogleMap.setMyLocationEnabled(true);
         }
@@ -453,11 +427,50 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        JWLog.e("","");
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        JWLog.e("","");
+    }
 
+    private void searchAddress(View view) {
+        JWLog.e("","");
+        CommonUtil.hideKeyboard(this, view);
+
+        mAddress = mAddressText.getText().toString();
+
+        LatLng homeLatLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+        List<Address> list = null;
+
+        try {
+            list = mGeocoder.getFromLocationName( mAddress, 3);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JWLog.e("test","입출력 오류 - 서버에서 주소변환시 에러발생");
+            Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
+        }
+
+        if (list != null) {
+            if (list.size() == 0) {
+                JWLog.e("", "해당되는 주소 정보는 없습니다");
+                Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
+            } else {
+                JWLog.e("", list.get(0).toString());
+
+                homeLatLng = new LatLng(list.get(0).getLatitude(), list.get(0).getLongitude());
+                mGoogleMapAddressLine = list.get(0).getAddressLine(0);
+            }
+        }
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(homeLatLng);
+        markerOptions.title("집 주소");
+        markerOptions.snippet(mGoogleMapAddressLine);
+        mGoogleMap.addMarker(markerOptions);
+
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, 15));
+        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(14), 500, null);
     }
 }

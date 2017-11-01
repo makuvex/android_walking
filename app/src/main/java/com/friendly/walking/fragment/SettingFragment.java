@@ -1,6 +1,9 @@
 package com.friendly.walking.fragment;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -10,14 +13,18 @@ import android.view.LayoutInflater;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 
 import com.friendly.walking.adapter.SettingRecyclerAdapter;
 import com.friendly.walking.adapter.baseInterface.BaseSettingDataSetInterface;
+import com.friendly.walking.adapter.viewHolder.SettingViewHolder;
+import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LocationSettingListData;
 import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.dataSet.NotificationSettingListData;
 import com.friendly.walking.dataSet.VersionInfoSettingListData;
 import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.util.JWLog;
 import com.friendly.walking.views.DividerItemDecoration;
 import com.friendly.walking.R;
 import com.friendly.walking.dataSet.PermissionSettingListData;
@@ -30,8 +37,13 @@ public class SettingFragment extends Fragment {
     private static String[] contentTitle = {"로그인 정보", "알림 설정", "권한 설정", "위치 서비스", "생활패턴 인식", "버전 정보"};
     private static String[] contentTitleDesc = {"로그인 정보", "알림 받기", "", "위치 서비스", "생활패턴 인식", "버전 정보"};
 
-    private RecyclerView    mRecyclerView = null;
-    private Context         mContext;
+    private RecyclerView                            mRecyclerView = null;
+    private SettingRecyclerAdapter                  mAdapter = null;
+    private Context                                 mContext;
+
+    private BroadcastReceiver                       mReceiver = null;
+    private IntentFilter                            mIntentFilter = null;
+    private boolean                                 mIsRegisterdReceiver = false;
 
     public SettingFragment() {
     }
@@ -45,6 +57,25 @@ public class SettingFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
+
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                JWLog.e("","action :"+intent.getAction());
+
+                if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())) {
+                    mAdapter.setDataWithIndex(0, new LoginSettingListData(intent.getStringExtra("email"), false));
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+        };
+
+        mContext.registerReceiver(mReceiver, mIntentFilter);
+        mIsRegisterdReceiver = true;
+
     }
 
     @Override
@@ -57,8 +88,12 @@ public class SettingFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onDestroy() {
+        super.onDestroy();
+        if(mIsRegisterdReceiver == true) {
+            mContext.unregisterReceiver(mReceiver);
+            mIsRegisterdReceiver = false;
+        }
     }
 
     @Override
@@ -88,9 +123,12 @@ public class SettingFragment extends Fragment {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext());
         mRecyclerView.addItemDecoration(dividerItemDecoration);
 
-        mRecyclerView.setAdapter(new SettingRecyclerAdapter(getActivity(), list));
+        mAdapter = new SettingRecyclerAdapter(getActivity(), list);
+        mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+
+
     }
 
 }
