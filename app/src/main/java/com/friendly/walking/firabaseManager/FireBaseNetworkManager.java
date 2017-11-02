@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.dataSet.UserData;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -223,6 +224,15 @@ public class FireBaseNetworkManager {
             }
         });
 
+    }
+
+    public void logoutAccount(Context context) {
+        FirebaseAuth.getInstance().signOut();
+
+        PreferencePhoneShared.setAutoLoginYn(context, false);
+        PreferencePhoneShared.setLoginYn(context, false);
+        PreferencePhoneShared.setUserUID(context, "");
+        PreferencePhoneShared.setLoginPassword(context, "");
     }
 
     public void queryUserIndex(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {

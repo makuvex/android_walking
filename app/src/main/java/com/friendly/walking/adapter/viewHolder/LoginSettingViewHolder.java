@@ -5,12 +5,15 @@ import android.content.Intent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.activity.LoginActivity;
 import com.friendly.walking.adapter.baseInterface.BaseSettingViewHolderInterface;
 import com.friendly.walking.dataSet.LoginSettingListData;
+import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
 
 /**
@@ -27,7 +30,7 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
 
     private View.OnClickListener mOnClickListener;
 
-    public LoginSettingViewHolder(Context context, View itemView) {
+    public LoginSettingViewHolder(final Context context, View itemView) {
         super(context, itemView);
 
         JWLog.e("", "");
@@ -39,18 +42,24 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
         mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(v.getId() == R.id.login_out_action) {
-
-                    if(PreferencePhoneShared.getLoginYn(mContext)) {
-                        JWLog.e("","로그아웃");
+                if(v.getId() == R.id.login_out_action)
+                    if (PreferencePhoneShared.getLoginYn(mContext)) {
+                        JWLog.e("", "로그아웃");
+                        CommonUtil.alertDialogShow(mContext, "로그아웃", "로그아웃 하시겠습니까?", new CommonUtil.CompleteCallback() {
+                            @Override
+                            public void onCompleted(boolean result, Object object) {
+                                if(result) {
+                                    FireBaseNetworkManager.getInstance(mContext).logoutAccount(mContext);
+                                    Toast.makeText(mContext, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
                     } else {
-                        JWLog.e("","로그인");
+                        JWLog.e("", "로그인");
                         Intent intent = new Intent(mContext, LoginActivity.class);
-
-
                         mContext.startActivity(intent);
-                   }
-                } else if(v.getId() == R.id.autoLogin) {
+                    }
+                else if(v.getId() == R.id.autoLogin) {
                     JWLog.e("","autoLogin");
                 }
             }
