@@ -181,17 +181,23 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
                                             if (result) {
                                                 Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
-                                                FireBaseNetworkManager.getInstance(SignUpPetActivity.this).uploadProfileImage(mImageCaptureUri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                                                    @Override
-                                                    public void onCompleted(boolean result, Task<AuthResult> task) {
+                                                if(mImageCaptureUri != null) {
+                                                    try {
+                                                        FireBaseNetworkManager.getInstance(SignUpPetActivity.this).uploadProfileImage(mImageCaptureUri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                                            @Override
+                                                            public void onCompleted(boolean result, Task<AuthResult> task) {
 
-                                                        if(result) {
-                                                            Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
-                                                        } else {
-                                                            Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
-                                                        }
+                                                                if (result) {
+                                                                    Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                                                } else {
+                                                                    Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            }
+                                                        });
+                                                    } catch(Exception e) {
+                                                        e.printStackTrace();
                                                     }
-                                                });
+                                                }
                                             } else {
                                                 Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
                                             }

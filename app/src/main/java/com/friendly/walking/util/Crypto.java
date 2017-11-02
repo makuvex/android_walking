@@ -165,43 +165,51 @@ public class Crypto {
 		}
 		
 		return null;
-	}	
-	
-	/**
-	 * AES 암호화
-	 * @param plainText
-	 * @return
-	 * @throws NumberFormatException
-	 * @throws IllegalArgumentException
-	 * @throws Exception
-	 */
-	public static String encryptAES(String plainText, String secureKey) throws NumberFormatException, IllegalArgumentException, Exception {
-		SecretKeySpec localKeySpec = createKeySpec(secureKey);
-		
-		Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
-		cipher.init(Cipher.ENCRYPT_MODE, localKeySpec);
-		byte[] encrypted = cipher.doFinal(plainText.getBytes());
-		return Base64.encodeToString(encrypted, 0);
 	}
-	
+
 	/**
-	 * AES 복호화
-	 * @param encryptKey
+	 * AES 방식의 암호화
+	 *
+	 * @param message
 	 * @return
-	 * @throws NumberFormatException
-	 * @throws IllegalArgumentException
 	 * @throws Exception
 	 */
-	public static String decryptAES(String encryptKey, String secureKey) throws NumberFormatException, IllegalArgumentException, Exception {
-		SecretKeySpec localKeySpec = createKeySpec(secureKey);
+	public static String encryptAES(String message, String key) throws Exception {
 
-		byte encrypted[] = Base64.decode(encryptKey, 0);
-	    Cipher cipher = Cipher.getInstance(CIPHER_TRANSFORMATION);
-	    cipher.init(Cipher.DECRYPT_MODE, localKeySpec);
-	    byte[] decrypted = cipher.doFinal(encrypted);
-	    if(decrypted == null) {
-	    	return null;
-	    }
-		return new String(decrypted);
+		if(TextUtils.isEmpty(message))
+			return message;
+
+		// use key coss2
+		SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes(), "AES");
+
+		// Instantiate the cipher
+		Cipher cipher = Cipher.getInstance("AES");
+		cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+
+		byte[] encrypted = cipher.doFinal(message.getBytes());
+		return byteArrayToHex(encrypted);
+	}
+
+	/**
+	 * AES 방식의 복호화
+	 *
+	 * @param encrypted
+	 * @param key
+	 * @return
+	 * @throws Exception
+	 */
+	public static String decryptAES(String encrypted, String key) throws Exception {
+
+		if(TextUtils.isEmpty(encrypted))
+			return encrypted;
+
+		// use key coss2
+		SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes(), "AES");
+
+		Cipher cipher = Cipher.getInstance("AES");
+		cipher.init(Cipher.DECRYPT_MODE, skeySpec);
+		byte[] original = cipher.doFinal(hexToByteArray(encrypted));
+		String originalString = new String(original);
+		return originalString;
 	}
 }

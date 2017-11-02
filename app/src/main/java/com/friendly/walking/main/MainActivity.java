@@ -1,6 +1,7 @@
 package com.friendly.walking.main;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 
@@ -9,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -26,12 +28,17 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.fragment.ReportFragment;
 import com.friendly.walking.fragment.StrollFragment;
 import com.friendly.walking.fragment.StrollMapFragment;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.fragment.SettingFragment;
+import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.Crypto;
+import com.friendly.walking.util.JWLog;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -148,7 +155,8 @@ public class MainActivity extends BaseActivity {
 
         //mProgressBar.setVisibility(View.VISIBLE);
 
-
+        PreferencePhoneShared.setLoginYn(this, false);
+        doLogin();
     }
 
     @Override
@@ -274,5 +282,29 @@ public class MainActivity extends BaseActivity {
 
     public void showProfileView(boolean show) {
         mProfileView.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    private void doLogin() {
+        try {
+            String key = PreferencePhoneShared.getUserUid(this);
+            boolean autoLogin = PreferencePhoneShared.getAutoLoginYn(this);
+
+            if(TextUtils.isEmpty(key) || !autoLogin) {
+                return;
+            }
+
+            JWLog.e("","uid :" + key);
+            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(this), key));
+            String decPassword = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginPassword(this), key));
+
+            Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
+            intent.putExtra("email", decEmail);
+            intent.putExtra("password", decPassword);
+            //intent.putExtra("autoLogin", autoLogin);
+
+            JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }

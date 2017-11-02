@@ -24,6 +24,8 @@ import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.dataSet.NotificationSettingListData;
 import com.friendly.walking.dataSet.VersionInfoSettingListData;
 import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
 import com.friendly.walking.views.DividerItemDecoration;
 import com.friendly.walking.R;
@@ -109,7 +111,18 @@ public class SettingFragment extends Fragment {
 
         List<BaseSettingDataSetInterface> list = new ArrayList<BaseSettingDataSetInterface>();
 
-        String loginText = PreferencePhoneShared.getLoginID(mContext);
+        String key = PreferencePhoneShared.getUserUid(getActivity());
+
+        JWLog.e("","uid :" + key);
+        String loginText = "";
+
+        try {
+            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(getActivity()), key));
+            loginText = decEmail;
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
         if(!PreferencePhoneShared.getLoginYn(mContext)) {
             loginText = getString(R.string.login_guide);
         }

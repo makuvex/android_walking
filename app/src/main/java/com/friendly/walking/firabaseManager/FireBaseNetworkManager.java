@@ -127,7 +127,7 @@ public class FireBaseNetworkManager {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         JWLog.e("", "signInWithEmail:onComplete:" + task.isSuccessful());
 
-                        callback.onCompleted(task.isSuccessful(), null);
+                        callback.onCompleted(task.isSuccessful(), task);
                     }
                 });
     }
@@ -137,8 +137,11 @@ public class FireBaseNetworkManager {
         ValueEventListener listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                JWLog.e("", "@@@ onDataChange");
+
                 UserData data = dataSnapshot.getValue(UserData.class);
+
+                JWLog.e("", "@@@ onDataChange data :"+data);
+
                 if(callback != null) {
                     callback.onCompleted(true, null);
                 }

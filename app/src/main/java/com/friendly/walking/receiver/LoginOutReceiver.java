@@ -3,6 +3,7 @@ package com.friendly.walking.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.widget.Toast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.broadcast.JWBroadCast;
@@ -25,21 +26,21 @@ public class LoginOutReceiver extends BroadcastReceiver {
         if(JWBroadCast.BROAD_CAST_LOGIN.equals(intent.getAction())) {
             final String email = intent.getStringExtra("email");
             final String password = intent.getStringExtra("password");
-            final boolean autoLogin = intent.getBooleanExtra("autoLogin", false);
 
-            JWLog.e("","email :"+email+", password : "+password+", autoLogin :"+autoLogin);
+
+            JWLog.e("","email :"+email+", password : "+password);
 
             FireBaseNetworkManager.getInstance(context).loginEmailWithPassword(email, password, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Task<AuthResult> task) {
                     if(result) {
-                        PreferencePhoneShared.setLoginID(context, email);
-                        PreferencePhoneShared.setLoginPassword(context, password);
-                        PreferencePhoneShared.setLoginYn(context, autoLogin);
+                        PreferencePhoneShared.setLoginYn(context, true);
 
                         Intent i = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
                         i.putExtra("email", email);
                         JWBroadCast.sendBroadcast(context, i);
+                    } else {
+                        Toast.makeText(context, "로그인 실패", Toast.LENGTH_SHORT).show();
                     }
                 }
             });

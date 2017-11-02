@@ -13,9 +13,13 @@ import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.main.MainActivity;
 import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+
+import java.net.URL;
 
 /**
  * Created by jungjiwon on 2017. 10. 25..
@@ -61,17 +65,37 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
                     if(result) {
                         JWLog.e("","email :"+email+", password : "+mPasswordText.getText().toString()+", autoLogin :"+mAutoLoginCheckBox.isChecked());
+                        JWLog.e("","task uid :"+task.getResult().getUser().getUid());
+                        PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
+                        try {
+                            String key = task.getResult().getUser().getUid().substring(0, 16);
+                            String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(email, 0), key);
+                            String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPasswordText.getText().toString(), 0), key);
 
-                        PreferencePhoneShared.setLoginID(getApplicationContext(), email);
-                        PreferencePhoneShared.setLoginPassword(getApplicationContext(), mPasswordText.getText().toString());
-                        PreferencePhoneShared.setLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
+                            JWLog.e("","encEmail : ["+encryptedEmail+"]"+", encPassword : ["+encryptedPassword +"]");
 
-                        Intent intent = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
-                        intent.putExtra("email", email);
-                        intent.putExtra("autoLogin", mAutoLoginCheckBox.isChecked());
+                            PreferencePhoneShared.setUserUID(getApplicationContext(), key);
+                            PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
+                            PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
+                            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
 
-                        JWBroadCast.sendBroadcast(getApplicationContext(), intent);
-                        finish();
+                            /////////////////////////////
+                            String uid = PreferencePhoneShared.getUserUid(getApplicationContext());
+
+                            JWLog.e("","uid :" + uid);
+                            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(getApplicationContext()), key));
+
+
+                            /////////////////////////////
+                            Intent intent = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+                            intent.putExtra("email", email);
+                            intent.putExtra("autoLogin", mAutoLoginCheckBox.isChecked());
+
+                            JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+                            finish();
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             });
