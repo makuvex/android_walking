@@ -31,7 +31,9 @@ import com.friendly.walking.dataSet.PetRelationData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.main.MainActivity;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -168,7 +170,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                     @Override
                     public void onCompleted(boolean result, Object object) {
-                        Task<AuthResult> task = (Task<AuthResult>)object;
+                        final Task<AuthResult> task = (Task<AuthResult>)object;
 
                         if (result) {
                             Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
@@ -188,6 +190,22 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                                             if (result) {
                                                 Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
 
+                                                try {
+                                                    String key = task.getResult().getUser().getUid().substring(0, 16);
+                                                    String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(mEmail, 0), key);
+                                                    String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPassword, 0), key);
+
+                                                    JWLog.e("", "encEmail : [" + encryptedEmail + "]" + ", encPassword : [" + encryptedPassword + "]");
+
+                                                    PreferencePhoneShared.setUserUID(getApplicationContext(), key);
+                                                    PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
+                                                    PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
+                                                    PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mUserData.mem_auto_login);
+
+                                                } catch(Exception e) {
+                                                    e.printStackTrace();
+                                                    Toast.makeText(SignUpPetActivity.this, "preference 저장 실패", Toast.LENGTH_SHORT).show();
+                                                }
                                                 if(mImageCaptureUri != null) {
                                                     try {
                                                         FireBaseNetworkManager.getInstance(SignUpPetActivity.this).uploadProfileImage(mImageCaptureUri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
