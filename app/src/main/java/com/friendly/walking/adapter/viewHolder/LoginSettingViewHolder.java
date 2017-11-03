@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.activity.LoginActivity;
+import com.friendly.walking.activity.ProfileActivity;
 import com.friendly.walking.adapter.baseInterface.BaseSettingViewHolderInterface;
 import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
@@ -44,16 +45,13 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
             public void onClick(View v) {
                 if(v.getId() == R.id.login_out_action)
                     if (PreferencePhoneShared.getLoginYn(mContext)) {
-                        JWLog.e("", "로그아웃");
-                        CommonUtil.alertDialogShow(mContext, "로그아웃", "로그아웃 하시겠습니까?", new CommonUtil.CompleteCallback() {
-                            @Override
-                            public void onCompleted(boolean result, Object object) {
-                                if(result) {
-                                    FireBaseNetworkManager.getInstance(mContext).logoutAccount(mContext);
-                                    Toast.makeText(mContext, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
+                        Intent intent = new Intent(mContext, ProfileActivity.class);
+                        intent.putExtra("email", loginID.getText());
+//                        intent.putExtra("petName", loginID.getText());
+//                        intent.putExtra("gender", loginID.getText());
+
+                        // 펫네임 젠더
+                        mContext.startActivity(intent);
                     } else {
                         JWLog.e("", "로그인");
                         Intent intent = new Intent(mContext, LoginActivity.class);

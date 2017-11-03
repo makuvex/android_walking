@@ -46,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import stfalcon.universalpickerdialog.UniversalPickerDialog;
 
@@ -106,7 +107,8 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         mPetRelation.setOnFocusChangeListener(this);
         mAddProfile.setOnClickListener(this);
 
-        mPetData = new PetData[]{new PetData(0, "웰시코기"),
+        mPetData = new PetData[]{
+                new PetData(0, "웰시코기"),
                 new PetData(1, "말티즈"),
                 new PetData(2, "시츄"),
                 new PetData(3, "이탈리안 그레이하운드"),
@@ -161,31 +163,36 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
             } else {
                 setProgressBar(View.VISIBLE);
 
+                createPetData();
+
                 FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                     @Override
-                    public void onCompleted(boolean result, Task<AuthResult> task) {
+                    public void onCompleted(boolean result, Object object) {
+                        Task<AuthResult> task = (Task<AuthResult>)object;
+
                         if (result) {
                             Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
 
                             mUserData.uid = task.getResult().getUser().getUid();
                             FireBaseNetworkManager.getInstance(getApplicationContext()).queryUserIndex(new FireBaseNetworkManager.FireBaseNetworkCallback() {
                                 @Override
-                                public void onCompleted(boolean result, Task<AuthResult> task) {
+                                public void onCompleted(boolean result, Object object) {
                                     long userIndex = FireBaseNetworkManager.getInstance(getApplicationContext()).getUserIndex();
                                     mUserData.member_index = ++userIndex;
 
                                     FireBaseNetworkManager.getInstance(getApplicationContext()).createUserData(mUserData, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                                         @Override
-                                        public void onCompleted(boolean result, Task<AuthResult> task) {
+                                        public void onCompleted(boolean result, Object object) {
                                             setProgressBar(View.INVISIBLE);
 
                                             if (result) {
                                                 Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
+
                                                 if(mImageCaptureUri != null) {
                                                     try {
                                                         FireBaseNetworkManager.getInstance(SignUpPetActivity.this).uploadProfileImage(mImageCaptureUri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                                                             @Override
-                                                            public void onCompleted(boolean result, Task<AuthResult> task) {
+                                                            public void onCompleted(boolean result, Object object) {
 
                                                                 if (result) {
                                                                     Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
@@ -266,6 +273,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 .setInputs(
                         new UniversalPickerDialog.Input(PICKER_DATA_TYPE_SPECIES, mPetData)
                 )
+                .setKey(PICKER_DATA_TYPE_SPECIES)
                 .show();
     }
 
@@ -278,6 +286,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 .setInputs(
                         new UniversalPickerDialog.Input(PICKER_DATA_TYPE_RELATION, mRelationData)
                 )
+                .setKey(PICKER_DATA_TYPE_RELATION)
                 .show();
     }
 
@@ -292,10 +301,10 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         JWLog.e("","selectedValues :"+selectedValues[0]+", key :"+key);
         String data = null;
 
-        if(selectedValues[0] == PICKER_DATA_TYPE_SPECIES) {
+        if(key == PICKER_DATA_TYPE_SPECIES) {
             data = mPetData[selectedValues[0]].getSpecies();
             mPetSpecies.setText(data);
-        } else if(selectedValues[0] == PICKER_DATA_TYPE_RELATION) {
+        } else if(key == PICKER_DATA_TYPE_RELATION) {
             data = mRelationData[selectedValues[0]].getName();
             mPetRelation.setText(data);
         }
@@ -440,5 +449,18 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     private void beginCrop(Uri source) {
         Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
         Crop.of(source, destination).asSquare().start(this);
+    }
+
+    private void createPetData() {
+        PetData petData = new PetData();
+        petData.index = 0;
+        petData.mem_email = mEmail;
+        petData.petName = mPetName.getText().toString();
+        petData.petGender = mPetGender == 0 ? false : true;
+        petData.birthDay = mPetBirthDate.getText().toString();
+        petData.petSpecies = mPetSpecies.getText().toString();
+        petData.petRelation = mPetRelation.getText().toString();
+
+        mUserData.pet_list.add(petData);
     }
 }

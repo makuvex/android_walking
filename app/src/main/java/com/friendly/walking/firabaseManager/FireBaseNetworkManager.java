@@ -1,6 +1,8 @@
 package com.friendly.walking.firabaseManager;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -25,12 +27,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnPausedListener;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
 
 
 /**
@@ -55,12 +60,13 @@ public class FireBaseNetworkManager {
     // firebase 로그인 인증
     private FirebaseAuth                        mAuth;
     private FirebaseAuth.AuthStateListener      mAuthListener;
+    private Task<AuthResult>                    mTask;
 
     private long                                mUserIndex = -1;
 
 
     public interface FireBaseNetworkCallback {
-        public void onCompleted(boolean result, Task<AuthResult> task);
+        public void onCompleted(boolean result, Object object);
     }
 
     public static FireBaseNetworkManager getInstance(Context context) {
@@ -127,7 +133,7 @@ public class FireBaseNetworkManager {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         JWLog.e("", "signInWithEmail:onComplete:" + task.isSuccessful());
-
+                        mTask = task;
                         callback.onCompleted(task.isSuccessful(), task);
                     }
                 });
@@ -135,14 +141,12 @@ public class FireBaseNetworkManager {
 
     public void createUserData(UserData data, final FireBaseNetworkCallback callback) {
         JWLog.e("", "@@@ ");
-        ValueEventListener listener = new ValueEventListener() {
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 UserData data = dataSnapshot.getValue(UserData.class);
-
                 JWLog.e("", "@@@ onDataChange data :"+data);
-
                 if(callback != null) {
                     callback.onCompleted(true, null);
                 }
@@ -150,22 +154,66 @@ public class FireBaseNetworkManager {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
                 JWLog.e("", "error : "+ databaseError.toException());
                 if(callback != null) {
                     callback.onCompleted(false, null);
                 }
             }
-        };
-
-        databaseReference.addValueEventListener(listener);
+        });
         databaseReference.child("users").child(data.uid).setValue(data);
     }
 
-    public void createUserData(String email, String uid, String  petName, final FireBaseNetworkCallback callback) {
-//        UserData data = new UserData(email, uid, petName);
-//
-//        createUserData(data, callback);
+    public void deleteUserData(final FireBaseNetworkCallback callback) {
+        JWLog.e("", "@@@ ");
+        String uid = mTask.getResult().getUser().getUid();
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                JWLog.e("", "@@@ onDataChange data");
+                if(callback != null) {
+                    callback.onCompleted(true, null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).removeValue();
+    }
+
+    public void readUserData(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData userData = null;
+                for(DataSnapshot data : dataSnapshot.getChildren()) {
+                    userData = data.getValue(UserData.class);
+                }
+                JWLog.e("","userData :"+userData);
+                if(callback != null) {
+                    if (userData != null) {
+                        callback.onCompleted(true, userData);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
     }
 
     public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -224,6 +272,69 @@ public class FireBaseNetworkManager {
             }
         });
 
+    }
+
+    public void downloadProfileImage(Uri file, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        StorageReference imageRef = storageRef.child("profile/"+file.getLastPathSegment());
+
+        try {
+            final  File imageFile = File.createTempFile("image", "jpg");
+            imageRef.getFile(imageFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    // Success Case
+                    Bitmap bitmapImage = BitmapFactory.decodeFile(imageFile.getPath());
+                    if(callback != null) {
+                        callback.onCompleted(true, bitmapImage);
+                    }
+                        //imageView.setImageBitmap(bitmapImage);
+                        //Toast.makeText(mContext, "Success !!", Toast.LENGTH_LONG).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // Fail Case
+                    e.printStackTrace();
+                    Toast.makeText(mContext, "Fail !!", Toast.LENGTH_LONG).show();
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            if(callback != null) {
+                callback.onCompleted(false, null);
+            }
+        }
+
+    }
+
+    public void changePassword(String password, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        try {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+            user.updatePassword(password)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                JWLog.e("", "User password updated.");
+                                if(callback != null) {
+                                    callback.onCompleted(true, null);
+                                }
+                            } else {
+                                if(callback != null) {
+                                    callback.onCompleted(false, null);
+                                }
+                            }
+                        }
+                    });
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            if(callback != null) {
+                callback.onCompleted(false, null);
+            }
+        }
     }
 
     public void logoutAccount(Context context) {

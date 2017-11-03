@@ -60,8 +60,10 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             final String email = mEmailText.getText().toString().trim();
             FireBaseNetworkManager.getInstance(this).loginEmailWithPassword(email, mPasswordText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
-                public void onCompleted(boolean result, Task<AuthResult> task) {
+                public void onCompleted(boolean result, Object object) {
                     setProgressBar(View.INVISIBLE);
+
+                    Task<AuthResult> task = (Task<AuthResult>)object;
 
                     if(result) {
                         JWLog.e("","email :"+email+", password : "+mPasswordText.getText().toString()+", autoLogin :"+mAutoLoginCheckBox.isChecked());

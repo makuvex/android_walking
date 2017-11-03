@@ -19,6 +19,7 @@ import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
 import com.friendly.walking.R;
 import com.google.android.gms.tasks.Task;
@@ -105,7 +106,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
 
             if(isValidEmail(mEmailText.getText().toString())) {
                 if(mPasswordText.getText().toString().equals(mConfirmPasswordText.getText().toString())) {
-                    if(isValidPasswd(mPasswordText.getText().toString())) {
+                    if(CommonUtil.isValidPassword(mPasswordText.getText().toString())) {
 
                         Intent intent = new Intent(this, SignUpPetActivity.class);
                         intent.putExtra(GlobalConstantID.SIGN_UP_EMAIL, mEmailText.getText().toString());
@@ -133,7 +134,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
 
             FireBaseNetworkManager.getInstance(this).findUserEmail(mEmailText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
-                public void onCompleted(boolean result, Task<AuthResult> task) {
+                public void onCompleted(boolean result, Object object) {
                     setProgressBar(View.INVISIBLE);
 
                     if(result) {
@@ -155,27 +156,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         }
     }
 
-    private boolean isValidPasswd(String target) {
-        /*
-        Pattern p = Pattern.compile("^[a-zA-Z0-9!@#]+$");
 
-        Matcher m = p.matcher(target);
-        if (m.find() && !target.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")){
-            return true;
-        }else{
-            return false;
-        }
-        */
-
-        Pattern pattern;
-        Matcher matcher;
-        final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{4,}$";
-        pattern = Pattern.compile(PASSWORD_PATTERN);
-        matcher = pattern.matcher(target);
-
-        return matcher.matches();
-
-    }
 
     private boolean isValidEmail(String target) {
         if (target == null || TextUtils.isEmpty(target)) {

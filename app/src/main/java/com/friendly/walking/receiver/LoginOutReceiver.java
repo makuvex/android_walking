@@ -32,7 +32,7 @@ public class LoginOutReceiver extends BroadcastReceiver {
 
             FireBaseNetworkManager.getInstance(context).loginEmailWithPassword(email, password, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
-                public void onCompleted(boolean result, Task<AuthResult> task) {
+                public void onCompleted(boolean result, Object object) {
                     if(result) {
                         PreferencePhoneShared.setLoginYn(context, true);
 

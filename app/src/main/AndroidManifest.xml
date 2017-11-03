@@ -63,8 +63,16 @@
 
         <activity android:name="com.friendly.walking.activity.GoogleMapActivity" />
 
+        <activity android:name="com.friendly.walking.activity.ProfileActivity" />
+
+        <activity android:name="com.friendly.walking.activity.ChangePasswordActivity" />
+
+
+        //////////////////// service ////////////////////
         <service android:name="com.friendly.walking.service.MainService" />
 
+
+        //////////////////// receiver ////////////////////
         <receiver android:name=".receiver.LoginOutReceiver">
             <intent-filter>
                 <action android:name="com.friendly.walking.BROAD_CAST_LOGIN"/>

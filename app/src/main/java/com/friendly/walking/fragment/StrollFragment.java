@@ -60,7 +60,7 @@ public class StrollFragment extends Fragment {
         //애니메이션 속도
         circleAnimIndicator.setAnimDuration(300);
         //indecator 생성
-        circleAnimIndicator.createDotPanel(MAX_PAGE_COUNT, R.mipmap.dot_icon_2 , R.mipmap.dot_icon_1);
+        circleAnimIndicator.createDotPanel(MAX_PAGE_COUNT, R.drawable.dot_icon_2 , R.drawable.dot_icon_1);
 
         circleAnimIndicator.selectDot(0);
 

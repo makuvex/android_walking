@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 
 import android.view.View;
@@ -69,7 +70,14 @@ public class SettingFragment extends Fragment {
                 JWLog.e("","action :"+intent.getAction());
 
                 if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())) {
-                    mAdapter.setDataWithIndex(0, new LoginSettingListData(intent.getStringExtra("email"), intent.getBooleanExtra("autoLogin", false)));
+                    String email = intent.getStringExtra("email");
+                    boolean autoLogin = intent.getBooleanExtra("autoLogin", false);
+
+                    if(TextUtils.isEmpty(email)) {
+                        email = getString(R.string.login_guide);
+                        autoLogin = false;
+                    }
+                    mAdapter.setDataWithIndex(0, new LoginSettingListData(email, autoLogin));
                     mAdapter.notifyDataSetChanged();
                 }
             }

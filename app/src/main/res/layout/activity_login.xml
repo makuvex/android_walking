@@ -145,7 +145,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:src="@mipmap/google_login"
+            android:src="@drawable/google_login"
             android:background="@color/colorTransparent"
             android:onClick="onClickCallback"/>
 
@@ -154,7 +154,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:src="@mipmap/facebook_login"
+            android:src="@drawable/facebook_login"
             android:background="@color/colorTransparent"
             android:layout_marginTop="10dp"
             android:onClick="onClickCallback"/>

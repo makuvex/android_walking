@@ -49,7 +49,7 @@
             android:layout_marginLeft="10dp"
             android:scaleType="fitCenter"
             android:background="@color/colorTransparent"
-            android:src="@mipmap/more"/>
+            android:src="@drawable/more"/>
 
     </LinearLayout>
 
@@ -66,7 +66,7 @@
             android:textSize="17dp"
             android:gravity="center_vertical"
             android:typeface="sans"
-            android:text="@string/autoLogin"
+            android:text="@string/auto_login"
             android:lines="1"
             android:layout_weight="1"
             android:ellipsize="marquee"/>
@@ -79,7 +79,7 @@
             android:layout_marginLeft="10dp"
             android:scaleType="fitCenter"
             android:background="@color/colorTransparent"
-            android:src="@mipmap/common_btn_toggle_off"/>
+            android:src="@drawable/common_btn_toggle_off"/>
 
     </LinearLayout>
 

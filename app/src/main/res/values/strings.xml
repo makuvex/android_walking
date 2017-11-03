@@ -54,6 +54,11 @@
     <string name="auto_login" translatable="false">자동 로그인</string>
     <string name="auto_stroll" translatable="false">자동 산책모드</string>
 
+    <string name="logout" translatable="false">로그아웃</string>
+    <string name="change_password" translatable="false">비밀번호 변경</string>
+    <string name="change_pet_info" translatable="false">반려동물 정보 변경</string>
+    <string name="quit_service" translatable="false">서비스 탈퇴</string>
+
     <string name="notification_setting" translatable="false">알림 설정</string>
     <string name="notification_accept" translatable="false">알림 받기</string>
     <string name="suggest_geofence_notification" translatable="false">생활패턴 알림 제안</string>
@@ -68,4 +73,14 @@
     <string name="version_information" translatable="false">버전 정보</string>
     <string name="current_version" translatable="false">현재 버전</string>
     <string name="latest_version" translatable="false">최신 버전</string>
+
+    <string name="current_password_hint" translatable="false">현재 비밀번호</string>
+    <string name="new_password_hint" translatable="false">새 비밀번호(대소문자 8글자 이상, 숫자 및 특수문자 포함)</string>
+    <string name="new_password_confirm_hint" translatable="false">새 비밀번호 확인</string>
+
+    <string name="input_password" translatable="false">비밀번호를 입력해 주세요.</string>
+    <string name="same_password" translatable="false">현재 비밀번호와 새 비밀번호가 동일합니다.</string>
+    <string name="failed_change_password" translatable="false">비밀번호 변경 실패</string>
+    <string name="succeed_change_password" translatable="false">비밀번호 변경 성공</string>
+
 </resources>

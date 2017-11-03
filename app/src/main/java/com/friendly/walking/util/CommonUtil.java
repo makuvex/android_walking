@@ -1,7 +1,13 @@
 package com.friendly.walking.util;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,6 +17,8 @@ import android.widget.Toast;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CommonUtil {
 
@@ -77,5 +85,73 @@ public class CommonUtil {
                     }
                 });
         builder.show();
+    }
+
+    @SuppressLint("NewApi")
+    public static Bitmap blurRenderScript(Context context, Bitmap smallBitmap, int radius) {
+
+        try {
+            smallBitmap = RGB565toARGB888(smallBitmap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(
+                smallBitmap.getWidth(), smallBitmap.getHeight(),
+                Bitmap.Config.ARGB_8888);
+
+        RenderScript renderScript = RenderScript.create(context);
+
+        Allocation blurInput = Allocation.createFromBitmap(renderScript, smallBitmap);
+        Allocation blurOutput = Allocation.createFromBitmap(renderScript, bitmap);
+
+        ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(renderScript,
+                Element.U8_4(renderScript));
+        blur.setInput(blurInput);
+        blur.setRadius(radius); // radius must be 0 < r <= 25
+        blur.forEach(blurOutput);
+
+        blurOutput.copyTo(bitmap);
+        renderScript.destroy();
+
+        return bitmap;
+
+    }
+
+    public static Bitmap RGB565toARGB888(Bitmap img) throws Exception {
+        int numPixels = img.getWidth() * img.getHeight();
+        int[] pixels = new int[numPixels];
+
+        //Get JPEG pixels.  Each int is the color values for one pixel.
+        img.getPixels(pixels, 0, img.getWidth(), 0, 0, img.getWidth(), img.getHeight());
+
+        //Create a Bitmap of the appropriate format.
+        Bitmap result = Bitmap.createBitmap(img.getWidth(), img.getHeight(), Bitmap.Config.ARGB_8888);
+
+        //Set RGB pixels.
+        result.setPixels(pixels, 0, result.getWidth(), 0, 0, result.getWidth(), result.getHeight());
+        return result;
+    }
+
+    public static boolean isValidPassword(String target) {
+        /*
+        Pattern p = Pattern.compile("^[a-zA-Z0-9!@#]+$");
+
+        Matcher m = p.matcher(target);
+        if (m.find() && !target.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")){
+            return true;
+        }else{
+            return false;
+        }
+        */
+
+        Pattern pattern;
+        Matcher matcher;
+        final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{4,}$";
+        pattern = Pattern.compile(PASSWORD_PATTERN);
+        matcher = pattern.matcher(target);
+
+        return matcher.matches();
+
     }
 }

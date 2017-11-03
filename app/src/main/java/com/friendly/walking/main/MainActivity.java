@@ -1,7 +1,10 @@
 package com.friendly.walking.main;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 
@@ -29,6 +32,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.fragment.ReportFragment;
 import com.friendly.walking.fragment.StrollFragment;
 import com.friendly.walking.fragment.StrollMapFragment;
@@ -44,24 +48,29 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends BaseActivity {
 
-    public static final int PAGER_MAX_COUNT = 4;
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+    public static final int                         PAGER_MAX_COUNT = 4;
+    private SectionsPagerAdapter                    mSectionsPagerAdapter;
 
-    private ViewPager   mViewPager = null;
+    private ViewPager                               mViewPager = null;
 
-    private View        mStrollSelected = null;
-    private View        mMapSelected = null;
-    private View        mReportSelected = null;
-    private View        mSettingSelected = null;
-    private View        mPreviousSelectedView = null;
+    private View                                    mStrollSelected = null;
+    private View                                    mMapSelected = null;
+    private View                                    mReportSelected = null;
+    private View                                    mSettingSelected = null;
+    private View                                    mPreviousSelectedView = null;
 
 
-    private LinearLayout mProfileView = null;
+    private LinearLayout                            mProfileView = null;
 
-    private long        mDoublePressInterval = 2000;
-    private long        mPreviousTouchTime = 0;
+    private long                                    mDoublePressInterval = 2000;
+    private long                                    mPreviousTouchTime = 0;
 
-    private MainActivity    thisActivity;
+    private MainActivity                            thisActivity;
+
+    private BroadcastReceiver                       mReceiver = null;
+    private IntentFilter                            mIntentFilter = null;
+    private boolean                                 mIsRegisterdReceiver = false;
+
 
 
     @Override
@@ -149,11 +158,13 @@ public class MainActivity extends BaseActivity {
         BitmapDrawable drawable = (BitmapDrawable) imageview.getDrawable();
         Bitmap bitmap = drawable.getBitmap();
 
-        Bitmap blurred = blurRenderScript(bitmap, 25);//second parametre is radius
+        Bitmap blurred = CommonUtil.blurRenderScript(this, bitmap, 25);//second parametre is radius
         //imageview.setImageBitmap(blurred);
         mProfileView.setBackground(new BitmapDrawable(blurred));
 
-        //mProgressBar.setVisibility(View.VISIBLE);
+
+        initReceiver();
+        registerReceiverMain();
 
         PreferencePhoneShared.setLoginYn(this, false);
         doLogin();
@@ -168,6 +179,24 @@ public class MainActivity extends BaseActivity {
             return;
         }
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        registerReceiverMain();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiverMain();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiverMain();
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -221,53 +250,6 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @SuppressLint("NewApi")
-    private Bitmap blurRenderScript(Bitmap smallBitmap, int radius) {
-
-        try {
-            smallBitmap = RGB565toARGB888(smallBitmap);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        Bitmap bitmap = Bitmap.createBitmap(
-                smallBitmap.getWidth(), smallBitmap.getHeight(),
-                Bitmap.Config.ARGB_8888);
-
-        RenderScript renderScript = RenderScript.create(this.getApplicationContext());
-
-        Allocation blurInput = Allocation.createFromBitmap(renderScript, smallBitmap);
-        Allocation blurOutput = Allocation.createFromBitmap(renderScript, bitmap);
-
-        ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(renderScript,
-                Element.U8_4(renderScript));
-        blur.setInput(blurInput);
-        blur.setRadius(radius); // radius must be 0 < r <= 25
-        blur.forEach(blurOutput);
-
-        blurOutput.copyTo(bitmap);
-        renderScript.destroy();
-
-        return bitmap;
-
-    }
-
-    private Bitmap RGB565toARGB888(Bitmap img) throws Exception {
-        int numPixels = img.getWidth() * img.getHeight();
-        int[] pixels = new int[numPixels];
-
-        //Get JPEG pixels.  Each int is the color values for one pixel.
-        img.getPixels(pixels, 0, img.getWidth(), 0, 0, img.getWidth(), img.getHeight());
-
-        //Create a Bitmap of the appropriate format.
-        Bitmap result = Bitmap.createBitmap(img.getWidth(), img.getHeight(), Bitmap.Config.ARGB_8888);
-
-        //Set RGB pixels.
-        result.setPixels(pixels, 0, result.getWidth(), 0, 0, result.getWidth(), result.getHeight());
-        return result;
-    }
-
     public void tapClicked(View button) {
         if(button.getId() == R.id.stroll) {
             mViewPager.setCurrentItem(0, true);
@@ -293,6 +275,8 @@ public class MainActivity extends BaseActivity {
                 return;
             }
 
+            setProgressBar(View.VISIBLE);
+
             JWLog.e("","uid :" + key);
             String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(this), key));
             String decPassword = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginPassword(this), key));
@@ -305,6 +289,37 @@ public class MainActivity extends BaseActivity {
             JWBroadCast.sendBroadcast(getApplicationContext(), intent);
         } catch(Exception e) {
             e.printStackTrace();
+            setProgressBar(View.INVISIBLE);
+        }
+    }
+
+    private void initReceiver() {
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                JWLog.e("","action :"+intent.getAction());
+
+                if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())) {
+                    setProgressBar(View.INVISIBLE);
+                }
+            }
+        };
+    }
+
+    private void registerReceiverMain() {
+        if(mIsRegisterdReceiver != true) {
+            registerReceiver(mReceiver, mIntentFilter);
+            mIsRegisterdReceiver = true;
+        }
+    }
+
+    private void unregisterReceiverMain() {
+        if(mIsRegisterdReceiver == true) {
+            unregisterReceiver(mReceiver);
+            mIsRegisterdReceiver = false;
         }
     }
 }

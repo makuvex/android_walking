@@ -5,9 +5,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import com.friendly.walking.R;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 
 /**
@@ -19,6 +21,8 @@ public class BaseActivity extends AppCompatActivity {
     protected static int        mVisibleState;
     protected ProgressBar       mProgressBar;
     protected ViewGroup         mRootView;
+
+    protected ImageButton       mBackButton;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -44,7 +48,18 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        if(mBackButton == null) {
 
+            mBackButton = (ImageButton) findViewById(R.id.back);
+            if(mBackButton != null) {
+                mBackButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        finish();
+                    }
+                });
+            }
+        }
         FireBaseNetworkManager.getInstance(this).onStart();
     }
 

@@ -11,8 +11,11 @@ public class PetData {
     public String birthDay = "";
     public String petSpecies = "";
     public String petRelation = "";
-    public String petProfile = "";
+    //public String petProfile = "";
 
+    public PetData() {
+
+    }
 
     public PetData(int index, String species) {
         this.index = index;

@@ -26,7 +26,7 @@
                 android:layout_height="100dp"
                 android:layout_marginTop="20dp"
                 android:layout_gravity="center"
-                android:src="@mipmap/profile"
+                android:src="@drawable/profile"
                 app:civ_border_width="1px"
                 app:civ_border_color="#FF000000" />
 
@@ -117,7 +117,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="#ffffff"
-                    android:src="@mipmap/stroll"
+                    android:src="@drawable/stroll"
                     android:scaleType="fitCenter"
                     android:padding="5dp"
                     android:onClick="tapClicked"/>
@@ -128,7 +128,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="#ffffff"
-                    android:src="@mipmap/map"
+                    android:src="@drawable/map"
                     android:scaleType="fitCenter"
                     android:padding="5dp"
                     android:onClick="tapClicked"/>
@@ -139,7 +139,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="#ffffff"
-                    android:src="@mipmap/report"
+                    android:src="@drawable/report"
                     android:scaleType="fitCenter"
                     android:padding="5dp"
                     android:onClick="tapClicked"/>
@@ -150,7 +150,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="#ffffff"
-                    android:src="@mipmap/setting"
+                    android:src="@drawable/setting"
                     android:scaleType="fitCenter"
                     android:padding="5dp"
                     android:onClick="tapClicked"/>

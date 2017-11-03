@@ -47,7 +47,7 @@
             android:layout_marginLeft="10dp"
             android:scaleType="fitCenter"
             android:background="@color/colorTransparent"
-            android:src="@mipmap/more"/>
+            android:src="@drawable/more"/>
 
     </LinearLayout>
 
