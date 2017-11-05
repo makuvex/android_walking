@@ -19,6 +19,7 @@ import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
 import com.friendly.walking.R;
@@ -247,7 +248,11 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
     }
 
     private void showGoogleMap() {
-        Intent intent = new Intent(this, GoogleMapActivity.class);
-        startActivityForResult(intent, REQ_CODE_GOOGLE_MAP);
+        if(PermissionManager.isAcceptedLocationPermission(this)) {
+            Intent intent = new Intent(this, GoogleMapActivity.class);
+            startActivityForResult(intent, REQ_CODE_GOOGLE_MAP);
+        } else {
+            PermissionManager.requestLocationPermission(this);
+        }
     }
 }

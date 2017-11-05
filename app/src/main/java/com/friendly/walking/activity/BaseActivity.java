@@ -1,5 +1,6 @@
 package com.friendly.walking.activity;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
@@ -8,9 +9,12 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.permission.PermissionManager;
+import com.friendly.walking.util.CommonUtil;
 
 /**
  * Created by Administrator on 2017-10-28.
@@ -18,11 +22,13 @@ import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 
 public class BaseActivity extends AppCompatActivity {
 
-    protected static int        mVisibleState;
-    protected ProgressBar       mProgressBar;
-    protected ViewGroup         mRootView;
+    protected static int                       mVisibleState;
 
-    protected ImageButton       mBackButton;
+    protected ProgressBar                       mProgressBar;
+    protected ViewGroup                         mRootView;
+
+    protected ImageButton                       mBackButton;
+    protected boolean                          mIsAcceptedPermission = false;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -42,7 +48,6 @@ public class BaseActivity extends AppCompatActivity {
         rl.addView(mProgressBar);
 
         mRootView.addView(rl, params);
-
     }
 
     @Override
@@ -103,5 +108,44 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        boolean isAcceptedPermission = true;
+        String permissionName = null;
 
+        switch (requestCode) {
+            case PermissionManager.CAMERA_PERMISSION_REQUEST_CODE :
+                permissionName = "카메라";
+            case PermissionManager.STORAGE_PERMISSION_REQUEST_CODE :
+                if(permissionName == null) {
+                    permissionName = "저장공간";
+                }
+            case PermissionManager.LOCATION_PERMISSION_REQUEST_CODE :
+                if(permissionName == null) {
+                    permissionName = "위치";
+                }
+
+                for (int i = 0; permissions != null && i < permissions.length; i++) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        boolean showRationale = shouldShowRequestPermissionRationale(permissions[i]);
+                        isAcceptedPermission = false;
+
+                        if (!showRationale) {
+                            CommonUtil.alertDialogShow(this, permissionName, "권한이 허용되지 않았습니다.\n사용을 위해 설정 메뉴로 이동 하시겠습니까?", new CommonUtil.CompleteCallback() {
+                                @Override
+                                public void onCompleted(boolean result, Object object) {
+                                    if(result) {
+                                        PermissionManager.goPermissionSettingMenu(BaseActivity.this);
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "취소 되었습니다.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                            break;
+                        }
+                    }
+                }
+                break;
+        }
+    }
 }

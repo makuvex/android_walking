@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -121,28 +122,27 @@ public class StrollMapFragment extends SupportMapFragment
         JWLog.e("","");
         super.onResume();
 
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            if (!mRequestingLocationUpdates) {
-                startLocationUpdates();
+        if(PermissionManager.isAcceptedLocationPermission(getActivity())) {
+            if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+                if (!mRequestingLocationUpdates) {
+                    startLocationUpdates();
+                }
             }
+        } else {
+            PermissionManager.requestLocationPermission(getActivity());
         }
     }
 
     @Override
     public void onStop() {
-
         if (mRequestingLocationUpdates) {
-
             JWLog.d(TAG, "onStop : call stopLocationUpdates");
             stopLocationUpdates();
         }
-
         if (mGoogleApiClient != null &&  mGoogleApiClient.isConnected()) {
-
             JWLog.d(TAG, "onStop : mGoogleApiClient disconnect");
             mGoogleApiClient.disconnect();
         }
-
         super.onStop();
     }
 
@@ -222,22 +222,15 @@ public class StrollMapFragment extends SupportMapFragment
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        if ( mRequestingLocationUpdates == false ) {
-
-
-
-                    JWLog.d(TAG, "onConnected : 퍼미션 가지고 있음");
+        if(PermissionManager.isAcceptedLocationPermission(getActivity())) {
+            JWLog.d(TAG, "onConnected : 퍼미션 가지고 있음");
             JWLog.d(TAG, "onConnected : call startLocationUpdates");
-                    startLocationUpdates();
-                    mGoogleMap.setMyLocationEnabled(true);
 
-            }else{
-
-            JWLog.d(TAG, "onConnected : call startLocationUpdates");
-                startLocationUpdates();
-                mGoogleMap.setMyLocationEnabled(true);
-            }
-
+            startLocationUpdates();
+            mGoogleMap.setMyLocationEnabled(true);
+        } else {
+            PermissionManager.requestLocationPermission(getActivity());
+        }
     }
 
     @Override

@@ -31,6 +31,7 @@ import com.friendly.walking.dataSet.PetRelationData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.main.MainActivity;
+import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
@@ -360,6 +361,14 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
     @Override
     public void onClick(View view) {
+        if(!PermissionManager.isAcceptedCameraPermission(this)) {
+            PermissionManager.requestCameraPermission(this);
+            return ;
+        } else if(!PermissionManager.isAcceptedStoragePermission(this)) {
+            PermissionManager.requestStoragePermission(this);
+            return ;
+        }
+
         final List<String> ListItems = new ArrayList<>();
         ListItems.add("사진 촬영");
         ListItems.add("앨범 선택");
