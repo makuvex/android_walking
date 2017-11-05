@@ -16,10 +16,19 @@ import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.net.URL;
+
+import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOOGLE_SIGN_IN;
 
 /**
  * Created by jungjiwon on 2017. 10. 25..
@@ -31,6 +40,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     private EditText                            mPasswordText;
     private CheckBox                            mAutoLoginCheckBox;
 
+    private SignInButton                        mSignInGoogleButton;
+
     @Override
     public void onCreate(Bundle bundle) {
         JWLog.e("", "@@@ ");
@@ -40,12 +51,16 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         mEmailText = (EditText)findViewById(R.id.email_id);
         mPasswordText = (EditText)findViewById(R.id.password);
         mAutoLoginCheckBox = (CheckBox)findViewById(R.id.autologin_check);
+
+        mSignInGoogleButton = (SignInButton)findViewById(R.id.google_login);
+
         findViewById(R.id.find_id).setOnClickListener(this);
         findViewById(R.id.find_password).setOnClickListener(this);
         findViewById(R.id.sign_up).setOnClickListener(this);
-
+        mSignInGoogleButton.setOnClickListener(this);
         mAutoLoginCheckBox.setChecked(true);
 
+        FireBaseNetworkManager.getInstance(this);
     }
 
     public void onClickCallback(View v) {
@@ -103,10 +118,6 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             });
         } else if(v.getId() == R.id.autologin_check) {
 
-        } else if(v.getId() == R.id.google_login) {
-
-        } else if(v.getId() == R.id.facebook_login) {
-
         }
     }
 
@@ -115,6 +126,29 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         JWLog.e("","");
         if(view.getId() == R.id.sign_up) {
             startActivity(new Intent(this, SignUpActivity.class));
+        } else if(view == mSignInGoogleButton) {
+            FireBaseNetworkManager.getInstance(this).googleSignIn(this);
         }
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if ( requestCode == RC_GOOGLE_SIGN_IN ) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
+            if ( result.isSuccess() ) {
+                JWLog.e("", "Google Login succeed." + result.getStatus());
+                String token = result.getSignInAccount().getIdToken();
+                AuthCredential credential = GoogleAuthProvider.getCredential(token, null);
+
+                FireBaseNetworkManager.getInstance(this).signInWithCredential(credential);
+            } else {
+                JWLog.e("", "Google Login Failed." + result.getStatus());
+            }
+        }
+    }
+
+
 }

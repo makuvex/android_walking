@@ -1,22 +1,30 @@
 package com.friendly.walking.firabaseManager;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,13 +50,14 @@ import java.io.File;
  * Created by jungjiwon on 2017. 10. 25..
  */
 
-public class FireBaseNetworkManager {
+public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFailedListener {
 
-    public static final String                  DB_TABLE_USER                   = "user";
-    public static final String                  DB_TABLE_PET                    = "pet";
+    public static final String                  DB_TABLE_USER = "user";
+    public static final String                  DB_TABLE_PET = "pet";
+    public static final int                     RC_GOOGLE_SIGN_IN = 9001;
 
 
-    private static FireBaseNetworkManager       mSelf;
+    private static FireBaseNetworkManager      mSelf;
     private Context                             mContext;
 
     private FirebaseDatabase                    firebaseDatabase = FirebaseDatabase.getInstance();
@@ -61,12 +70,39 @@ public class FireBaseNetworkManager {
     private FirebaseAuth                        mAuth;
     private FirebaseAuth.AuthStateListener      mAuthListener;
     private Task<AuthResult>                    mTask;
+    public GoogleApiClient                     mGoogleApiClient;
 
     private long                                mUserIndex = -1;
 
 
     public interface FireBaseNetworkCallback {
         public void onCompleted(boolean result, Object object);
+    }
+
+    public static FireBaseNetworkManager getInstance(AppCompatActivity activity) {
+        if(mSelf == null) {
+            mSelf = new FireBaseNetworkManager(activity);
+        }
+        mSelf.mContext = activity;
+
+        if(!mSelf.checkInternetConnection(activity)) {
+            Toast.makeText(activity, R.string.internet_connection_faild, Toast.LENGTH_SHORT).show();
+        }
+
+        if(activity instanceof AppCompatActivity && mSelf.mGoogleApiClient == null) {
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(activity.getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build();
+
+            mSelf.mGoogleApiClient = new GoogleApiClient.Builder(activity)
+                    .enableAutoManage(activity /* FragmentActivity */, mSelf /* OnConnectionFailedListener */)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .build();
+
+        }
+
+        return mSelf;
     }
 
     public static FireBaseNetworkManager getInstance(Context context) {
@@ -99,6 +135,8 @@ public class FireBaseNetworkManager {
         mAuth.addAuthStateListener(mAuthListener);
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
+
+
     }
 
     public void onStart() {
@@ -369,6 +407,22 @@ public class FireBaseNetworkManager {
             }
         });
 
+    }
+
+    public void googleSignIn(AppCompatActivity activity) {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        activity.startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
+    }
+
+    public void signInWithCredential(AuthCredential credential) {
+        if(mAuth != null) {
+            mAuth.signInWithCredential(credential);
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        JWLog.e("",connectionResult.getErrorMessage());
     }
 
     public boolean checkInternetConnection(Context context) {
