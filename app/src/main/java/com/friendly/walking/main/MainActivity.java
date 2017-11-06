@@ -31,8 +31,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LoginSettingListData;
+import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.fragment.ReportFragment;
 import com.friendly.walking.fragment.StrollFragment;
 import com.friendly.walking.fragment.StrollMapFragment;
@@ -43,8 +45,14 @@ import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.firebase.auth.FirebaseUser;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOOGLE_SIGN_IN;
 
 public class MainActivity extends BaseActivity {
 
@@ -267,26 +275,43 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doLogin() {
-        try {
-            String key = PreferencePhoneShared.getUserUid(this);
-            boolean autoLogin = PreferencePhoneShared.getAutoLoginYn(this);
 
-            if(TextUtils.isEmpty(key) || !autoLogin) {
+        try {
+            boolean autoLogin = PreferencePhoneShared.getAutoLoginYn(this);
+            if(!autoLogin) {
                 return;
             }
+            int autoLoginType = PreferencePhoneShared.getAutoLoginType(this);
 
-            setProgressBar(View.VISIBLE);
+            if(autoLoginType == GlobalConstantID.LOGIN_TYPE_EMAIL) {
+                String key = PreferencePhoneShared.getUserUid(this);
 
-            JWLog.e("","uid :" + key);
-            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(this), key));
-            String decPassword = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginPassword(this), key));
+                if (TextUtils.isEmpty(key) || !autoLogin) {
+                    return;
+                }
 
-            Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
-            intent.putExtra("email", decEmail);
-            intent.putExtra("password", decPassword);
-            //intent.putExtra("autoLogin", autoLogin);
+                setProgressBar(View.VISIBLE);
 
-            JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+                JWLog.e("", "uid :" + key);
+                String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(this), key));
+                String decPassword = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginPassword(this), key));
+
+                Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
+                intent.putExtra("email", decEmail);
+                intent.putExtra("password", decPassword);
+                //intent.putExtra("autoLogin", autoLogin);
+
+                JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+            } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
+                FireBaseNetworkManager.getInstance(this).googleSignIn(this);
+            } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
+//                FireBaseNetworkManager.getInstance(this).facebookSignIn(this, null, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+//                    @Override
+//                    public void onCompleted(boolean result, Object object) {
+//
+//                    }
+//                });
+            }
         } catch(Exception e) {
             e.printStackTrace();
             setProgressBar(View.INVISIBLE);
@@ -322,4 +347,41 @@ public class MainActivity extends BaseActivity {
             mIsRegisterdReceiver = false;
         }
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if ( requestCode == RC_GOOGLE_SIGN_IN ) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
+            if ( result.isSuccess() ) {
+                JWLog.e("", "Google Login succeed." + result.getStatus());
+                GoogleSignInAccount account = result.getSignInAccount();
+
+                JWLog.e("",""+account.getId()+", "+account.getEmail()+", "+account.getDisplayName()+", "+account.getServerAuthCode());
+
+                setProgressBar(View.VISIBLE);
+                FireBaseNetworkManager.getInstance(this).firebaseAuthWithGoogle(account,new  FireBaseNetworkManager.FireBaseNetworkCallback() {
+                    @Override
+                    public void onCompleted(boolean result, Object object) {
+                        setProgressBar(View.INVISIBLE);
+                        if(object instanceof FirebaseUser) {
+                            try {
+                                FirebaseUser user = (FirebaseUser) object;
+
+                                PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
+                                updateUI(user.getEmail());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+            } else {
+                JWLog.e("", "Google Login Failed." + result.getStatus());
+            }
+        }
+    }
+
 }

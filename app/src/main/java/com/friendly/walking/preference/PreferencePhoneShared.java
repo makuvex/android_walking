@@ -13,6 +13,8 @@ public class PreferencePhoneShared extends BasePreference {
     private static final String KEY_LOGIN_PASSWORD                          = "KEY_LOGIN_PASSWORD";
     private static final String KEY_USER_UID                                = "KEY_USER_UID";
 
+    private static final String KEY_AUTO_LOGIN_TYPE                         = "KEY_LOGIN_TYPE";     //0 : EMAIL, 1 : GOOGLE, 2 : FACEBOOK
+
     public static void setAutoLoginYn(Context cxt, boolean autoLoginYn){
         putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_YN, autoLoginYn);
     }
@@ -51,6 +53,14 @@ public class PreferencePhoneShared extends BasePreference {
 
     public static String getUserUid(Context cxt){
         return getString(cxt, PREFERENCE_NAME, KEY_USER_UID, "");
+    }
+
+    public static void setAutoLoginType(Context cxt, int type){
+        putInt(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_TYPE, type);
+    }
+
+    public static int getAutoLoginType(Context cxt){
+        return getInt(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_TYPE, -1);
     }
 
 }

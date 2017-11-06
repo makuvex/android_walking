@@ -198,6 +198,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
                                                     JWLog.e("", "encEmail : [" + encryptedEmail + "]" + ", encPassword : [" + encryptedPassword + "]");
 
+                                                    PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_EMAIL);
                                                     PreferencePhoneShared.setUserUID(getApplicationContext(), key);
                                                     PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
                                                     PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);

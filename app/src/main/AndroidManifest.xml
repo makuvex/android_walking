@@ -20,6 +20,14 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAumDY-OHDxWEBAaFJLGsN9KzdO-NS9i7E" />
 
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id"/>
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="@string/kakao_app_key" />
+
         <activity android:name="com.friendly.walking.main.IntroActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

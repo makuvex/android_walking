@@ -24,6 +24,7 @@ import com.friendly.walking.dataSet.LocationSettingListData;
 import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.dataSet.NotificationSettingListData;
 import com.friendly.walking.dataSet.VersionInfoSettingListData;
+import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
@@ -148,7 +149,6 @@ public class SettingFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-
 
     }
 

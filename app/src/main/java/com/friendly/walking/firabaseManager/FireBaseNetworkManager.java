@@ -12,22 +12,37 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -44,6 +59,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.util.List;
 
 
 /**
@@ -57,20 +73,26 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
     public static final int                     RC_GOOGLE_SIGN_IN = 9001;
 
 
-    private static FireBaseNetworkManager      mSelf;
+    private static FireBaseNetworkManager       mSelf;
     private Context                             mContext;
 
     private FirebaseDatabase                    firebaseDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference                   databaseReference = firebaseDatabase.getReference();
 
+    // storage
     private FirebaseStorage                     firebaseStorage;
     private StorageReference                    storageRef;
 
-    // firebase 로그인 인증
+    // firebase email 로그인 인증
     private FirebaseAuth                        mAuth;
     private FirebaseAuth.AuthStateListener      mAuthListener;
     private Task<AuthResult>                    mTask;
-    public GoogleApiClient                     mGoogleApiClient;
+
+    // google login api
+    public GoogleApiClient                      mGoogleApiClient;
+
+    // facebook login
+    private CallbackManager                     mCallbackManager;
 
     private long                                mUserIndex = -1;
 
@@ -89,19 +111,6 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
             Toast.makeText(activity, R.string.internet_connection_faild, Toast.LENGTH_SHORT).show();
         }
 
-        if(activity instanceof AppCompatActivity && mSelf.mGoogleApiClient == null) {
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(activity.getString(R.string.default_web_client_id))
-                    .requestEmail()
-                    .build();
-
-            mSelf.mGoogleApiClient = new GoogleApiClient.Builder(activity)
-                    .enableAutoManage(activity /* FragmentActivity */, mSelf /* OnConnectionFailedListener */)
-                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                    .build();
-
-        }
-
         return mSelf;
     }
 
@@ -117,25 +126,46 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         return mSelf;
     }
 
-    public FireBaseNetworkManager(Context context) {
+    private FireBaseNetworkManager(Context context) {
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
+
                 if (user != null) {
+                    try {
+                        JWLog.e("", "facebook onAuthStateChanged");
+
+                        String key = user.getUid().substring(0, 16);
+                        String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding("Facebook : " + user.getDisplayName(), 0), key);
+
+                        PreferencePhoneShared.setLoginYn(mContext, true);
+                        PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_FACEBOOK);
+                        PreferencePhoneShared.setAutoLoginYn(mContext, true);
+                        PreferencePhoneShared.setLoginID(mContext, encryptedEmail);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     // User is signed in
-                    JWLog.d("", "@@@ onAuthStateChanged:signed_in:" + user.getUid());
+                    JWLog.e("", "@@@ onAuthStateChanged:signed_in:" + user.getUid()+", displayName:"+user.getDisplayName());
+
                 } else {
                     // User is signed out
-                    JWLog.d("", "@@@ onAuthStateChanged:signed_out");
+                    JWLog.e("", "@@@ onAuthStateChanged:signed_out");
+
+                    PreferencePhoneShared.setLoginYn(mContext, false);
+                    PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_NONE);
+                    PreferencePhoneShared.setAutoLoginYn(mContext, false);
+                    PreferencePhoneShared.setLoginID(mContext, "");
                 }
+
             }
         };
         mAuth.addAuthStateListener(mAuthListener);
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
-
 
     }
 
@@ -203,7 +233,8 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
     public void deleteUserData(final FireBaseNetworkCallback callback) {
         JWLog.e("", "@@@ ");
-        String uid = mTask.getResult().getUser().getUid();
+
+        String uid = PreferencePhoneShared.getUserUid(mContext);
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -333,7 +364,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 public void onFailure(@NonNull Exception e) {
                     // Fail Case
                     e.printStackTrace();
-                    Toast.makeText(mContext, "Fail !!", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(mContext, "Fail !!", Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -377,6 +408,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
     public void logoutAccount(Context context) {
         FirebaseAuth.getInstance().signOut();
+        LoginManager.getInstance().logOut();
 
         PreferencePhoneShared.setAutoLoginYn(context, false);
         PreferencePhoneShared.setLoginYn(context, false);
@@ -410,14 +442,134 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
     }
 
     public void googleSignIn(AppCompatActivity activity) {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(activity.getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mSelf.mGoogleApiClient = new GoogleApiClient.Builder(activity)
+                .enableAutoManage(activity /* FragmentActivity */, mSelf /* OnConnectionFailedListener */)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         activity.startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
     }
 
-    public void signInWithCredential(AuthCredential credential) {
+    public void facebookSignIn(AppCompatActivity activity, LoginButton loginButton, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        mCallbackManager = CallbackManager.Factory.create();
+        loginButton.setReadPermissions("email", "public_profile");
+        loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                JWLog.d("", "facebook:onSuccess:" + loginResult);
+                handleFacebookAccessToken(loginResult.getAccessToken(), callback);
+            }
+
+            @Override
+            public void onCancel() {
+                JWLog.d("", "facebook:onCancel");
+                Toast.makeText(mContext, "취소 되었습니다", Toast.LENGTH_SHORT).show();
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                JWLog.d("", "facebook:onError" + error);
+                Toast.makeText(mContext, "에러가 발생 했습니다.", Toast.LENGTH_SHORT).show();
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+    }
+
+    public CallbackManager getFacebookCallback() {
+        return mCallbackManager;
+    }
+
+    public FirebaseUser getCurrentUser() {
         if(mAuth != null) {
-            mAuth.signInWithCredential(credential);
+            return mAuth.getCurrentUser();
         }
+        return null;
+    }
+
+    public void firebaseAuthWithGoogle(GoogleSignInAccount acct, final FireBaseNetworkCallback callback) {
+        JWLog.d("", "firebaseAuthWithGoogle:" + acct.getId());
+
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            JWLog.d("", "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if(callback != null) {
+                                callback.onCompleted(task.isSuccessful(), user);
+                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            JWLog.w("", "signInWithCredential:failure" + task.getException());
+                            Toast.makeText(mContext, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                            if(callback != null) {
+                                callback.onCompleted(task.isSuccessful(), null);
+                            }
+                        }
+                    }
+                });
+    }
+
+    private void revokeAuthGoogleAccess() {
+        // Firebase sign out
+        mAuth.signOut();
+
+        // Google revoke access
+        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+            new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+
+                }
+            });
+    }
+
+    private void handleFacebookAccessToken(AccessToken token, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.d("", "handleFacebookAccessToken:" + token);
+
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            JWLog.d("", "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+
+                            if(callback != null) {
+                                callback.onCompleted(true, task);
+                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            JWLog.w("", "signInWithCredential:failure "+ task.getException());
+                            if(callback != null) {
+                                callback.onCompleted(false, null);
+                            }
+                        }
+
+                        if(callback != null) {
+                            callback.onCompleted(false, null);
+                        }
+                    }
+                });
     }
 
     @Override

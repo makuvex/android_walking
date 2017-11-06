@@ -83,4 +83,7 @@
     <string name="failed_change_password" translatable="false">비밀번호 변경 실패</string>
     <string name="succeed_change_password" translatable="false">비밀번호 변경 성공</string>
 
+    <string name="facebook_app_id">312550385892011</string>
+    <string name="kakao_app_key">6f19041ba7c4a532af929b23325c3615</string>
+
 </resources>

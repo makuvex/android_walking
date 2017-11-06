@@ -143,10 +143,12 @@ public class ProfileActivity extends BaseActivity {
             public void onCompleted(boolean result, Object object) {
                 JWLog.e("", "result :"+result);
                 UserData userData = (UserData) object;
-                PetData petData = userData.pet_list.get(0);
+                if(userData != null) {
+                    PetData petData = userData.pet_list.get(0);
 
-                mPetName.setText(petData.petName);
-                mGenderImage.setImageResource(petData.petGender == false ? R.drawable.male : R.drawable.female);
+                    mPetName.setText(petData.petName);
+                    mGenderImage.setImageResource(petData.petGender == false ? R.drawable.male : R.drawable.female);
+                }
             }
         });
     }

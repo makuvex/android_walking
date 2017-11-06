@@ -12,4 +12,10 @@ public class GlobalConstantID {
     public static final String              HOME_ADDRESS            = "HOME_ADDRESS";
     public static final String              HOME_ADDRESS_LAT_LNG    = "HOME_ADDRESS_LAT_LNG";
 
+    public static final int                 LOGIN_TYPE_NONE                                 = -1;
+    public static final int                 LOGIN_TYPE_EMAIL                                = 0;
+    public static final int                 LOGIN_TYPE_GOOGLE                               = 1;
+    public static final int                 LOGIN_TYPE_FACEBOOK                             = 2;
+
+
 }

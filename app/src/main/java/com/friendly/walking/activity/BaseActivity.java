@@ -1,5 +1,6 @@
 package com.friendly.walking.activity;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,8 +13,10 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.friendly.walking.R;
+import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.permission.PermissionManager;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 
 /**
@@ -148,4 +151,13 @@ public class BaseActivity extends AppCompatActivity {
                 break;
         }
     }
+
+    public void updateUI(String email) {
+        Intent intent = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+        intent.putExtra("email", email);
+        intent.putExtra("autoLogin", PreferencePhoneShared.getAutoLoginYn(this));
+
+        JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+    }
+
 }
