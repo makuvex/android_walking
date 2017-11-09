@@ -169,11 +169,11 @@
             android:id="@+id/kakao_login"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="13dp"
             android:layout_marginLeft="13dp"
             android:layout_marginRight="13dp"
             android:layout_weight="1"
-            android:scaleY="0.8"/>
+            android:scaleY="1"/>
 
 
     <!--

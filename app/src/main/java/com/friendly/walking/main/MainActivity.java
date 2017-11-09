@@ -32,6 +32,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.friendly.walking.GlobalConstantID;
+import com.friendly.walking.activity.KakaoSignupActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
@@ -41,6 +42,7 @@ import com.friendly.walking.fragment.StrollMapFragment;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.fragment.SettingFragment;
+import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
@@ -49,6 +51,8 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.firebase.auth.FirebaseUser;
+import com.kakao.usermgmt.response.model.User;
+import com.kakao.usermgmt.response.model.UserProfile;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -311,6 +315,25 @@ public class MainActivity extends BaseActivity {
 //
 //                    }
 //                });
+            } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                if(KakaoLoginManager.getInstance(this).hasKakaoLoginSession()) {
+                    KakaoLoginManager.getInstance(this).requestMe(new KakaoLoginManager.KakaoLoginManagerCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            if(result) {
+                                Toast.makeText(getApplicationContext(), "카카오톡 연동 로그인 했습니다.", Toast.LENGTH_SHORT).show();
+                                PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
+
+                                if(object instanceof UserProfile) {
+                                    Intent i = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+                                    i.putExtra("email", PreferencePhoneShared.getLoginID(getApplicationContext()));
+                                    JWBroadCast.sendBroadcast(getApplicationContext(), i);
+
+                                }
+                            }
+                        }
+                    });
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();

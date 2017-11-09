@@ -86,6 +86,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     private static PetRelationData[]            mRelationData;
     private int                                 mPetGender = -1;
     private Uri                                 mImageCaptureUri;
+    private int                                 mSignUpType;
 
     private UserData                            mUserData;
 
@@ -130,13 +131,15 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 new PetRelationData(9, "친구")};
 
         Intent intent = getIntent();
-        mEmail = intent.getStringExtra(GlobalConstantID.SIGN_UP_EMAIL);
+        //mEmail = intent.getStringExtra(GlobalConstantID.SIGN_UP_EMAIL);
         mPassword = intent.getStringExtra(GlobalConstantID.SIGN_UP_PASSWORD);
 
         ApplicationPool pool = (ApplicationPool)getApplicationContext();
         mUserData = (UserData)pool.getExtra(SignUpActivity.KEY_USER_DATA, getIntent());
+        mSignUpType = intent.getIntExtra(GlobalConstantID.SIGN_UP_TYPE, -1);
+        mEmail = mUserData.mem_email;
 
-        JWLog.e("","mUserData : "+mUserData);
+        JWLog.e("","mUserData : "+mUserData+", mEmail :"+mEmail);
     }
 
     public void onClickCallback(View v) {
@@ -168,91 +171,118 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
                 createPetData();
 
-                FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                    @Override
-                    public void onCompleted(boolean result, Object object) {
-                        final Task<AuthResult> task = (Task<AuthResult>)object;
-
-                        if (result) {
-                            Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
-
-                            mUserData.uid = task.getResult().getUser().getUid();
-                            FireBaseNetworkManager.getInstance(getApplicationContext()).queryUserIndex(new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                                @Override
-                                public void onCompleted(boolean result, Object object) {
-                                    long userIndex = FireBaseNetworkManager.getInstance(getApplicationContext()).getUserIndex();
-                                    mUserData.member_index = ++userIndex;
-
-                                    FireBaseNetworkManager.getInstance(getApplicationContext()).createUserData(mUserData, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                                        @Override
-                                        public void onCompleted(boolean result, Object object) {
-                                            setProgressBar(View.INVISIBLE);
-
-                                            if (result) {
-                                                Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
-
-                                                try {
-                                                    String key = task.getResult().getUser().getUid().substring(0, 16);
-                                                    String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(mEmail, 0), key);
-                                                    String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPassword, 0), key);
-
-                                                    JWLog.e("", "encEmail : [" + encryptedEmail + "]" + ", encPassword : [" + encryptedPassword + "]");
-
-                                                    PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_EMAIL);
-                                                    PreferencePhoneShared.setUserUID(getApplicationContext(), key);
-                                                    PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
-                                                    PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
-                                                    PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mUserData.mem_auto_login);
-
-                                                } catch(Exception e) {
-                                                    e.printStackTrace();
-                                                    Toast.makeText(SignUpPetActivity.this, "preference 저장 실패", Toast.LENGTH_SHORT).show();
-                                                }
-                                                if(mImageCaptureUri != null) {
-                                                    try {
-                                                        FireBaseNetworkManager.getInstance(SignUpPetActivity.this).uploadProfileImage(mImageCaptureUri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                                                            @Override
-                                                            public void onCompleted(boolean result, Object object) {
-
-                                                                if (result) {
-                                                                    Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
-                                                                } else {
-                                                                    Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            }
-                                                        });
-                                                    } catch(Exception e) {
-                                                        e.printStackTrace();
-                                                    }
-                                                }
-                                            } else {
-                                                Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
-                                            }
-
-                                            Intent i = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
-                                            i.putExtra("email", mEmail);
-                                            i.putExtra("password", mPassword);
-                                            i.putExtra("autoLogin", mUserData.mem_auto_login);
-
-                                            JWBroadCast.sendBroadcast(getApplicationContext(), i);
-
-                                            Intent intent = new Intent(SignUpPetActivity.this, MainActivity.class);
-                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                            startActivity(intent);
-                                        }
-                                    });
-                                }
-                            });
-
-
-                        } else {
+                if(mSignUpType == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                    FireBaseNetworkManager.getInstance(this).findUserEmail(mUserData.mem_email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
                             setProgressBar(View.INVISIBLE);
-                            Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
+
+                            if(result) {
+                                Toast.makeText(getApplicationContext(), R.string.unavailable_id, Toast.LENGTH_SHORT).show();
+                            } else {
+                                //Toast.makeText(getApplicationContext(), R.string.available_id, Toast.LENGTH_SHORT).show();
+                                queryUserIndex(null);
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            final Task<AuthResult> task = (Task<AuthResult>) object;
+
+                            if (result) {
+                                Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
+
+                                mUserData.uid = task.getResult().getUser().getUid();
+                                queryUserIndex(task);
+                            } else {
+                                setProgressBar(View.INVISIBLE);
+                                Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
             }
         }
+    }
+
+    public void queryUserIndex(final Task<AuthResult> task) {
+
+        FireBaseNetworkManager.getInstance(getApplicationContext()).queryUserIndex(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+            @Override
+            public void onCompleted(boolean result, Object object) {
+                long userIndex = FireBaseNetworkManager.getInstance(getApplicationContext()).getUserIndex();
+                mUserData.member_index = ++userIndex;
+
+                createUserData(task);
+            }
+        });
+    }
+
+    private void createUserData(final Task<AuthResult> task) {
+
+        FireBaseNetworkManager.getInstance(getApplicationContext()).createUserData(mUserData, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+            @Override
+            public void onCompleted(boolean result, Object object) {
+                setProgressBar(View.INVISIBLE);
+
+                if (result) {
+                    Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
+
+                    try {
+                        if(task != null) {
+                            String key = task.getResult().getUser().getUid().substring(0, 16);
+                            String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(mEmail, 0), key);
+                            String encryptedPassword = "";
+                            encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPassword, 0), key);
+
+                            JWLog.e("", "encEmail : [" + encryptedEmail + "]" + ", encPassword : [" + encryptedPassword + "]");
+
+                            PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_EMAIL);
+                            PreferencePhoneShared.setUserUID(getApplicationContext(), key);
+                            PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
+                            PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
+                            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mUserData.mem_auto_login);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(SignUpPetActivity.this, "preference 저장 실패", Toast.LENGTH_SHORT).show();
+                    }
+                    if (mImageCaptureUri != null) {
+                        try {
+                            FireBaseNetworkManager.getInstance(SignUpPetActivity.this).uploadProfileImage(mImageCaptureUri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                @Override
+                                public void onCompleted(boolean result, Object object) {
+
+                                    if (result) {
+                                        Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
+                }
+
+                if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) != GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                    Intent i = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
+                    i.putExtra("email", mEmail);
+                    i.putExtra("password", mPassword);
+                    i.putExtra("autoLogin", mUserData.mem_auto_login);
+
+                    JWBroadCast.sendBroadcast(getApplicationContext(), i);
+                }
+                Intent intent = new Intent(SignUpPetActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -404,7 +434,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
             case Crop.REQUEST_CROP :
                 mAddProfile.setBackground(new BitmapDrawable(Crop.getOutput(data).getPath()));
                 File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                JWLog.e("","path :"+path.getAbsolutePath());
+                JWLog.e("","email :"+mEmail+", path :"+path.getAbsolutePath());
                 mImageCaptureUri = Uri.parse(path.getAbsolutePath() + "/" + mEmail +"_pet_profile.jpg");
                 saveBitmaptoJpeg(new BitmapDrawable(Crop.getOutput(data).getPath()).getBitmap(), Environment.DIRECTORY_DOWNLOADS,  mEmail +"_pet_profile");
                 mImageCaptureUri = Uri.fromFile(new File(mImageCaptureUri.getPath()));

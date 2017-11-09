@@ -81,6 +81,11 @@ public class JWLog
         log(TYPE_WARN, tag, message,STACK_NUMBER_CURRENT);
     }
 
+    public static void e(String message)
+    {
+        log(TYPE_ERROR, "", message,STACK_NUMBER_CURRENT);
+    }
+
     public static void e(String tag, String message)
     {
         log(TYPE_ERROR, tag, message,STACK_NUMBER_CURRENT);

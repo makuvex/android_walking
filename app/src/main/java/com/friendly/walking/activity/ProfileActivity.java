@@ -15,11 +15,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
@@ -47,6 +49,7 @@ public class ProfileActivity extends BaseActivity {
     private ImageButton                         mChangePasswordButton;
     private ImageButton                         mChangePetInfoButton;
     private ImageButton                         mQuitServiceButton;
+    private View                                mChangePassworLayout;
 
     private OnClickListener                     mClickListener;
 
@@ -67,41 +70,22 @@ public class ProfileActivity extends BaseActivity {
         mChangePasswordButton = (ImageButton)findViewById(R.id.change_password);
         mChangePetInfoButton = (ImageButton)findViewById(R.id.change_pet_info);
         mQuitServiceButton = (ImageButton)findViewById(R.id.quit_service);
+        mChangePassworLayout = findViewById(R.id.change_password_layout);
 
         mClickListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(v == mLogoutButton) {
                     JWLog.e("", "로그아웃");
-                    CommonUtil.alertDialogShow(ProfileActivity.this, "알림", "로그아웃 하시겠습니까?", new CommonUtil.CompleteCallback() {
-                        @Override
-                        public void onCompleted(boolean result, Object object) {
-                            if(result) {
-
-                                FireBaseNetworkManager.getInstance(ProfileActivity.this).logoutAccount(ProfileActivity.this);
-                                Toast.makeText(ProfileActivity.this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
-
-                                FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserData(new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                                    @Override
-                                    public void onCompleted(boolean result, Object object) {
-
-                                        Intent i = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
-                                        i.putExtra("email", "");
-                                        JWBroadCast.sendBroadcast(ProfileActivity.this, i);
-
-                                        finish();
-                                    }
-                                });
-                            }
-                        }
-                    });
+                    requestLogout();
                 } else if(v == mChangePasswordButton) {
                     startActivity(new Intent(ProfileActivity.this, ChangePasswordActivity.class));
 
                 } else if(v == mChangePetInfoButton) {
 
                 } else if(v == mQuitServiceButton) {
-
+                    JWLog.e("", "탈퇴");
+                    quitService();
                 }
             }
         };
@@ -111,6 +95,9 @@ public class ProfileActivity extends BaseActivity {
         mChangePetInfoButton.setOnClickListener(mClickListener);
         mQuitServiceButton.setOnClickListener(mClickListener);
 
+        if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+            mChangePassworLayout.setVisibility(View.GONE);
+        }
         String email = getIntent().getStringExtra("email");
         mEmailText.setText(email);
 
@@ -153,5 +140,73 @@ public class ProfileActivity extends BaseActivity {
         });
     }
 
+    private void quitService() {
+
+        CommonUtil.alertDialogShow(ProfileActivity.this, "알림", "서비스를 탈퇴 하시겠습니까?\n탈퇴 시 모든 정보가 삭제 됩니다.", new CommonUtil.CompleteCallback() {
+            @Override
+            public void onCompleted(boolean result, Object object) {
+                if(result) {
+                    if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                        KakaoLoginManager.getInstance(ProfileActivity.this).unlinkApp(null);
+                    } else {
+                        FireBaseNetworkManager.getInstance(getApplicationContext()).deleteFireBaseUser(null);
+                    }
+
+                    FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserImage(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            JWLog.e("result :"+result);
+                        }
+                    });
+                    FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserData(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            Toast.makeText(getApplicationContext(), "정상적으로 탈퇴 되었습니다", Toast.LENGTH_SHORT).show();
+
+                            PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
+                            PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
+                            PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
+                            PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
+                            PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
+
+                            updateUI("");
+                            finish();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void requestLogout() {
+        CommonUtil.alertDialogShow(ProfileActivity.this, "알림", "로그아웃 하시겠습니까?", new CommonUtil.CompleteCallback() {
+            @Override
+            public void onCompleted(boolean result, Object object) {
+                if(result) {
+                    if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                        KakaoLoginManager.getInstance(ProfileActivity.this).requestLogout(new KakaoLoginManager.KakaoLoginManagerCallback() {
+                            @Override
+                            public void onCompleted(boolean result, Object object) {
+                                Toast.makeText(getApplicationContext(), "정상적으로 로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
+
+                            }
+                        });
+                    } else {
+                        FireBaseNetworkManager.getInstance(ProfileActivity.this).logoutAccount();
+                        Toast.makeText(ProfileActivity.this, "정상적으로 로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+                    }
+
+                    PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
+                    PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
+                    PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
+                    PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
+                    PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
+
+                    updateUI("");
+                    finish();
+                }
+            }
+        });
+    }
 
 }

@@ -110,7 +110,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
                     if(CommonUtil.isValidPassword(mPasswordText.getText().toString())) {
 
                         Intent intent = new Intent(this, SignUpPetActivity.class);
-                        intent.putExtra(GlobalConstantID.SIGN_UP_EMAIL, mEmailText.getText().toString());
+                        //intent.putExtra(GlobalConstantID.SIGN_UP_EMAIL, mEmailText.getText().toString());
                         intent.putExtra(GlobalConstantID.SIGN_UP_PASSWORD, mPasswordText.getText().toString());
 
                         ApplicationPool pool = (ApplicationPool)getApplicationContext();

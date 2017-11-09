@@ -150,7 +150,7 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
-                        android:background="@color/colorTransparent">
+                        android:background="@color/colorTransparent" >
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -158,6 +158,7 @@
                             android:paddingLeft="10dp"
                             android:gravity="center_vertical"
                             android:textSize="16dp"
+
                             android:text="@string/logout"/>
 
                         <ImageButton
@@ -177,6 +178,7 @@
                         android:background="@color/colorBG"/>
 
                     <FrameLayout
+                        android:id="@+id/change_password_layout"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:background="@color/colorTransparent">

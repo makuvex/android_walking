@@ -75,6 +75,9 @@
 
         <activity android:name="com.friendly.walking.activity.ChangePasswordActivity" />
 
+        <activity android:name="com.friendly.walking.activity.KakaoSignupActivity" />
+
+
 
         //////////////////// service ////////////////////
         <service android:name="com.friendly.walking.service.MainService" />

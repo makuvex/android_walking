@@ -71,7 +71,7 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
 
-        JWLog.e("","");
+        //JWLog.e("","");
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutMap.get(viewType), viewGroup,false);
         if(viewType == INDEX_DATA_LOGIN) {
             return new LoginSettingViewHolder(mContext, view).setLayout(mContext);
@@ -97,7 +97,7 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
      */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        JWLog.e("","");
+        //JWLog.e("","");
 
         if(viewHolder instanceof BaseSettingViewHolderInterface) {
             BaseSettingViewHolderInterface holder = (BaseSettingViewHolderInterface)viewHolder;
@@ -110,7 +110,7 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     @Override
     public int getItemCount() {
-        JWLog.e("","");
+        //JWLog.e("","");
         return dataList.size();
     }
 

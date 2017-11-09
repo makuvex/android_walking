@@ -8,8 +8,11 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -107,7 +110,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         }
         mSelf.mContext = activity;
 
-        if(!mSelf.checkInternetConnection(activity)) {
+        if(!mSelf.checkInternetConnection()) {
             Toast.makeText(activity, R.string.internet_connection_faild, Toast.LENGTH_SHORT).show();
         }
 
@@ -120,7 +123,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         }
         mSelf.mContext = context;
 
-        if(!mSelf.checkInternetConnection(context)) {
+        if(!mSelf.checkInternetConnection()) {
             Toast.makeText(context, R.string.internet_connection_faild, Toast.LENGTH_SHORT).show();
         }
         return mSelf;
@@ -155,10 +158,13 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                     // User is signed out
                     JWLog.e("", "@@@ onAuthStateChanged:signed_out");
 
-                    PreferencePhoneShared.setLoginYn(mContext, false);
-                    PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_NONE);
-                    PreferencePhoneShared.setAutoLoginYn(mContext, false);
-                    PreferencePhoneShared.setLoginID(mContext, "");
+                    if(PreferencePhoneShared.getAutoLoginType(mContext) != GlobalConstantID.LOGIN_TYPE_KAKAO) {
+
+                        PreferencePhoneShared.setLoginYn(mContext, false);
+                        PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_NONE);
+                        PreferencePhoneShared.setAutoLoginYn(mContext, false);
+                        PreferencePhoneShared.setLoginID(mContext, "");
+                    }
                 }
 
             }
@@ -231,6 +237,27 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         databaseReference.child("users").child(data.uid).setValue(data);
     }
 
+    public void deleteFireBaseUser(final FireBaseNetworkCallback callback) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        user.delete()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            JWLog.e("User account deleted.");
+                            if(callback != null) {
+                                callback.onCompleted(true, null);
+                            }
+                        } else {
+                            if(callback != null) {
+                                callback.onCompleted(false, null);
+                            }
+                        }
+                    }
+                });
+    }
+
     public void deleteUserData(final FireBaseNetworkCallback callback) {
         JWLog.e("", "@@@ ");
 
@@ -255,6 +282,36 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         });
 
         databaseReference.child("users").child(uid).removeValue();
+    }
+
+    public void deleteUserImage(final FireBaseNetworkCallback callback) {
+        try {
+            String key = PreferencePhoneShared.getUserUid(mContext);
+            JWLog.e("", "uid :" + key);
+
+            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(mContext), key));
+            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            Uri uri = Uri.parse(path.getAbsolutePath() + "/" + decEmail + "_pet_profile.jpg");
+
+            storageRef.child("profile/" + uri.getLastPathSegment()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    if(callback != null) {
+                        callback.onCompleted(true, null);
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    if(callback != null) {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            });
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void readUserData(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -406,14 +463,14 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         }
     }
 
-    public void logoutAccount(Context context) {
+    public void logoutAccount() {
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
 
-        PreferencePhoneShared.setAutoLoginYn(context, false);
-        PreferencePhoneShared.setLoginYn(context, false);
-        PreferencePhoneShared.setUserUID(context, "");
-        PreferencePhoneShared.setLoginPassword(context, "");
+        PreferencePhoneShared.setAutoLoginYn(mContext, false);
+        PreferencePhoneShared.setLoginYn(mContext, false);
+        PreferencePhoneShared.setUserUID(mContext, "");
+        PreferencePhoneShared.setLoginPassword(mContext, "");
     }
 
     public void queryUserIndex(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -577,8 +634,8 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         JWLog.e("",connectionResult.getErrorMessage());
     }
 
-    public boolean checkInternetConnection(Context context) {
-        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    public boolean checkInternetConnection() {
+        ConnectivityManager cm = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();

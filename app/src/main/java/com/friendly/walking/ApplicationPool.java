@@ -1,5 +1,6 @@
 package com.friendly.walking;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +30,9 @@ public class ApplicationPool extends Application {
 	private final static int		TYPE_NONE			= -1;
 	public final static int			TYPE_PUBLIC			= 0;
 
+	private static ApplicationPool	mSelf;
+	private static Activity			mCurrentActivity;
+
 	private static class KakaoSDKAdapter extends KakaoAdapter {
 		/**
 		 * Session Config에 대해서는 default값들이 존재한다.
@@ -57,6 +61,11 @@ public class ApplicationPool extends Application {
 				public boolean isSaveFormData() {
 					return true;
 				}
+
+				@Override
+				public boolean isSecureMode() {
+					return false;
+				}
 			};
 		}
 
@@ -71,9 +80,18 @@ public class ApplicationPool extends Application {
 		}
 	}
 
+	public static ApplicationPool getGlobalApplicationContext() {
+		return mSelf;
+	}
+
+	public static void setCurrentActivity(Activity activity) {
+		mCurrentActivity = activity;
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mSelf = this;
 		createPoolList();
 
 		KakaoSDK.init(new KakaoSDKAdapter());
@@ -82,6 +100,7 @@ public class ApplicationPool extends Application {
 	@Override
 	public void onTerminate() {
 		super.onTerminate();
+		mSelf = null;
 	}
 	
 	/**

@@ -1,21 +1,28 @@
 package com.friendly.walking.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInstaller;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
+
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.content.pm.PackageInstaller;
 
 import com.facebook.FacebookSdk;
 import com.facebook.internal.CallbackManagerImpl;
-import com.facebook.login.widget.LoginButton;
+
+import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
@@ -27,7 +34,20 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
+import com.kakao.auth.ErrorCode;
+import com.kakao.auth.ISessionCallback;
+import com.kakao.network.ErrorResult;
+import com.kakao.usermgmt.UserManagement;
+import com.kakao.usermgmt.callback.MeResponseCallback;
+import com.kakao.usermgmt.callback.UnLinkResponseCallback;
+import com.kakao.usermgmt.response.model.UserProfile;
 
+import com.kakao.auth.Session;
+import com.kakao.util.exception.KakaoException;
+
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOOGLE_SIGN_IN;
 
@@ -37,18 +57,21 @@ import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOO
 
 public class LoginActivity extends BaseActivity implements View.OnClickListener {
 
-    private EditText                            mEmailText;
-    private EditText                            mPasswordText;
-    private CheckBox                            mAutoLoginCheckBox;
+    private EditText                                    mEmailText;
+    private EditText                                    mPasswordText;
+    private CheckBox                                    mAutoLoginCheckBox;
 
-    private SignInButton                        mSignInGoogleButton;
-    private LoginButton                         mSignInFacebookButton;
+    private SignInButton                                mSignInGoogleButton;
+    private com.facebook.login.widget.LoginButton       mSignInFacebookButton;
+    private com.kakao.usermgmt.LoginButton              mSignInKakaoButton;
+
 
     @Override
     public void onCreate(Bundle bundle) {
         JWLog.e("", "@@@ ");
         super.onCreate(bundle);
 
+        ApplicationPool.setCurrentActivity(this);
 
         setContentView(R.layout.activity_login);
         mEmailText = (EditText)findViewById(R.id.email_id);
@@ -56,7 +79,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         mAutoLoginCheckBox = (CheckBox)findViewById(R.id.autologin_check);
 
         mSignInGoogleButton = (SignInButton)findViewById(R.id.google_login);
-        mSignInFacebookButton = (LoginButton)findViewById(R.id.facebook_login);
+        mSignInFacebookButton = (com.facebook.login.widget.LoginButton)findViewById(R.id.facebook_login);
+        mSignInKakaoButton = (com.kakao.usermgmt.LoginButton)findViewById(R.id.kakao_login);
 
         findViewById(R.id.find_id).setOnClickListener(this);
         findViewById(R.id.find_password).setOnClickListener(this);
@@ -65,6 +89,30 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         mAutoLoginCheckBox.setChecked(true);
 
         mSignInFacebookButton.setOnClickListener(this);
+        //mSignInKakaoButton.setOnClickListener(this);
+
+        KakaoLoginManager.getInstance(this);
+
+//        KakaoLoginManager.getInstance(this).requestMe(new KakaoLoginManager.KakaoLoginManagerCallback() {
+//            @Override
+//            public void onCompleted(boolean result, Object object) {
+//
+//            }
+//        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        KakaoLoginManager.getInstance(this).terminate();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        JWLog.e(""+intent.getAction());
+
 
     }
 
@@ -163,14 +211,15 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             } else {
                 Toast.makeText(LoginActivity.this, "로그인 안됨" , Toast.LENGTH_SHORT).show();
             }
+        } else if(view == mSignInKakaoButton) {
+            //kakaoRequestMe();
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        JWLog.e("", "requestCode :"+requestCode+", resultCode :"+resultCode);
+        JWLog.e("", "onActivityResult requestCode :"+requestCode+", resultCode :"+resultCode);
         if(resultCode != RESULT_OK) {
             return;
         }
@@ -234,10 +283,16 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     e.printStackTrace();
                 }
             }
+        } else if (KakaoLoginManager.getInstance(this).handleKakaoActivityResult(requestCode, resultCode, data)) {
+            JWLog.e("","");
+            return;
         }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     public void updateUI(String email) {
+        JWLog.e("","");
         Intent intent = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
         intent.putExtra("email", email);
         intent.putExtra("autoLogin", mAutoLoginCheckBox.isChecked());
@@ -245,5 +300,6 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         JWBroadCast.sendBroadcast(getApplicationContext(), intent);
         finish();
     }
+
 
 }
