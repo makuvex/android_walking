@@ -145,7 +145,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     public void test() {
 
     }
-
+    
     public void onClickCallback(View v) {
         JWLog.e("","v : "+v.getId());
 
