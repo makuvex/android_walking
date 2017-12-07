@@ -146,33 +146,60 @@ public class ProfileActivity extends BaseActivity {
             @Override
             public void onCompleted(boolean result, Object object) {
                 if(result) {
-                    if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
-                        KakaoLoginManager.getInstance(ProfileActivity.this).unlinkApp(null);
-                    } else {
-                        FireBaseNetworkManager.getInstance(getApplicationContext()).deleteFireBaseUser(null);
-                    }
 
-                    FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserImage(new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                        @Override
-                        public void onCompleted(boolean result, Object object) {
-                            JWLog.e("result :"+result);
-                        }
-                    });
                     FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserData(new FireBaseNetworkManager.FireBaseNetworkCallback() {
                         @Override
                         public void onCompleted(boolean result, Object object) {
-                            Toast.makeText(getApplicationContext(), "정상적으로 탈퇴 되었습니다", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(getApplicationContext(), "정상적으로 탈퇴 되었습니다", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "유저 데이터 삭제 성공", Toast.LENGTH_SHORT).show();
 
-                            PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
-                            PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
-                            PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
-                            PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
-                            PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
+                            if(result) {
+                                if (PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                                    KakaoLoginManager.getInstance(ProfileActivity.this).unlinkApp(new KakaoLoginManager.KakaoLoginManagerCallback() {
+                                        @Override
+                                        public void onCompleted(boolean result, Object object) {
+                                            if (result) {
+                                                Toast.makeText(getApplicationContext(), "카카오 계정 삭제 성공", Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(getApplicationContext(), "계정 삭제 실패", Toast.LENGTH_SHORT).show();
+                                            }
+                                            updateUI("");
+                                            finish();
+                                        }
+                                    });
+                                } else {
+                                    FireBaseNetworkManager.getInstance(getApplicationContext()).deleteFireBaseUser(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                        @Override
+                                        public void onCompleted(boolean result, Object object) {
+                                            if (result) {
+                                                Toast.makeText(getApplicationContext(), "계정 삭제 성공", Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(getApplicationContext(), "계정 삭제 실패", Toast.LENGTH_SHORT).show();
+                                            }
+                                            updateUI("");
+                                            finish();
+                                        }
+                                    });
+                                }
+                            } else {
+                                Toast.makeText(getApplicationContext(), "유저 데이터 삭제 실패", Toast.LENGTH_SHORT).show();
+                            }
+                            FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserImage(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                @Override
+                                public void onCompleted(boolean result, Object object) {
+                                    JWLog.e("result :"+result);
 
-                            updateUI("");
-                            finish();
+                                    if(result) {
+                                        Toast.makeText(getApplicationContext(), "펫 이미지 삭제 성공", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "펫 이미지 삭제 실패", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                         }
                     });
+
+
                 }
             }
         });
@@ -196,11 +223,11 @@ public class ProfileActivity extends BaseActivity {
                         Toast.makeText(ProfileActivity.this, "정상적으로 로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
                     }
 
-                    PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
-                    PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
-                    PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
-                    PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
-                    PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
+//                    PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
+//                    PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
+//                    PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
+//                    PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
+//                    PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
 
                     updateUI("");
                     finish();

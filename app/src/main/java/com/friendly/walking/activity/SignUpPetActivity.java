@@ -3,18 +3,17 @@ package com.friendly.walking.activity;
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
+
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -44,12 +43,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import stfalcon.universalpickerdialog.UniversalPickerDialog;
 
@@ -142,10 +139,6 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         JWLog.e("","mUserData : "+mUserData+", mEmail :"+mEmail);
     }
 
-    public void test() {
-
-    }
-    
     public void onClickCallback(View v) {
         JWLog.e("","v : "+v.getId());
 
@@ -189,6 +182,9 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                             }
                         }
                     });
+                } else if(mSignUpType == GlobalConstantID.LOGIN_TYPE_FACEBOOK || mSignUpType == GlobalConstantID.LOGIN_TYPE_GOOGLE ) {
+
+                    queryUserIndex(mUserData.uid);
                 } else {
                     FireBaseNetworkManager.getInstance(this).createAccount(mEmail, mPassword, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                         @Override
@@ -199,7 +195,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                                 Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
 
                                 mUserData.uid = task.getResult().getUser().getUid();
-                                queryUserIndex(task);
+                                queryUserIndex(mUserData.uid);
                             } else {
                                 setProgressBar(View.INVISIBLE);
                                 Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
@@ -211,7 +207,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         }
     }
 
-    public void queryUserIndex(final Task<AuthResult> task) {
+    public void queryUserIndex(final String uid) {
 
         FireBaseNetworkManager.getInstance(getApplicationContext()).queryUserIndex(new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
@@ -219,12 +215,12 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 long userIndex = FireBaseNetworkManager.getInstance(getApplicationContext()).getUserIndex();
                 mUserData.member_index = ++userIndex;
 
-                createUserData(task);
+                createUserData(uid);
             }
         });
     }
 
-    private void createUserData(final Task<AuthResult> task) {
+    private void createUserData(final String uid) {
 
         FireBaseNetworkManager.getInstance(getApplicationContext()).createUserData(mUserData, new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
@@ -235,19 +231,13 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                     Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
 
                     try {
-                        if(task != null) {
-                            String key = task.getResult().getUser().getUid().substring(0, 16);
-                            String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(mEmail, 0), key);
-                            String encryptedPassword = "";
-                            encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPassword, 0), key);
-
-                            JWLog.e("", "encEmail : [" + encryptedEmail + "]" + ", encPassword : [" + encryptedPassword + "]");
-
-                            PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_EMAIL);
-                            PreferencePhoneShared.setUserUID(getApplicationContext(), key);
-                            PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
-                            PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
-                            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mUserData.mem_auto_login);
+                        if(uid != null) {
+                            if(mSignUpType == GlobalConstantID.LOGIN_TYPE_EMAIL) {
+                                String key = uid.substring(0, 16);
+                                String encryptedPassword = "";
+                                encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPassword, 0), key);
+                                PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -261,6 +251,14 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
                                     if (result) {
                                         Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+
+                                        if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
+                                            UpdateMainProfileUI(mEmail, JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN);
+                                        } else if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
+                                            UpdateMainProfileUI(mEmail, JWBroadCast.BROAD_CAST_GOOGLE_LOGIN);
+                                        } else if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                                            UpdateMainProfileUI(mEmail, JWBroadCast.BROAD_CAST_KAKAO_LOGIN);
+                                        }
                                     } else {
                                         Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
                                     }
@@ -274,7 +272,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                     Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
                 }
 
-                if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) != GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_EMAIL) {
                     Intent i = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
                     i.putExtra("email", mEmail);
                     i.putExtra("password", mPassword);
@@ -282,6 +280,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
                     JWBroadCast.sendBroadcast(getApplicationContext(), i);
                 }
+
                 Intent intent = new Intent(SignUpPetActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
@@ -300,6 +299,14 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 CommonUtil.hideKeyboard(this, v);
             }
         }
+    }
+
+    public void UpdateMainProfileUI(String email, String broadCast) {
+        JWLog.e("","email :"+email+", broadCast :"+broadCast);
+        Intent intent = new Intent(broadCast);
+        intent.putExtra("email", email);
+
+        JWBroadCast.sendBroadcast(this, intent);
     }
 
     private void showDatePicker() {
@@ -436,12 +443,26 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
         switch(requestCode) {
             case Crop.REQUEST_CROP :
-                mAddProfile.setBackground(new BitmapDrawable(Crop.getOutput(data).getPath()));
+
                 File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 JWLog.e("","email :"+mEmail+", path :"+path.getAbsolutePath());
                 mImageCaptureUri = Uri.parse(path.getAbsolutePath() + "/" + mEmail +"_pet_profile.jpg");
-                saveBitmaptoJpeg(new BitmapDrawable(Crop.getOutput(data).getPath()).getBitmap(), Environment.DIRECTORY_DOWNLOADS,  mEmail +"_pet_profile");
-                mImageCaptureUri = Uri.fromFile(new File(mImageCaptureUri.getPath()));
+
+                try {
+                    Bitmap image = new BitmapDrawable(Crop.getOutput(data).getPath()).getBitmap();
+                    ExifInterface exif = new ExifInterface(mImageCaptureUri.getPath());
+                    int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+                    int exifDegree = exifOrientationToDegrees(ExifInterface.ORIENTATION_ROTATE_90);
+                    image = rotateCropImage(image, exifDegree);
+
+                    saveBitmaptoJpeg(image, Environment.DIRECTORY_DOWNLOADS, mEmail + "_pet_profile");
+                    mImageCaptureUri = Uri.fromFile(new File(mImageCaptureUri.getPath()));
+
+                    mAddProfile.setBackground(new BitmapDrawable(mImageCaptureUri.getPath()));
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             case REQ_CODE_SELECT_IMAGE:
                 mImageCaptureUri = data.getData();
@@ -449,6 +470,37 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 beginCrop(mImageCaptureUri);
                 break;
         }
+    }
+
+    public int exifOrientationToDegrees(int exifOrientation) {
+        if(exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            return 90;
+        } else if(exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            return 180;
+        } else if(exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            return 270;
+        }
+        return 0;
+    }
+
+    public Bitmap rotateCropImage(Bitmap bitmap, int degrees) {
+        if(degrees != 0 && bitmap != null) {
+            Matrix m = new Matrix();
+            m.setRotate(degrees, (float) bitmap.getWidth() / 2,
+                    (float) bitmap.getHeight() / 2);
+
+            try {
+                Bitmap converted = Bitmap.createBitmap(bitmap, 0, 0,
+                        bitmap.getWidth(), bitmap.getHeight(), m, true);
+                if(bitmap != converted) {
+                    bitmap.recycle();
+                    bitmap = converted;
+                }
+            } catch(OutOfMemoryError ex) {
+                // 메모리가 부족하여 회전을 시키지 못할 경우 그냥 원본을 반환합니다.
+            }
+        }
+        return bitmap;
     }
 
     private void doTakePhotoAction() {
@@ -496,9 +548,14 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
             if(!file_path.isDirectory()){
                 file_path.mkdirs();
             }
-            FileOutputStream out = new FileOutputStream(string_path+file_name);
+            File image = new File(string_path+file_name);
 
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            if(image.exists()) {
+                image.delete();
+            }
+            FileOutputStream out = new FileOutputStream(image.getAbsolutePath());
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
             out.close();
 
         }catch(FileNotFoundException exception){

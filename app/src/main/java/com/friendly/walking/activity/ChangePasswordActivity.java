@@ -109,7 +109,9 @@ public class ChangePasswordActivity extends BaseActivity {
                 if(result) {
                     try {
                         String key = PreferencePhoneShared.getUserUid(ChangePasswordActivity.this);
-                        String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(newPassword, 0), key);
+                        String paddedKey = key.substring(0, 16);
+
+                        String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(newPassword, 0), paddedKey);
 
                         PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
                         Toast.makeText(ChangePasswordActivity.this, R.string.succeed_change_password, Toast.LENGTH_SHORT).show();

@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 
@@ -29,12 +31,15 @@ import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.activity.KakaoSignupActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LoginSettingListData;
+import com.friendly.walking.dataSet.PetData;
+import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.fragment.ReportFragment;
 import com.friendly.walking.fragment.StrollFragment;
@@ -54,6 +59,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.kakao.usermgmt.response.model.User;
 import com.kakao.usermgmt.response.model.UserProfile;
 
+import java.io.File;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOOGLE_SIGN_IN;
@@ -70,7 +77,8 @@ public class MainActivity extends BaseActivity {
     private View                                    mReportSelected = null;
     private View                                    mSettingSelected = null;
     private View                                    mPreviousSelectedView = null;
-
+    private CircleImageView                         mProfileImageView = null;
+    private TextView                                mProfileText = null;
 
     private LinearLayout                            mProfileView = null;
 
@@ -99,12 +107,16 @@ public class MainActivity extends BaseActivity {
         mMapSelected = findViewById(R.id.map_page);
         mReportSelected = findViewById(R.id.report_page);
         mSettingSelected = findViewById(R.id.setting_page);
+        mProfileImageView = (CircleImageView)findViewById(R.id.profileImageView);
+        mProfileText = (TextView)findViewById(R.id.profileText);
+        mProfileText.setText("누구의 산책에 온거 축하");
 
         mPreviousSelectedView = mStrollSelected;
 
         mStrollSelected.setBackgroundResource(R.color.colorTapSelected);
         mProfileView = (LinearLayout)findViewById(R.id.profileBackgroundImageView);
         //mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
+        mProfileView.setBackgroundResource(R.drawable.profile_bg);
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -165,14 +177,14 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        CircleImageView imageview = (CircleImageView)findViewById(R.id.profileImageView);
-
-        BitmapDrawable drawable = (BitmapDrawable) imageview.getDrawable();
-        Bitmap bitmap = drawable.getBitmap();
-
-        Bitmap blurred = CommonUtil.blurRenderScript(this, bitmap, 25);//second parametre is radius
-        //imageview.setImageBitmap(blurred);
-        mProfileView.setBackground(new BitmapDrawable(blurred));
+//        CircleImageView imageview = (CircleImageView)findViewById(R.id.profileImageView);
+//
+//        BitmapDrawable drawable = (BitmapDrawable) imageview.getDrawable();
+//        Bitmap bitmap = drawable.getBitmap();
+//
+//        Bitmap blurred = CommonUtil.blurRenderScript(this, bitmap, 25);//second parametre is radius
+//        //imageview.setImageBitmap(blurred);
+//        mProfileView.setBackground(new BitmapDrawable(blurred));
 
 
         initReceiver();
@@ -289,6 +301,7 @@ public class MainActivity extends BaseActivity {
 
             if(autoLoginType == GlobalConstantID.LOGIN_TYPE_EMAIL) {
                 String key = PreferencePhoneShared.getUserUid(this);
+                String paddedKey = key.substring(0, 16);
 
                 if (TextUtils.isEmpty(key) || !autoLogin) {
                     return;
@@ -296,9 +309,9 @@ public class MainActivity extends BaseActivity {
 
                 setProgressBar(View.VISIBLE);
 
-                JWLog.e("", "uid :" + key);
-                String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(this), key));
-                String decPassword = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginPassword(this), key));
+                JWLog.e("", "uid :" + paddedKey);
+                String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(this), paddedKey));
+                String decPassword = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginPassword(this), paddedKey));
 
                 Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
                 intent.putExtra("email", decEmail);
@@ -309,12 +322,7 @@ public class MainActivity extends BaseActivity {
             } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
                 FireBaseNetworkManager.getInstance(this).googleSignIn(this);
             } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
-//                FireBaseNetworkManager.getInstance(this).facebookSignIn(this, null, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-//                    @Override
-//                    public void onCompleted(boolean result, Object object) {
-//
-//                    }
-//                });
+
             } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_KAKAO) {
                 if(KakaoLoginManager.getInstance(this).hasKakaoLoginSession()) {
                     KakaoLoginManager.getInstance(this).requestMe(new KakaoLoginManager.KakaoLoginManagerCallback() {
@@ -344,6 +352,9 @@ public class MainActivity extends BaseActivity {
     private void initReceiver() {
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GOOGLE_LOGIN);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_KAKAO_LOGIN);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -352,6 +363,29 @@ public class MainActivity extends BaseActivity {
 
                 if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())) {
                     setProgressBar(View.INVISIBLE);
+                } else if(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_GOOGLE_LOGIN.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_KAKAO_LOGIN.equals(intent.getAction())) {
+
+                    String email = intent.getStringExtra("email");
+                    setProgressBar(View.VISIBLE);
+
+                    readPetProfileImage(email);
+
+                    FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            JWLog.e("", "result :"+result);
+                            setProgressBar(View.INVISIBLE);
+
+                            UserData userData = (UserData) object;
+                            if(userData != null) {
+                                PetData petData = userData.pet_list.get(0);
+
+                                mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
+                            }
+                        }
+                    });
                 }
             }
         };
@@ -395,6 +429,20 @@ public class MainActivity extends BaseActivity {
 
                                 PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
                                 updateUI(user.getEmail());
+                                readPetProfileImage(user.getEmail());
+
+                                FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(user.getEmail(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                    @Override
+                                    public void onCompleted(boolean result, Object object) {
+                                        JWLog.e("", "result :"+result);
+                                        UserData userData = (UserData) object;
+                                        if(userData != null) {
+                                            PetData petData = userData.pet_list.get(0);
+                                            mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
+                                        }
+                                    }
+                                });
+
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -405,6 +453,25 @@ public class MainActivity extends BaseActivity {
                 JWLog.e("", "Google Login Failed." + result.getStatus());
             }
         }
+    }
+
+    private void readPetProfileImage(String email) {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        Uri uri = Uri.parse(path.getAbsolutePath() + "/" + email +"_pet_profile.jpg");
+        JWLog.e("","uri :"+uri.toString());
+
+        FireBaseNetworkManager.getInstance(this).downloadProfileImage(uri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+            @Override
+            public void onCompleted(boolean result, Object object) {
+                if(result) {
+                    Bitmap bitmap = (Bitmap)object;
+                    Bitmap blurred = CommonUtil.blurRenderScript(getApplicationContext(), bitmap, 25);//second parametre is radius
+
+                    mProfileImageView.setImageBitmap(bitmap);
+                    mProfileView.setBackground(new BitmapDrawable(blurred));
+                }
+            }
+        });
     }
 
 }

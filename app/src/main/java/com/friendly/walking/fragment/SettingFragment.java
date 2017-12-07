@@ -119,14 +119,13 @@ public class SettingFragment extends Fragment {
     private void initData() {
 
         List<BaseSettingDataSetInterface> list = new ArrayList<BaseSettingDataSetInterface>();
-
-        String key = PreferencePhoneShared.getUserUid(getActivity());
-
-        JWLog.e("","uid :" + key);
         String loginText = "";
 
         try {
-            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(getActivity()), key));
+            String key = PreferencePhoneShared.getUserUid(getActivity());
+            String paddedKey = key.substring(0, 16);
+            JWLog.e("","uid :" + key);
+            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(getActivity()), paddedKey));
             loginText = decEmail;
         } catch(Exception e) {
             e.printStackTrace();

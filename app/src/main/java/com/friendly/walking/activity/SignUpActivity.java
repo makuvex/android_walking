@@ -221,6 +221,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
             data.mem_alarm_time.put("end", ""+mEndStrollHour+":"+mEndStrollMin);
         }
 
+        data.joinBy = "email";
         JWLog.e("","@@@ userData : "+data);
 
         return data;

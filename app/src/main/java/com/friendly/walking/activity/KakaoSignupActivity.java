@@ -45,6 +45,7 @@ public class KakaoSignupActivity extends BaseActivity {
         KakaoLoginManager.getInstance(this).requestMe(new KakaoLoginManager.KakaoLoginManagerCallback() {
             @Override
             public void onCompleted(boolean result, final Object userProfile) {
+                JWLog.e("result : "+result);
                 if(result) {
                     JWLog.e(""+userProfile);
                     try {
@@ -62,7 +63,6 @@ public class KakaoSignupActivity extends BaseActivity {
                         JWLog.e("@@@ key :"+key+", paddedKey:"+paddedKey);
                         String encryptedId = Crypto.encryptAES(CommonUtil.urlEncoding(id, 0), paddedKey);
 
-
                         PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
                         PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_KAKAO);
                         PreferencePhoneShared.setUserUID(getApplicationContext(), paddedKey);
@@ -74,20 +74,20 @@ public class KakaoSignupActivity extends BaseActivity {
                         JWBroadCast.sendBroadcast(KakaoSignupActivity.this, i);
 
                         final String resultId = id;
-
                         FireBaseNetworkManager.getInstance(KakaoSignupActivity.this).findUserEmail(id, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                             @Override
                             public void onCompleted(boolean result, Object object) {
                                 if(!result) {
                                     startSignUpPet((UserProfile)userProfile);
                                 } else {
-//                                    Toast.makeText(KakaoSignupActivity.this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(KakaoSignupActivity.this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show();
                                     updateUI(resultId);
                                 }
                             }
                         });
                     } catch (Exception e) {
                         e.printStackTrace();
+                        Toast.makeText(KakaoSignupActivity.this, "카톡 로그인 오류 되었습니다.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     JWLog.e("@@@ requestMe failed");
@@ -127,6 +127,7 @@ public class KakaoSignupActivity extends BaseActivity {
         data.mem_auto_stroll_mode = false;
 
         JWLog.e("","@@@ userData : "+data);
+        data.joinBy = "kakao";
 
         return data;
     }

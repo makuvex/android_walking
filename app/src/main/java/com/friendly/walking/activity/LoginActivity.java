@@ -21,6 +21,7 @@ import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
@@ -46,7 +47,10 @@ import com.kakao.auth.Session;
 import com.kakao.util.exception.KakaoException;
 
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOOGLE_SIGN_IN;
@@ -56,6 +60,7 @@ import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOO
  */
 
 public class LoginActivity extends BaseActivity implements View.OnClickListener {
+    public static final String                          KEY_USER_DATA = "key_user_data";
 
     private EditText                                    mEmailText;
     private EditText                                    mPasswordText;
@@ -65,6 +70,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     private com.facebook.login.widget.LoginButton       mSignInFacebookButton;
     private com.kakao.usermgmt.LoginButton              mSignInKakaoButton;
 
+    private FirebaseUser                                mFirebaseUser;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -85,6 +91,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         findViewById(R.id.find_id).setOnClickListener(this);
         findViewById(R.id.find_password).setOnClickListener(this);
         findViewById(R.id.sign_up).setOnClickListener(this);
+        findViewById(R.id.login_button).setOnClickListener(this);
+
         mSignInGoogleButton.setOnClickListener(this);
         mAutoLoginCheckBox.setChecked(true);
 
@@ -112,62 +120,18 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         super.onNewIntent(intent);
 
         JWLog.e(""+intent.getAction());
-
-
-    }
-
-    public void onClickCallback(View v) {
-        JWLog.e("","v : "+v.getId());
-
-        if(v.getId() == R.id.close_button) {
-
-            finish();
-        } else if(v.getId() == R.id.login_button) {
-            setProgressBar(View.VISIBLE);
-
-            final String email = mEmailText.getText().toString().trim();
-            FireBaseNetworkManager.getInstance(this).loginEmailWithPassword(email, mPasswordText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                @Override
-                public void onCompleted(boolean result, Object object) {
-                    setProgressBar(View.INVISIBLE);
-
-                    Task<AuthResult> task = (Task<AuthResult>)object;
-
-                    if(result) {
-                        JWLog.e("","email :"+email+", password : "+mPasswordText.getText().toString()+", autoLogin :"+mAutoLoginCheckBox.isChecked());
-                        JWLog.e("","task uid :"+task.getResult().getUser().getUid());
-                        PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
-                        try {
-                            String key = task.getResult().getUser().getUid().substring(0, 16);
-                            String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(email, 0), key);
-                            String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPasswordText.getText().toString(), 0), key);
-
-                            JWLog.e("","encEmail : ["+encryptedEmail+"]"+", encPassword : ["+encryptedPassword +"]");
-
-                            PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_EMAIL);
-                            PreferencePhoneShared.setUserUID(getApplicationContext(), key);
-                            PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
-                            PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
-                            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
-
-                            updateUI(email);
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-        } else if(v.getId() == R.id.autologin_check) {
-
-        }
     }
 
     @Override
     public void onClick(View view) {
         JWLog.e("","");
-        if(view.getId() == R.id.sign_up) {
+        if (view.getId() == R.id.close_button) {
+            finish();
+        } else if(view.getId() == R.id.sign_up) {
             startActivity(new Intent(this, SignUpActivity.class));
         } else if(view == mSignInGoogleButton) {
+            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
+            PreferencePhoneShared.setAutoLoginType(getApplication(), GlobalConstantID.LOGIN_TYPE_GOOGLE);
             FireBaseNetworkManager.getInstance(this).googleSignIn(this);
         } else if(view == mSignInFacebookButton) {
             setProgressBar(View.VISIBLE);
@@ -182,23 +146,48 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                         if (result) {
                             if (object instanceof Task<?>) {
                                 try {
-                                    Task<AuthResult> task = (Task<AuthResult>) object;
+                                    final Task<AuthResult> task = (Task<AuthResult>) object;
 
                                     JWLog.e("", "email :" + task.getResult().getUser().getEmail() + ", uid :" + task.getResult().getUser().getUid());
                                     JWLog.e("", "" + task.getResult().getUser().getDisplayName() + ", " + task.getResult().getUser().getPhoneNumber() + ", " + task.getResult().getUser().getDisplayName());
 
-                                    String key = task.getResult().getUser().getUid().substring(0, 16);
+                                    PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
+                                    PreferencePhoneShared.setAutoLoginType(getApplication(), GlobalConstantID.LOGIN_TYPE_FACEBOOK);
+
+//                                    String key = task.getResult().getUser().getUid().substring(0, 16);
                                     String id = task.getResult().getUser().getEmail();
-                                    if (TextUtils.isEmpty(id)) {
+                                    if(TextUtils.isEmpty(id)) {
                                         id = task.getResult().getUser().getDisplayName();
                                     }
-                                    String encryptedId = Crypto.encryptAES(CommonUtil.urlEncoding(id, 0), key);
+                                    final String displayName = id;
 
-                                    PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
-                                    PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_FACEBOOK);
-                                    PreferencePhoneShared.setUserUID(getApplicationContext(), key);
-                                    PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedId);
-                                    PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
+                                    JWLog.e("displayName :"+displayName+", email :"+task.getResult().getUser().getEmail());
+
+                                    FireBaseNetworkManager.getInstance(LoginActivity.this).findUserEmail(displayName, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                        @Override
+                                        public void onCompleted(boolean result, Object object) {
+                                            setProgressBar(View.INVISIBLE);
+
+                                            if(result) {
+                                                Toast.makeText(getApplicationContext(), "아이디가 디비에 있음", Toast.LENGTH_SHORT).show();
+
+                                                Intent intent = new Intent(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN);
+                                                intent.putExtra("email", displayName);
+                                                JWBroadCast.sendBroadcast(LoginActivity.this, intent);
+                                            } else {
+                                                Toast.makeText(getApplicationContext(), "아이디가 디비에 없음", Toast.LENGTH_SHORT).show();
+
+                                                Intent intent = new Intent(LoginActivity.this, SignUpPetActivity.class);
+                                                intent.putExtra(GlobalConstantID.SIGN_UP_TYPE, GlobalConstantID.LOGIN_TYPE_FACEBOOK);
+                                                //intent.putExtra(GlobalConstantID.SIGN_UP_PASSWORD, mPasswordText.getText().toString());
+
+                                                ApplicationPool pool = (ApplicationPool)getApplicationContext();
+                                                pool.putExtra(KEY_USER_DATA, intent, getUserData(displayName, task.getResult().getUser().getUid(), "facebook"));
+
+                                                startActivity(intent);
+                                            }
+                                        }
+                                    });
 
                                     updateUI(id);
                                 } catch (Exception e) {
@@ -213,6 +202,49 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             }
         } else if(view == mSignInKakaoButton) {
             //kakaoRequestMe();
+            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
+            PreferencePhoneShared.setAutoLoginType(getApplication(), GlobalConstantID.LOGIN_TYPE_KAKAO);
+        } else if(view.getId() == R.id.login_button) {
+            setProgressBar(View.VISIBLE);
+
+            final String email = mEmailText.getText().toString().trim();
+            if(TextUtils.isEmpty(email)) {
+                Toast.makeText(getApplicationContext(), "이메일을 입력해 주세요", Toast.LENGTH_SHORT).show();
+            } else if(TextUtils.isEmpty(mPasswordText.getText().toString())) {
+                Toast.makeText(getApplicationContext(), "비밀번호를 입력해 주세요", Toast.LENGTH_SHORT).show();
+            } else {
+                FireBaseNetworkManager.getInstance(this).loginEmailWithPassword(email, mPasswordText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                    @Override
+                    public void onCompleted(boolean result, Object object) {
+                        setProgressBar(View.INVISIBLE);
+
+                        Task<AuthResult> task = (Task<AuthResult>) object;
+
+                        if (result) {
+                            JWLog.e("", "email :" + email + ", password : " + mPasswordText.getText().toString() + ", autoLogin :" + mAutoLoginCheckBox.isChecked());
+                            JWLog.e("", "task uid :" + task.getResult().getUser().getUid());
+                            PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
+                            try {
+//                            String key = task.getResult().getUser().getUid().substring(0, 16);
+//                            String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(email, 0), key);
+//                            String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPasswordText.getText().toString(), 0), key);
+//
+//                            JWLog.e("","encEmail : ["+encryptedEmail+"]"+", encPassword : ["+encryptedPassword +"]");
+//
+//                            PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_EMAIL);
+//                            PreferencePhoneShared.setUserUID(getApplicationContext(), key);
+//                            PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
+//                            PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
+//                            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
+
+                                updateUI(email);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -239,16 +271,38 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                         setProgressBar(View.INVISIBLE);
                         if(object instanceof FirebaseUser) {
                             try {
-                                FirebaseUser user = (FirebaseUser) object;
+                                final FirebaseUser user = (FirebaseUser) object;
+                                mFirebaseUser = user;
+                                setProgressBar(View.VISIBLE);
 
-                                String key = user.getUid().substring(0, 16);
-                                String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(user.getEmail(), 0), key);
+                                FireBaseNetworkManager.getInstance(LoginActivity.this).findUserEmail(user.getEmail(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                    @Override
+                                    public void onCompleted(boolean result, Object object) {
+                                        setProgressBar(View.INVISIBLE);
 
-                                PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
-                                PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_GOOGLE);
-                                PreferencePhoneShared.setUserUID(getApplicationContext(), key);
-                                PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
-                                PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
+                                        if(result) {
+                                            Toast.makeText(getApplicationContext(), "아이디가 디비에 있음", Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(JWBroadCast.BROAD_CAST_GOOGLE_LOGIN);
+                                            intent.putExtra("email", user.getEmail());
+                                            JWBroadCast.sendBroadcast(LoginActivity.this, intent);
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), "아이디가 디비에 없음", Toast.LENGTH_SHORT).show();
+
+                                            Intent intent = new Intent(LoginActivity.this, SignUpPetActivity.class);
+                                            intent.putExtra(GlobalConstantID.SIGN_UP_TYPE, GlobalConstantID.LOGIN_TYPE_GOOGLE);
+                                            //intent.putExtra(GlobalConstantID.SIGN_UP_PASSWORD, mPasswordText.getText().toString());
+
+                                            ApplicationPool pool = (ApplicationPool)getApplicationContext();
+                                            String email = mFirebaseUser.getEmail();
+                                            if(TextUtils.isEmpty(email)) {
+                                                email = mFirebaseUser.getDisplayName();
+                                            }
+                                            pool.putExtra(KEY_USER_DATA, intent, getUserData(email, mFirebaseUser.getUid(), "google"));
+
+                                            startActivity(intent);
+                                        }
+                                    }
+                                });
 
                                 updateUI(user.getEmail());
                             } catch (Exception e) {
@@ -267,18 +321,9 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     FireBaseNetworkManager.getInstance(this).getFacebookCallback().onActivityResult(requestCode, resultCode, data);
 
                     FirebaseUser user = FireBaseNetworkManager.getInstance(this).getCurrentUser();
-                    if(user == null) {
-                        return ;
-                    }
-                    String key = user.getUid();
-                    String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(user.getDisplayName(), 0), key);
 
-                    PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
-                    PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_FACEBOOK);
-                    PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
-                    PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
+                    JWLog.e("user :"+user);
 
-                    updateUI(user.getDisplayName());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -301,5 +346,31 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         finish();
     }
 
+    private UserData getUserData(String email, String uid, String joinBy) {
+        UserData data = new UserData();
+
+        data.mem_email = email;
+        data.mem_auto_login = true;
+        data.mem_notification_yn = true;
+        data.mem_location_yn = false;
+
+        data.mem_address.put("address", "");
+        data.mem_address.put("lat", "");
+        data.mem_address.put("lot", "");
+
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy.MM.dd.HH:mm:ss", Locale.KOREA );
+        String dateTime = formatter.format(date);
+        data.mem_register_datetime = dateTime;
+
+        data.mem_last_login_datetime = "";
+        data.mem_auto_stroll_mode = false;
+        data.uid = uid;
+        data.joinBy = joinBy;
+
+        JWLog.e("","@@@ userData : "+data);
+
+        return data;
+    }
 
 }

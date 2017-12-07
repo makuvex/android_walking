@@ -1,7 +1,10 @@
 package com.friendly.walking.fragment;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,8 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.friendly.walking.R;
+import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.JWLog;
 import com.friendly.walking.views.CircleAnimIndicator;
 
+
+import java.io.File;
 
 import at.grabner.circleprogress.AnimationState;
 import at.grabner.circleprogress.AnimationStateChangedListener;
@@ -96,5 +104,8 @@ public class StrollFragment extends Fragment {
         circleProgressView.setValueAnimated(50, 1500);
 
     }
+
+
+
 
 }

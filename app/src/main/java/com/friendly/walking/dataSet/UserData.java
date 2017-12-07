@@ -27,6 +27,8 @@ public class UserData extends Object {
     public boolean mem_auto_stroll_mode = true;
     public Map<String, String> mem_alarm_time = new HashMap<>();
 
+    public String joinBy = "";
+
     public UserData() {
         Log.e("","@@@ LoginData constructor @@@");
     }

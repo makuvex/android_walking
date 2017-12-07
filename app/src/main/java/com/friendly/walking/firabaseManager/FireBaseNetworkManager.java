@@ -1,6 +1,5 @@
 package com.friendly.walking.firabaseManager;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,7 +11,6 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -24,6 +22,8 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
+import com.friendly.walking.activity.ChangePasswordActivity;
+import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
@@ -46,7 +46,7 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -60,6 +60,8 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.List;
@@ -139,15 +141,30 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 if (user != null) {
                     try {
                         JWLog.e("", "facebook onAuthStateChanged");
+                        List<String> list = user.getProviders();
+                        String provider = list.get(0).toString();
 
                         String key = user.getUid().substring(0, 16);
-                        String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding("Facebook : " + user.getDisplayName(), 0), key);
-
+                        String email = user.getEmail();
+                        if(TextUtils.isEmpty(email)) {
+                            email = user.getDisplayName();
+                        }
+                        String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(email, 0), key);
                         PreferencePhoneShared.setLoginYn(mContext, true);
-                        PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_FACEBOOK);
+                        if(provider.equals("google.com")) {
+                            PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_GOOGLE);
+                        } else if(provider.equals("facebook.com")) {
+                            PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_FACEBOOK);
+
+                            facebookUpdateUI(email);
+
+                        } else if(provider.equals("password")) {
+                            PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_EMAIL);
+                        }
+
                         PreferencePhoneShared.setAutoLoginYn(mContext, true);
                         PreferencePhoneShared.setLoginID(mContext, encryptedEmail);
-
+                        PreferencePhoneShared.setUserUID(mContext, user.getUid());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -159,14 +176,13 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                     JWLog.e("", "@@@ onAuthStateChanged:signed_out");
 
                     if(PreferencePhoneShared.getAutoLoginType(mContext) != GlobalConstantID.LOGIN_TYPE_KAKAO) {
-
                         PreferencePhoneShared.setLoginYn(mContext, false);
                         PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_NONE);
                         PreferencePhoneShared.setAutoLoginYn(mContext, false);
                         PreferencePhoneShared.setLoginID(mContext, "");
+                        PreferencePhoneShared.setUserUID(mContext, "");
                     }
                 }
-
             }
         };
         mAuth.addAuthStateListener(mAuthListener);
@@ -240,6 +256,11 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
     public void deleteFireBaseUser(final FireBaseNetworkCallback callback) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+        if(user == null) {
+            JWLog.e("계정 삭제중 오류 발생 user : "+user);
+            Toast.makeText(mContext, "계정 삭제중 오류 발생", Toast.LENGTH_LONG).show();
+            return;
+        }
         user.delete()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -287,9 +308,11 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
     public void deleteUserImage(final FireBaseNetworkCallback callback) {
         try {
             String key = PreferencePhoneShared.getUserUid(mContext);
-            JWLog.e("", "uid :" + key);
+            String paddedKey = key.substring(0, 16);
 
-            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(mContext), key));
+            JWLog.e("", "uid :" + paddedKey);
+
+            String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(mContext), paddedKey));
             File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             Uri uri = Uri.parse(path.getAbsolutePath() + "/" + decEmail + "_pet_profile.jpg");
 
@@ -646,6 +669,14 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
     public long getUserIndex() {
         return mUserIndex;
+    }
+
+    public void facebookUpdateUI(String email) {
+        JWLog.e("","");
+        Intent intent = new Intent(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN);
+        intent.putExtra("email", email);
+
+        JWBroadCast.sendBroadcast(mContext, intent);
     }
 
 }

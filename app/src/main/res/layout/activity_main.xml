@@ -26,12 +26,13 @@
                 android:layout_height="100dp"
                 android:layout_marginTop="20dp"
                 android:layout_gravity="center"
-                android:src="@drawable/profile"
+                android:src="@drawable/default_profile"
                 app:civ_border_width="1px"
                 app:civ_border_color="#FF000000" />
 
 
             <TextView
+                android:id="@+id/profileText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
