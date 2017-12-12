@@ -217,7 +217,6 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     @Override
                     public void onCompleted(boolean result, Object object) {
                         setProgressBar(View.INVISIBLE);
-
                         Task<AuthResult> task = (Task<AuthResult>) object;
 
                         if (result) {
@@ -225,17 +224,13 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                             JWLog.e("", "task uid :" + task.getResult().getUser().getUid());
                             PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
                             try {
-//                            String key = task.getResult().getUser().getUid().substring(0, 16);
-//                            String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(email, 0), key);
-//                            String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPasswordText.getText().toString(), 0), key);
-//
-//                            JWLog.e("","encEmail : ["+encryptedEmail+"]"+", encPassword : ["+encryptedPassword +"]");
-//
-//                            PreferencePhoneShared.setAutoLoginType(getApplicationContext(), GlobalConstantID.LOGIN_TYPE_EMAIL);
-//                            PreferencePhoneShared.setUserUID(getApplicationContext(), key);
-//                            PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedEmail);
-//                            PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
-//                            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), mAutoLoginCheckBox.isChecked());
+                                String key = task.getResult().getUser().getUid().substring(0, 16);
+                                String encryptedEmail = Crypto.encryptAES(CommonUtil.urlEncoding(email, 0), key);
+                                String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPasswordText.getText().toString(), 0), key);
+
+                                JWLog.e("","encEmail : ["+encryptedEmail+"]"+", encPassword : ["+encryptedPassword +"]");
+
+                                PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
 
                                 updateUI(email);
                             } catch (Exception e) {

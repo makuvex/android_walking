@@ -50,6 +50,8 @@ import java.util.List;
 
 import stfalcon.universalpickerdialog.UniversalPickerDialog;
 
+import static com.friendly.walking.GlobalConstantID.LOGIN_TYPE_EMAIL;
+
 
 /**
  * Created by jungjiwon on 2017. 10. 25..
@@ -133,7 +135,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
         ApplicationPool pool = (ApplicationPool)getApplicationContext();
         mUserData = (UserData)pool.getExtra(SignUpActivity.KEY_USER_DATA, getIntent());
-        mSignUpType = intent.getIntExtra(GlobalConstantID.SIGN_UP_TYPE, -1);
+        mSignUpType = intent.getIntExtra(GlobalConstantID.SIGN_UP_TYPE, LOGIN_TYPE_EMAIL);
         mEmail = mUserData.mem_email;
 
         JWLog.e("","mUserData : "+mUserData+", mEmail :"+mEmail);
@@ -232,7 +234,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
                     try {
                         if(uid != null) {
-                            if(mSignUpType == GlobalConstantID.LOGIN_TYPE_EMAIL) {
+                            if(mSignUpType == LOGIN_TYPE_EMAIL) {
                                 String key = uid.substring(0, 16);
                                 String encryptedPassword = "";
                                 encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(mPassword, 0), key);
@@ -272,7 +274,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                     Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
                 }
 
-                if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_EMAIL) {
+                if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == LOGIN_TYPE_EMAIL) {
                     Intent i = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
                     i.putExtra("email", mEmail);
                     i.putExtra("password", mPassword);

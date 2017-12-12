@@ -64,6 +64,7 @@ public class SettingFragment extends Fragment {
 
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGOUT);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -80,13 +81,15 @@ public class SettingFragment extends Fragment {
                     }
                     mAdapter.setDataWithIndex(0, new LoginSettingListData(email, autoLogin));
                     mAdapter.notifyDataSetChanged();
+                } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
+                    mAdapter.setDataWithIndex(0, new LoginSettingListData(getString(R.string.login_guide), false));
+                    mAdapter.notifyDataSetChanged();
                 }
             }
         };
 
         mContext.registerReceiver(mReceiver, mIntentFilter);
         mIsRegisterdReceiver = true;
-
     }
 
     @Override

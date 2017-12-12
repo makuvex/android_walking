@@ -160,4 +160,10 @@ public class BaseActivity extends AppCompatActivity {
         JWBroadCast.sendBroadcast(getApplicationContext(), intent);
     }
 
+    public void updateUIForLogout() {
+        Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGOUT);
+
+        JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+    }
+
 }

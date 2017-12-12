@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 
+import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.KakaoSignupActivity;
 import com.friendly.walking.activity.LoginActivity;
@@ -95,6 +96,7 @@ public class KakaoLoginManager {
         JWLog.e("","");
         Intent intent = new Intent(mContext, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //intent.putExtra("email", mUserProfile.getEmail());
         mContext.startActivity(intent);
     }
 

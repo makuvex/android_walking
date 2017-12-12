@@ -105,7 +105,7 @@
                     android:orientation="vertical"
                     android:layout_weight="1">
 
-                    <FrameLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:background="@color/colorTransparent">
@@ -113,34 +113,35 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:paddingLeft="10dp"
+                            android:layout_alignParentLeft="true"
                             android:gravity="center_vertical"
                             android:textSize="16dp"
+                            android:paddingLeft="10dp"
                             android:text="아이디"/>
 
                         <TextView
                             android:id="@+id/email"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:paddingLeft="10dp"
                             android:gravity="center_vertical"
+                            android:layout_toLeftOf="@+id/loginImage"
+                            android:layout_marginRight="10dp"
                             android:textSize="16dp"
-                            android:layout_marginRight="15dp"
                             android:ellipsize="marquee"
                             android:textStyle="bold"
-                            android:layout_gravity="right|center_vertical"
                             android:text="makuvex7@gmail.com"/>
 
-                        <ImageButton
+                        <ImageView
+                            android:id="@+id/loginImage"
                             android:layout_width="30dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/common_bt_go"
+                            android:layout_height="30dp"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentEnd="true"
                             android:layout_marginRight="10dp"
-                            android:layout_gravity="right|center_vertical"
-                            android:background="@color/colorTransparent"
-                            android:visibility="gone"/>
+                            android:scaleType="fitCenter"
+                            android:visibility="visible"/>
 
-                    </FrameLayout>
+                    </RelativeLayout>
 
                     <View
                         android:layout_width="match_parent"

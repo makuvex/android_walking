@@ -13,6 +13,7 @@ public class JWBroadCast {
     public static final String BROAD_CAST_LOGOUT                = "com.friendly.walking.BROAD_CAST_LOGOUT";
     public static final String BROAD_CAST_UPDATE_SETTING_UI     = "com.friendly.walking.BROAD_CAST_UPDATE_SETTING_UI";
 
+    public static final String BROAD_CAST_EMAIL_LOGIN           = "com.friendly.walking.BROAD_CAST_EMAIL_LOGIN";
     public static final String BROAD_CAST_FACEBOOK_LOGIN        = "com.friendly.walking.BROAD_CAST_FACEBOOK_LOGIN";
     public static final String BROAD_CAST_GOOGLE_LOGIN          = "com.friendly.walking.BROAD_CAST_GOOGLE_LOGIN";
     public static final String BROAD_CAST_KAKAO_LOGIN           = "com.friendly.walking.BROAD_CAST_KAKAO_LOGIN";

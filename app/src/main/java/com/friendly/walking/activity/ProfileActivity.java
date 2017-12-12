@@ -50,6 +50,7 @@ public class ProfileActivity extends BaseActivity {
     private ImageButton                         mChangePetInfoButton;
     private ImageButton                         mQuitServiceButton;
     private View                                mChangePassworLayout;
+    private ImageView                           mLoginTypeImage;
 
     private OnClickListener                     mClickListener;
 
@@ -71,6 +72,7 @@ public class ProfileActivity extends BaseActivity {
         mChangePetInfoButton = (ImageButton)findViewById(R.id.change_pet_info);
         mQuitServiceButton = (ImageButton)findViewById(R.id.quit_service);
         mChangePassworLayout = findViewById(R.id.change_password_layout);
+        mLoginTypeImage = (ImageView)findViewById(R.id.loginImage);
 
         mClickListener = new OnClickListener() {
             @Override
@@ -103,6 +105,16 @@ public class ProfileActivity extends BaseActivity {
 
         readUserData(email);
         readPetProfileImage(email);
+
+        if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+            mLoginTypeImage.setImageResource(R.drawable.k);
+        } else if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
+            mLoginTypeImage.setImageResource(R.drawable.f);
+        } else if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
+            mLoginTypeImage.setImageResource(R.drawable.g);
+        } else {
+            mLoginTypeImage.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void readPetProfileImage(String email) {
@@ -214,8 +226,17 @@ public class ProfileActivity extends BaseActivity {
                         KakaoLoginManager.getInstance(ProfileActivity.this).requestLogout(new KakaoLoginManager.KakaoLoginManagerCallback() {
                             @Override
                             public void onCompleted(boolean result, Object object) {
-                                Toast.makeText(getApplicationContext(), "정상적으로 로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
+                                if(result) {
+                                    Toast.makeText(getApplicationContext(), "정상적으로 로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
 
+                                    PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
+                                    PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
+                                    PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
+                                    PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
+                                    PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "로그아웃 실패 되었습니다", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         });
                     } else {
@@ -223,13 +244,8 @@ public class ProfileActivity extends BaseActivity {
                         Toast.makeText(ProfileActivity.this, "정상적으로 로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
                     }
 
-//                    PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
-//                    PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
-//                    PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
-//                    PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
-//                    PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
 
-                    updateUI("");
+                    updateUIForLogout();
                     finish();
                 }
             }

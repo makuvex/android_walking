@@ -7,6 +7,7 @@ import android.app.Activity;
  * Created by jungjiwon on 2017. 11. 7..
  */
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -36,6 +37,8 @@ import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 
 public class KakaoSignupActivity extends BaseActivity {
 
+    private UserProfile                 mUserProfile;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         JWLog.e("","");
@@ -49,16 +52,20 @@ public class KakaoSignupActivity extends BaseActivity {
                 if(result) {
                     JWLog.e(""+userProfile);
                     try {
-                        UserProfile user = (UserProfile) userProfile;
-                        String key = "" + user.getId();
-                        String id = user.getEmail();
+                        mUserProfile = (UserProfile) userProfile;
+                        String key = "" + mUserProfile.getId();
+                        String id = mUserProfile.getEmail();
 
                         if (TextUtils.isEmpty(id)) {
-                            id = user.getNickname();
+                            id = mUserProfile.getNickname();
                         }
 
+                        String kakaoKey = "kakao" + key;
                         char fill = 'e';
-                        String paddedKey = new String(new char[16 - key.length()]).replace('\0', fill) + key;
+                        if(kakaoKey.length() > 16) {
+                            kakaoKey = key;
+                        }
+                        String paddedKey = kakaoKey + new String(new char[16 - kakaoKey.length()]).replace('\0', fill);
 
                         JWLog.e("@@@ key :"+key+", paddedKey:"+paddedKey);
                         String encryptedId = Crypto.encryptAES(CommonUtil.urlEncoding(id, 0), paddedKey);
@@ -78,7 +85,7 @@ public class KakaoSignupActivity extends BaseActivity {
                             @Override
                             public void onCompleted(boolean result, Object object) {
                                 if(!result) {
-                                    startSignUpPet((UserProfile)userProfile);
+                                    startSignUpPet(KakaoSignupActivity.this, (UserProfile)userProfile);
                                 } else {
                                     Toast.makeText(KakaoSignupActivity.this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show();
                                     updateUI(resultId);
@@ -96,23 +103,23 @@ public class KakaoSignupActivity extends BaseActivity {
         });
     }
 
-    private void startSignUpPet(UserProfile userProfile) {
-        UserData userData = getUserData(userProfile);
+    public static void startSignUpPet(Activity activity, UserProfile userProfile) {
+        UserData userData = getUserData(activity, userProfile);
 
-        Intent intent = new Intent(this, SignUpPetActivity.class);
+        Intent intent = new Intent(activity, SignUpPetActivity.class);
         intent.putExtra(GlobalConstantID.SIGN_UP_TYPE, GlobalConstantID.LOGIN_TYPE_KAKAO);
 
-        ApplicationPool pool = (ApplicationPool)getApplicationContext();
+        ApplicationPool pool = (ApplicationPool)activity.getApplicationContext();
         pool.putExtra(KEY_USER_DATA, intent, userData);
 
-        startActivity(intent);
-        finish();
+        activity.startActivity(intent);
+        activity.finish();
     }
 
-    private UserData getUserData(UserProfile userProfile) {
+    public static UserData getUserData(Context cxt, UserProfile userProfile) {
         UserData data = new UserData();
 
-        data.uid = PreferencePhoneShared.getUserUid(getApplicationContext());
+        data.uid = PreferencePhoneShared.getUserUid(cxt);
         data.mem_email = TextUtils.isEmpty(userProfile.getEmail()) ? userProfile.getNickname() : userProfile.getEmail();
         data.mem_auto_login = true;
         data.mem_notification_yn = true;
@@ -134,7 +141,7 @@ public class KakaoSignupActivity extends BaseActivity {
 
     public void updateUI(String email) {
         JWLog.e("","");
-        Intent intent = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+        Intent intent = new Intent(JWBroadCast.BROAD_CAST_KAKAO_LOGIN);
         intent.putExtra("email", email);
 
         JWBroadCast.sendBroadcast(getApplicationContext(), intent);

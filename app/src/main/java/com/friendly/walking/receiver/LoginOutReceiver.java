@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.widget.Toast;
 
 import com.friendly.walking.ApplicationPool;
+import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
@@ -50,6 +51,11 @@ public class LoginOutReceiver extends BroadcastReceiver {
             });
         } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
             PreferencePhoneShared.setLoginYn(context, false);
+            PreferencePhoneShared.setAutoLoginType(context, GlobalConstantID.LOGIN_TYPE_NONE);
+            PreferencePhoneShared.setAutoLoginYn(context, false);
+            PreferencePhoneShared.setLoginID(context, "");
+            PreferencePhoneShared.setUserUID(context, "");
+
         }
     }
 }

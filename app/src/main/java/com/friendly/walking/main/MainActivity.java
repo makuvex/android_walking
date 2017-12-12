@@ -34,8 +34,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.activity.KakaoSignupActivity;
+import com.friendly.walking.activity.SignUpPetActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.dataSet.PetData;
@@ -59,10 +61,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.kakao.usermgmt.response.model.User;
 import com.kakao.usermgmt.response.model.UserProfile;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOOGLE_SIGN_IN;
 
 public class MainActivity extends BaseActivity {
@@ -208,13 +213,13 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        registerReceiverMain();
+        //registerReceiverMain();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiverMain();
+        //unregisterReceiverMain();
     }
 
     @Override
@@ -307,12 +312,16 @@ public class MainActivity extends BaseActivity {
                     return;
                 }
 
-                setProgressBar(View.VISIBLE);
-
                 JWLog.e("", "uid :" + paddedKey);
                 String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(this), paddedKey));
                 String decPassword = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginPassword(this), paddedKey));
 
+                JWLog.e("email :"+decEmail+", password :"+decPassword);
+                if(TextUtils.isEmpty(decEmail) || TextUtils.isEmpty(decPassword)) {
+                    return;
+                }
+
+                setProgressBar(View.VISIBLE);
                 Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
                 intent.putExtra("email", decEmail);
                 intent.putExtra("password", decPassword);
@@ -329,15 +338,21 @@ public class MainActivity extends BaseActivity {
                         @Override
                         public void onCompleted(boolean result, Object object) {
                             if(result) {
-                                Toast.makeText(getApplicationContext(), "카카오톡 연동 로그인 했습니다.", Toast.LENGTH_SHORT).show();
-                                PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
+                                final UserProfile profile = (UserProfile)object;
+                                FireBaseNetworkManager.getInstance(MainActivity.this).findUserEmail(profile.getEmail(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                    @Override
+                                    public void onCompleted(boolean result, Object object) {
+                                        if(!result) {
+                                            KakaoSignupActivity.startSignUpPet(MainActivity.this, (UserProfile)object);
+                                        } else {
+                                            PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
+                                            Intent intent = new Intent(JWBroadCast.BROAD_CAST_KAKAO_LOGIN);
+                                            intent.putExtra("email", profile.getEmail());
 
-                                if(object instanceof UserProfile) {
-                                    Intent i = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
-                                    i.putExtra("email", PreferencePhoneShared.getLoginID(getApplicationContext()));
-                                    JWBroadCast.sendBroadcast(getApplicationContext(), i);
-
-                                }
+                                            JWBroadCast.sendBroadcast(MainActivity.this, intent);
+                                        }
+                                    }
+                                });
                             }
                         }
                     });
@@ -355,6 +370,8 @@ public class MainActivity extends BaseActivity {
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GOOGLE_LOGIN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_KAKAO_LOGIN);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGOUT);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_EMAIL_LOGIN);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -365,7 +382,8 @@ public class MainActivity extends BaseActivity {
                     setProgressBar(View.INVISIBLE);
                 } else if(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN.equals(intent.getAction())
                         || JWBroadCast.BROAD_CAST_GOOGLE_LOGIN.equals(intent.getAction())
-                        || JWBroadCast.BROAD_CAST_KAKAO_LOGIN.equals(intent.getAction())) {
+                        || JWBroadCast.BROAD_CAST_KAKAO_LOGIN.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_EMAIL_LOGIN.equals(intent.getAction())) {
 
                     String email = intent.getStringExtra("email");
                     setProgressBar(View.VISIBLE);
@@ -386,6 +404,10 @@ public class MainActivity extends BaseActivity {
                             }
                         }
                     });
+                } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
+                    mProfileText.setText("누구의 산책에 온거 축하");
+                    mProfileImageView.setImageResource(R.drawable.default_profile);
+                    mProfileView.setBackgroundResource(R.drawable.profile_bg);
                 }
             }
         };
@@ -473,5 +495,6 @@ public class MainActivity extends BaseActivity {
             }
         });
     }
+
 
 }

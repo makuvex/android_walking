@@ -155,11 +155,10 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                             PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_GOOGLE);
                         } else if(provider.equals("facebook.com")) {
                             PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_FACEBOOK);
-
                             facebookUpdateUI(email);
-
                         } else if(provider.equals("password")) {
                             PreferencePhoneShared.setAutoLoginType(mContext, GlobalConstantID.LOGIN_TYPE_EMAIL);
+                            emailUpdateUI(email);
                         }
 
                         PreferencePhoneShared.setAutoLoginYn(mContext, true);
@@ -679,4 +678,11 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         JWBroadCast.sendBroadcast(mContext, intent);
     }
 
+    public void emailUpdateUI(String email) {
+        JWLog.e("","");
+        Intent intent = new Intent(JWBroadCast.BROAD_CAST_EMAIL_LOGIN);
+        intent.putExtra("email", email);
+
+        JWBroadCast.sendBroadcast(mContext, intent);
+    }
 }
