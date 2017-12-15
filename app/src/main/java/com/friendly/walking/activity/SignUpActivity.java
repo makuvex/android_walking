@@ -225,8 +225,10 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
 
         ArrayList<LocationData> list = new ArrayList<>();
         list.add(new LocationData());
+        SimpleDateFormat formatter2 = new SimpleDateFormat( "yyyy-MM-dd", Locale.KOREA );
+        String dateTime2 = formatter2.format(date);
 
-        data.walking_list.add(new LocationData());
+        data.walking_list.put(dateTime2, list);
 
         data.joinBy = "email";
         JWLog.e("","@@@ userData : "+data);

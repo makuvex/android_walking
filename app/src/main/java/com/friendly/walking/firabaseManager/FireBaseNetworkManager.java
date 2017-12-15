@@ -65,8 +65,12 @@ import com.google.firebase.storage.UploadTask;
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 
 /**
@@ -505,7 +509,17 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                     return;
                 }
 
-                userData.walking_list.addAll(list);
+                Date date = new Date(System.currentTimeMillis());
+                SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd", Locale.KOREA );
+                String dateTime = formatter.format(date);
+
+                ArrayList<LocationData> oriList = userData.walking_list.get(dateTime);
+                if(oriList == null) {
+                    oriList = new ArrayList<>();
+                }
+                oriList.addAll(list);
+                userData.walking_list.put(dateTime, oriList);
+
                 databaseReference.child("users").child(userData.uid).child("walking_list").setValue(userData.walking_list);
 
                 if(callback != null) {

@@ -26,7 +26,7 @@ public class UserData extends Object {
     public List<PetData> pet_list = new ArrayList<>();
     public boolean mem_auto_stroll_mode = true;
     public Map<String, String> mem_alarm_time = new HashMap<>();
-    public List<LocationData> walking_list = new ArrayList<>();
+    public Map<String, ArrayList<LocationData>> walking_list = new HashMap<>();
 
     public String joinBy = "";
 
