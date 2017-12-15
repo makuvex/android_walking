@@ -24,6 +24,7 @@ import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.ChangePasswordActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.dataSet.LocationData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
@@ -64,6 +65,7 @@ import com.google.firebase.storage.UploadTask;
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -483,6 +485,44 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 callback.onCompleted(false, null);
             }
         }
+    }
+
+    public void updateWalkingList(String email, final ArrayList<LocationData> list, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("email :"+email+", list :"+list.toString());
+
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData userData = null;
+                for(DataSnapshot data : dataSnapshot.getChildren()) {
+                    userData = data.getValue(UserData.class);
+                }
+                JWLog.e("","userData :"+userData);
+                if(userData == null) {
+                    Toast.makeText(mContext, "유저 데이터가 없어 위치 정보를 업데이트 하지 못했습니다.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                userData.walking_list.addAll(list);
+                databaseReference.child("users").child(userData.uid).child("walking_list").setValue(userData.walking_list);
+
+                if(callback != null) {
+                    if (userData != null) {
+                        callback.onCompleted(true, userData);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
     }
 
     public void logoutAccount() {

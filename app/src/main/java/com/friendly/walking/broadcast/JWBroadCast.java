@@ -18,6 +18,8 @@ public class JWBroadCast {
     public static final String BROAD_CAST_GOOGLE_LOGIN          = "com.friendly.walking.BROAD_CAST_GOOGLE_LOGIN";
     public static final String BROAD_CAST_KAKAO_LOGIN           = "com.friendly.walking.BROAD_CAST_KAKAO_LOGIN";
 
+    public static final String BROAD_CAST_GEOFENCE_OUT_DETECTED = "com.friendly.walking.BROAD_CAST_BROAD_CAST_GEOFENCE_OUT_DETECTED";
+    public static final String BROAD_CAST_GEOFENCE_IN_DETECTED  = "com.friendly.walking.BROAD_CAST_BROAD_CAST_GEOFENCE_IN_DETECTED";
 
     public JWBroadCast() {}
 

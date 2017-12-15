@@ -1,12 +1,13 @@
 package com.friendly.walking.main;
 
-import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 
@@ -17,29 +18,18 @@ import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.activity.KakaoSignupActivity;
-import com.friendly.walking.activity.SignUpPetActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
-import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
@@ -49,25 +39,26 @@ import com.friendly.walking.fragment.StrollMapFragment;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.fragment.SettingFragment;
+import com.friendly.walking.geofence.GeofenceManager;
+import com.friendly.walking.geofence.GeofenceTransitionsIntentService;
 import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.service.MainService;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
+
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.firebase.auth.FirebaseUser;
-import com.kakao.usermgmt.response.model.User;
 import com.kakao.usermgmt.response.model.UserProfile;
 
-import org.w3c.dom.Text;
 
 import java.io.File;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 import static com.friendly.walking.firabaseManager.FireBaseNetworkManager.RC_GOOGLE_SIGN_IN;
 
 public class MainActivity extends BaseActivity {
@@ -95,7 +86,6 @@ public class MainActivity extends BaseActivity {
     private BroadcastReceiver                       mReceiver = null;
     private IntentFilter                            mIntentFilter = null;
     private boolean                                 mIsRegisterdReceiver = false;
-
 
 
     @Override
@@ -191,12 +181,16 @@ public class MainActivity extends BaseActivity {
 //        //imageview.setImageBitmap(blurred);
 //        mProfileView.setBackground(new BitmapDrawable(blurred));
 
-
         initReceiver();
         registerReceiverMain();
 
+        Intent intent = new Intent(MainActivity.this, MainService.class);
+        startService(intent);
+
         PreferencePhoneShared.setLoginYn(this, false);
-        doLogin();
+        if(!doLogin()) {
+            GeofenceManager.getInstance(MainActivity.this).removeGeofences();
+        }
     }
 
     @Override
@@ -295,12 +289,13 @@ public class MainActivity extends BaseActivity {
         mProfileView.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
-    private void doLogin() {
+    private boolean doLogin() {
 
         try {
             boolean autoLogin = PreferencePhoneShared.getAutoLoginYn(this);
             if(!autoLogin) {
-                return;
+
+                return false;
             }
             int autoLoginType = PreferencePhoneShared.getAutoLoginType(this);
 
@@ -309,7 +304,7 @@ public class MainActivity extends BaseActivity {
                 String paddedKey = key.substring(0, 16);
 
                 if (TextUtils.isEmpty(key) || !autoLogin) {
-                    return;
+                    return false;
                 }
 
                 JWLog.e("", "uid :" + paddedKey);
@@ -318,7 +313,7 @@ public class MainActivity extends BaseActivity {
 
                 JWLog.e("email :"+decEmail+", password :"+decPassword);
                 if(TextUtils.isEmpty(decEmail) || TextUtils.isEmpty(decPassword)) {
-                    return;
+                    return false;
                 }
 
                 setProgressBar(View.VISIBLE);
@@ -358,10 +353,12 @@ public class MainActivity extends BaseActivity {
                     });
                 }
             }
+            return true;
         } catch(Exception e) {
             e.printStackTrace();
             setProgressBar(View.INVISIBLE);
         }
+        return false;
     }
 
     private void initReceiver() {
@@ -397,9 +394,21 @@ public class MainActivity extends BaseActivity {
                             setProgressBar(View.INVISIBLE);
 
                             UserData userData = (UserData) object;
+                            if(userData != null && userData.mem_address != null) {
+                                String address = userData.mem_address.get("address");
+                                String lat =  userData.mem_address.get("lat");
+                                String lot =  userData.mem_address.get("lot");
+
+                                JWLog.e("address : "+address+", lat :"+lat+", lot :"+lot);
+                                if(!TextUtils.isEmpty(address) && !TextUtils.isEmpty(lat) && !TextUtils.isEmpty(lot)) {
+                                    GeofenceManager.getInstance(MainActivity.this).populateGeofenceList(address, lat, lot);
+                                    GeofenceManager.getInstance(MainActivity.this).addGeofences();
+                                } else {
+                                    GeofenceManager.getInstance(MainActivity.this).removeGeofences();
+                                }
+                            }
                             if(userData != null) {
                                 PetData petData = userData.pet_list.get(0);
-
                                 mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
                             }
                         }

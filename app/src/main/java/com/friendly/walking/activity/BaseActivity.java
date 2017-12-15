@@ -68,13 +68,13 @@ public class BaseActivity extends AppCompatActivity {
                 });
             }
         }
-        FireBaseNetworkManager.getInstance(this).onStart();
+        //FireBaseNetworkManager.getInstance(this).onStart();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        FireBaseNetworkManager.getInstance(this).onStop();
+        //FireBaseNetworkManager.getInstance(this).onStop();
     }
 
     @Override

@@ -36,12 +36,11 @@ public class LoginOutReceiver extends BroadcastReceiver {
             FireBaseNetworkManager.getInstance(context).loginEmailWithPassword(email, password, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Object object) {
+                    JWLog.e("result :"+result);
                     if(result) {
                         PreferencePhoneShared.setLoginYn(context, true);
 
-
-
-                        Intent i = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+                        Intent i = new Intent(JWBroadCast.BROAD_CAST_EMAIL_LOGIN);
                         i.putExtra("email", email);
                         JWBroadCast.sendBroadcast(context, i);
                     } else {

@@ -7,8 +7,10 @@ import android.os.Handler;
  */
 
 public class ServiceThread extends Thread {
-    Handler handler;
-    boolean isRun = true;
+    private static final int        TIME_INTERVAL = 3000;
+
+    private Handler                 handler;
+    private boolean                 isRun = true;
 
     public ServiceThread(Handler handler){
         this.handler = handler;
@@ -24,11 +26,10 @@ public class ServiceThread extends Thread {
         while(isRun){
             handler.sendEmptyMessage(0);//쓰레드에 있는 핸들러에게 메세지를 보냄
             try{
-                Thread.sleep(3000); //10초씩 쉰다.
+                Thread.sleep(TIME_INTERVAL); //10초씩 쉰다.
             }catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-
 }

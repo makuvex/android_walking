@@ -1,12 +1,45 @@
 package com.friendly.walking.service;
 
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.friendly.walking.GlobalConstantID;
+import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.dataSet.LocationData;
+import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
+import com.friendly.walking.geofence.Constants;
 import com.friendly.walking.notification.NotificationUtil;
+import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.Crypto;
+import com.friendly.walking.util.JWLog;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.LocationRequest;
+
+import java.util.ArrayList;
+
+import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE;
 //import com.google.android.gms.location.Geofence;
 
 
@@ -14,9 +47,121 @@ import com.friendly.walking.notification.NotificationUtil;
  * Created by Administrator on 2017-10-22.
  */
 
-public class MainService extends Service {
-    ServiceThread thread;
-//    ArrayList<Geofence> mGeofenceList = new ArrayList<Geofence>();
+public class MainService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+    private static final int                        UPDATE_INTERVAL_MS = 1000;  // 1초
+    private static final int                        FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
+    // 최소 GPS 정보 업데이트 거리 10미터
+    private static final float                      MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+    // 최소 GPS 정보 업데이트 시간 밀리세컨이므로 1분
+    private static final long                       MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
+
+
+    private BroadcastReceiver                       mReceiver = null;
+    private IntentFilter                            mIntentFilter = null;
+    private boolean                                 mIsRegisterdReceiver = false;
+
+
+    private ServiceThread                           mThread;
+    private Handler                                 mHandler = new ServiceHandler();
+
+    // 현재 GPS 사용유무
+    boolean                                         isGPSEnabled = false;
+
+    // 네트워크 사용유무
+    boolean                                         isNetworkEnabled = false;
+
+    // GPS 상태값
+    boolean                                         isGetLocation = false;
+
+    Location                                        location;
+    double                                          lat; // 위도
+    double                                          lon; // 경도
+
+    LocationListener                                locationListener;
+    protected LocationManager                       locationManager;
+    //private GoogleApiClient                         mGoogleApiClient = null;
+    LocationRequest                                 locationRequest = null;
+    private ArrayList<LocationData>                 mLocationArray = null;
+    private FireBaseAsyncTask                       mAsyncTask = null;
+
+    class ServiceHandler extends Handler {
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            JWLog.e("msg :"+msg);
+            getLocation();
+
+            JWLog.e("@@@@ lat :"+getLatitude()+", lot :"+getLongitude());
+            mLocationArray.add(new LocationData(System.currentTimeMillis(), getLatitude(), getLongitude()));
+
+            /*
+            NotificationUtil.getInstance(getApplicationContext()).makeNotification(1,
+                    "우리 은비와 함께 산책할 시간입니다.",
+                    "우리 은비와 함께 산책할 시간입니다.",
+                    "어서 같이 나가셔야죠!");
+                    */
+        }
+    };
+
+    static class FireBaseAsyncTask extends AsyncTask<String, String, Boolean> {
+
+        private Context                         context;
+        private ArrayList<LocationData>         list;
+
+        public FireBaseAsyncTask(Context context, ArrayList<LocationData> list) {
+            this.context = context;
+            this.list = list;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            try {
+                if(list != null && list.size() == 0) {
+                    return false;
+                } else {
+                    int autoLoginType = PreferencePhoneShared.getAutoLoginType(context);
+                    String email = null;
+                    if(autoLoginType == GlobalConstantID.LOGIN_TYPE_EMAIL) {
+                        String key = PreferencePhoneShared.getUserUid(context);
+                        String paddedKey = key.substring(0, 16);
+
+                        JWLog.e("", "uid :" + paddedKey);
+                        email = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(context), paddedKey));
+                    }
+
+                    JWLog.e("email :"+email);
+                    if(email != null) {
+                        FireBaseNetworkManager.getInstance(context).updateWalkingList(email, list, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                            @Override
+                            public void onCompleted(boolean result, Object object) {
+                                if(result) {
+                                    NotificationUtil.getInstance(context).makeNotification(NOTIFICATION_ID_GEOFENCE,
+                                            "자동 산책 모드 실행 완료",
+                                            "산책기록을 성공적으로 업로드 했습니다.",
+                                            "자동 산책 모드 실행 완료2");
+                                }
+                            }
+                        });
+                    } else {
+                        return false;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+            JWLog.e("result :"+result);
+
+            if(result) {
+
+            }
+        }
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -26,28 +171,270 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e("","@@@ onStartCommand @@@");
-        ServiceHandler handler = new ServiceHandler();
-//        thread = new ServiceThread(handler);
-//        thread.start();
+
+        //ServiceHandler mHandler = new ServiceHandler();
 
 
+        //mThread = new ServiceThread(mHandler);
+        //thread.start();
 
+        initReceiver();
+        registerReceiverMain();
+        mLocationArray = new ArrayList<>();
+
+//        mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .addApi(LocationServices.API)
+//                .build();
+
+        locationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(UPDATE_INTERVAL_MS)
+                .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
+
+        locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                JWLog.e("onLocationChanged lat :"+location.getLatitude()+ ", lot : "+location.getLongitude());
+                lat = location.getLatitude();
+                lon = location.getLongitude();
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+                JWLog.e("onStatusChanged s:"+s+", i:"+i);
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+                JWLog.e("onProviderEnabled s:"+s);
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+                JWLog.e("onProviderDisabled s :"+s);
+            }
+        };
         return START_STICKY;
     }
 
     public void onDestroy() {
-        thread.stopForever();
-        thread = null;//쓰레기 값을 만들어서 빠르게 회수하라고 null을 넣어줌.
+        if(mThread != null) {
+            mThread.stopForever();
+            mThread = null;
+        }
+//        if (mGoogleApiClient != null &&  mGoogleApiClient.isConnected()) {
+//            JWLog.e("mGoogleApiClient disconnect");
+//            mGoogleApiClient.disconnect();
+//        }
+
+        unregisterReceiverMain();
+
     }
 
-    class ServiceHandler extends Handler {
-        @Override
-        public void handleMessage(android.os.Message msg) {
-            NotificationUtil.getInstance(getApplicationContext()).makeNotification(1,
-                    "우리 은비와 함께 산책할 시간입니다.",
-                    "우리 은비와 함께 산책할 시간입니다.",
-                    "어서 같이 나가셔야죠!");
-        }
-    };
+    private void initReceiver() {
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED);
 
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                JWLog.e("","action :"+intent.getAction());
+
+                if(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED.equals(intent.getAction())) {
+                    JWLog.e("thread :"+(mThread != null ? mThread: "null"));
+
+                    if(mThread != null) {
+                        JWLog.e("thread stop");
+                        mThread.stopForever();
+                        mThread = null;
+
+                        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                        notificationManager.cancel(NOTIFICATION_ID_GEOFENCE);
+
+                        for(LocationData data : mLocationArray) {
+                            JWLog.e("data :"+data.toString());
+                        }
+                        if(mAsyncTask != null) {
+                            mAsyncTask.cancel(true);
+                            mAsyncTask = null;
+                        }
+                        mAsyncTask = new FireBaseAsyncTask(MainService.this, mLocationArray);
+                        mAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }
+                } else if(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED.equals(intent.getAction())) {
+                    //setProgressBar(View.INVISIBLE);
+                    int transition = intent.getIntExtra("transition", -1);
+                    JWLog.e("","@@@@ transition :"+(transition == Geofence.GEOFENCE_TRANSITION_ENTER ? "enter" : "exit"));
+
+                    if(transition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+                        if(mThread != null) {
+                            JWLog.e("@@@ thread is already running @@@");
+                            return;
+                        }
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE,
+                                        "자동으로 산책모드 실행 중 입니다.",
+                                        "자동으로 산책모드 실행 중 입니다.",
+                                        "경로를 기록중 입니다.");
+
+                                mLocationArray.clear();
+                                mThread = new ServiceThread(mHandler);
+                                mThread.start();
+                            }
+                        }, 5000);
+                    }
+                }
+            }
+        };
+    }
+
+    private void registerReceiverMain() {
+        if(mIsRegisterdReceiver != true) {
+            registerReceiver(mReceiver, mIntentFilter);
+            mIsRegisterdReceiver = true;
+        }
+    }
+
+    private void unregisterReceiverMain() {
+        if(mIsRegisterdReceiver == true) {
+            unregisterReceiver(mReceiver);
+            mIsRegisterdReceiver = false;
+        }
+    }
+
+    public Location getLocation() {
+        try {
+            if(locationManager == null) {
+                locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            }
+            // GPS 정보 가져오기
+            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+            // 현재 네트워크 상태 값 알아오기
+            //isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            isNetworkEnabled = false;
+
+            if (!isGPSEnabled && !isNetworkEnabled) {
+                // GPS 와 네트워크사용이 가능하지 않을때 소스 구현
+                Toast.makeText(this, "GPS와 네트워크 사용이 불가능 합니다.", Toast.LENGTH_SHORT).show();
+            } else {
+                this.isGetLocation = true;
+
+                if (isGPSEnabled) {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
+                    if (locationManager != null) {
+                        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (location != null) {
+                            lat = location.getLatitude();
+                            lon = location.getLongitude();
+                        }
+                    }
+                }
+
+                // 네트워크 정보로 부터 위치값 가져오기
+//                if (isNetworkEnabled) {
+//                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
+//
+//                    if (locationManager != null) {
+//                        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+//                        if (location != null) {
+//                            // 위도 경도 저장
+//                            lat = location.getLatitude();
+//                            lon = location.getLongitude();
+//                        }
+//                    }
+//                }
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return location;
+    }
+
+    /**
+     * GPS 종료
+     * */
+    public void stopUsingGPS(){
+        if(locationManager != null && locationListener != null){
+            locationManager.removeUpdates(locationListener);
+        }
+    }
+
+    /**
+     * 위도값을 가져옵니다.
+     * */
+    public double getLatitude(){
+        if(location != null){
+            lat = location.getLatitude();
+        }
+        return lat;
+    }
+
+    /**
+     * 경도값을 가져옵니다.
+     * */
+    public double getLongitude(){
+        if(location != null){
+            lon = location.getLongitude();
+        }
+        return lon;
+    }
+
+    /**
+     * GPS 나 wifi 정보가 켜져있는지 확인합니다.
+     * */
+    public boolean isGetLocation() {
+        return this.isGetLocation;
+    }
+
+    /**
+     * GPS 정보를 가져오지 못했을때
+     * 설정값으로 갈지 물어보는 alert 창
+     * */
+    public void showSettingsAlert(){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+        alertDialog.setTitle("GPS 사용설정");
+        alertDialog.setMessage("GPS 설정이 되지 않았을수도 있습니다.\n설정 화면으로 가시겠습니까?");
+
+                // OK 를 누르게 되면 설정창으로 이동합니다.
+                alertDialog.setPositiveButton("Settings",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int which) {
+                                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(intent);
+                            }
+                        });
+        // Cancle 하면 종료 합니다.
+        alertDialog.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+        alertDialog.show();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }

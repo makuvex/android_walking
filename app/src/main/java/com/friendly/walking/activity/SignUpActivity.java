@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
+import com.friendly.walking.dataSet.LocationData;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
@@ -29,6 +30,7 @@ import com.soundcloud.android.crop.Crop;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -220,6 +222,11 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
             data.mem_alarm_time.put("start", ""+mStartStrollHour+":"+mStartStrollMin);
             data.mem_alarm_time.put("end", ""+mEndStrollHour+":"+mEndStrollMin);
         }
+
+        ArrayList<LocationData> list = new ArrayList<>();
+        list.add(new LocationData());
+
+        data.walking_list.add(new LocationData());
 
         data.joinBy = "email";
         JWLog.e("","@@@ userData : "+data);

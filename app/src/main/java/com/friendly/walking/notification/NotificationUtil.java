@@ -19,8 +19,10 @@ import com.friendly.walking.R;
 
 public class NotificationUtil extends Object {
 
-    private static NotificationUtil         mSelf;
-    private Context                          mContext;
+    public static int NOTIFICATION_ID_GEOFENCE = 0;
+
+    private static NotificationUtil             mSelf;
+    private Context                             mContext;
 
     public static NotificationUtil getInstance(Context context) {
         if(mSelf == null) {
@@ -45,13 +47,14 @@ public class NotificationUtil extends Object {
         builder.setContentTitle(title)
                 .setContentText(subTitle)
                 .setTicker(ticker)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_tag_faces)
                 .setLargeIcon(BitmapFactory.decodeResource(res, R.mipmap.ic_launcher))
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)
                 .setWhen(System.currentTimeMillis())
                 .setDefaults(Notification.DEFAULT_ALL)
-                .addAction(R.mipmap.ic_launcher, "산책 출발", contentIntent)
+                .addAction(R.drawable.stop, "산책 중지", contentIntent)
+                .setColor(mContext.getResources().getColor(R.color.colorPrimary))
                 .build();
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {

@@ -1,4 +1,8 @@
 <resources>
+
+    <string name="facebook_app_id">312550385892011</string>
+    <string name="kakao_app_key">849c482c6f3508287bc073fd85e9ba82</string>
+
     <string name="app_name" translatable="false">누구의 산책</string>
     <string name="action_settings" translatable="false">Settings</string>
     <string name="section_format" translatable="false">Hello World from section: %1$d</string>
@@ -86,7 +90,17 @@
     <string name="error_message_for_service_unavailable">서비스 연결상태가 좋지 않습니다.\n\n잠시 후 다시 시도해 주세요.</string>
     <string name="invalid_kakao_member">카카오톡 회원가입이 되지 않았습니다.\n\n카카오톡 회원 가입을 먼저 시도해 주세요.</string>
 
-    <string name="facebook_app_id">312550385892011</string>
-    <string name="kakao_app_key">849c482c6f3508287bc073fd85e9ba82</string>
+    <!-- Error strings -->
+    <string name="geofence_not_available">Geofence service is not available now</string>
+    <string name="geofence_too_many_geofences">Your app has registered too many geofences</string>
+    <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call</string>
+    <string name="unknown_geofence_error">Unknown error: the Geofence service is not available now</string>
+    <string name="geofence_transition_invalid_type">Geofence transition error: invalid transition type %1$d</string>
+    <string name="geofence_transition_entered">Entered</string>
+    <string name="geofence_transition_exited">Exited</string>
+    <string name="unknown_geofence_transition">Unknown Transition</string>
+    <string name="geofences_added">Geofences added</string>
+    <string name="geofences_removed">Geofences removed</string>
+
 
 </resources>

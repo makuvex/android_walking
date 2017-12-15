@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.friendly.walking">
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -11,6 +12,8 @@
     <application
         android:name=".ApplicationPool"
         android:allowBackup="false"
+        android:hardwareAccelerated="false"
+        android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -80,7 +83,8 @@
 
 
         //////////////////// service ////////////////////
-        <service android:name="com.friendly.walking.service.MainService" />
+        <service android:name="com.friendly.walking.service.MainService"/>
+        <service android:name="com.friendly.walking.geofence.GeofenceTransitionsIntentService" />
 
 
         //////////////////// receiver ////////////////////
