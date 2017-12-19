@@ -47,6 +47,7 @@ public class ProfileActivity extends BaseActivity {
     private TextView                            mEmailText;
     private ImageButton                         mLogoutButton;
     private ImageButton                         mChangePasswordButton;
+    private ImageButton                         mChangeUserInfoButton;
     private ImageButton                         mChangePetInfoButton;
     private ImageButton                         mQuitServiceButton;
     private View                                mChangePassworLayout;
@@ -69,6 +70,7 @@ public class ProfileActivity extends BaseActivity {
         mEmailText = (TextView)findViewById(R.id.email);
         mLogoutButton = (ImageButton)findViewById(R.id.logout);
         mChangePasswordButton = (ImageButton)findViewById(R.id.change_password);
+        mChangeUserInfoButton = (ImageButton)findViewById(R.id.change_user_info);
         mChangePetInfoButton = (ImageButton)findViewById(R.id.change_pet_info);
         mQuitServiceButton = (ImageButton)findViewById(R.id.quit_service);
         mChangePassworLayout = findViewById(R.id.change_password_layout);
@@ -88,6 +90,8 @@ public class ProfileActivity extends BaseActivity {
                 } else if(v == mQuitServiceButton) {
                     JWLog.e("", "탈퇴");
                     quitService();
+                } else if(v == mChangeUserInfoButton) {
+
                 }
             }
         };
@@ -96,6 +100,7 @@ public class ProfileActivity extends BaseActivity {
         mChangePasswordButton.setOnClickListener(mClickListener);
         mChangePetInfoButton.setOnClickListener(mClickListener);
         mQuitServiceButton.setOnClickListener(mClickListener);
+        mChangeUserInfoButton.setOnClickListener(mClickListener);
 
         if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
             mChangePassworLayout.setVisibility(View.GONE);
@@ -113,7 +118,7 @@ public class ProfileActivity extends BaseActivity {
         } else if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
             mLoginTypeImage.setImageResource(R.drawable.g);
         } else {
-            mLoginTypeImage.setVisibility(View.INVISIBLE);
+            mLoginTypeImage.setImageResource(R.drawable.e);
         }
     }
 

@@ -203,7 +203,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         data.mem_email = mEmailText.getText().toString();
         data.mem_auto_login = mAutoLogin.isChecked();
         data.mem_notification_yn = true;
-        data.mem_location_yn = false;
+        data.mem_location_yn = true;
 
         if(!TextUtils.isEmpty(mAddress)) {
             data.mem_address.put("address", mAddress);
@@ -211,7 +211,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
             data.mem_address.put("lot", mLot);
         }
         Date date = new Date(System.currentTimeMillis());
-        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy.MM.dd.HH:mm:ss", Locale.KOREA );
+        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd.HH:mm:ss", Locale.KOREA );
         String dateTime = formatter.format(date);
         data.mem_register_datetime = dateTime;
 
@@ -219,8 +219,8 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         data.mem_auto_stroll_mode = mAutoStroll.isChecked();
 
         if(mStartStrollHour != -1 && mEndStrollHour != -1) {
-            data.mem_alarm_time.put("start", ""+mStartStrollHour+":"+mStartStrollMin);
-            data.mem_alarm_time.put("end", ""+mEndStrollHour+":"+mEndStrollMin);
+            data.mem_alarm_time.put("start", ""+mStartStrollHour+mStartStrollMin);
+            data.mem_alarm_time.put("end", ""+mEndStrollHour+mEndStrollMin);
         }
 
         ArrayList<LocationData> list = new ArrayList<>();
@@ -228,7 +228,8 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         SimpleDateFormat formatter2 = new SimpleDateFormat( "yyyy-MM-dd", Locale.KOREA );
         String dateTime2 = formatter2.format(date);
 
-        data.walking_list.put(dateTime2, list);
+        data.walking_location_list.put(dateTime2, list);
+        data.walking_time_list.put(dateTime2, "0");
 
         data.joinBy = "email";
         JWLog.e("","@@@ userData : "+data);

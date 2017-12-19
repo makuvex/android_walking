@@ -15,6 +15,10 @@ public class PreferencePhoneShared extends BasePreference {
 
     private static final String KEY_AUTO_LOGIN_TYPE                         = "KEY_LOGIN_TYPE";     //0 : EMAIL, 1 : GOOGLE, 2 : FACEBOOK, 3 : KAKAO
 
+    private static final String KEY_AUTO_START_STROLL_TIME                  = "KEY_AUTO_START_STROLL_TIME";
+    private static final String KEY_AUTO_END_STROLL_TIME                    = "KEY_AUTO_END_STROLL_TIME";
+    private static final String KEY_AUTO_STROLL_MODE                        = "KEY_AUTO_STROLL_MODE";
+
     public static void setAutoLoginYn(Context cxt, boolean autoLoginYn){
         putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_YN, autoLoginYn);
     }
@@ -63,4 +67,27 @@ public class PreferencePhoneShared extends BasePreference {
         return getInt(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_TYPE, -1);
     }
 
+    public static void setStartStrollTime(Context cxt, String time){
+        putString(cxt, PREFERENCE_NAME, KEY_AUTO_START_STROLL_TIME, time);
+    }
+
+    public static String getStartStrollTime(Context cxt){
+        return getString(cxt, PREFERENCE_NAME, KEY_AUTO_START_STROLL_TIME, "");
+    }
+
+    public static void setEndStrollTime(Context cxt, String time){
+            putString(cxt, PREFERENCE_NAME, KEY_AUTO_END_STROLL_TIME, time);
+        }
+
+    public static String getEndStrollTime(Context cxt){
+        return getString(cxt, PREFERENCE_NAME, KEY_AUTO_END_STROLL_TIME, "");
+    }
+
+    public static void setAutoStrollMode(Context cxt, boolean mode){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_STROLL_MODE, mode);
+    }
+
+    public static boolean getAutoStrollMode(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_STROLL_MODE, false);
+    }
 }

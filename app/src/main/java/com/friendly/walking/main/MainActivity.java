@@ -392,22 +392,38 @@ public class MainActivity extends BaseActivity {
                             setProgressBar(View.INVISIBLE);
 
                             UserData userData = (UserData) object;
-                            if(userData != null && userData.mem_address != null) {
-                                String address = userData.mem_address.get("address");
-                                String lat =  userData.mem_address.get("lat");
-                                String lot =  userData.mem_address.get("lot");
 
-                                JWLog.e("address : "+address+", lat :"+lat+", lot :"+lot);
-                                if(!TextUtils.isEmpty(address) && !TextUtils.isEmpty(lat) && !TextUtils.isEmpty(lot)) {
-                                    Intent intent = new Intent(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
-                                    intent.putExtra("address", address);
-                                    intent.putExtra("lat", lat);
-                                    intent.putExtra("lot", lot);
+                            JWLog.e("userData :"+userData);
+                            if(!TextUtils.isEmpty(userData.mem_email)) {
+                                FireBaseNetworkManager.getInstance(MainActivity.this).updateLastLoginTime(userData.mem_email, null);
+                            }
 
-                                    JWBroadCast.sendBroadcast(MainActivity.this, intent);
-                                } else {
-                                    JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
+                            PreferencePhoneShared.setStartStrollTime(getApplicationContext(), userData.mem_alarm_time.get("start"));
+                            PreferencePhoneShared.setEndStrollTime(getApplicationContext(), userData.mem_alarm_time.get("end"));
+                            PreferencePhoneShared.setAutoStrollMode(getApplicationContext(), userData.mem_auto_stroll_mode);
+
+                            if(userData.mem_auto_stroll_mode) {
+                                if (userData != null && userData.mem_address != null) {
+                                    String address = userData.mem_address.get("address");
+                                    String lat = userData.mem_address.get("lat");
+                                    String lot = userData.mem_address.get("lot");
+
+                                    JWLog.e("address : " + address + ", lat :" + lat + ", lot :" + lot);
+                                    if (!TextUtils.isEmpty(address) && !TextUtils.isEmpty(lat) && !TextUtils.isEmpty(lot)) {
+                                        Intent intent = new Intent(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
+                                        intent.putExtra("address", address);
+                                        intent.putExtra("lat", lat);
+                                        intent.putExtra("lot", lot);
+
+                                        JWBroadCast.sendBroadcast(MainActivity.this, intent);
+                                    } else {
+                                        JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
+                                    }
                                 }
+                            } else {
+                                JWLog.e("자동 산책 모드가 아닙니다.");
+                                Toast.makeText(MainActivity.this, "자동 산책 모드가 아닙니다.", Toast.LENGTH_SHORT).show();
+                                JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
                             }
                             if(userData != null) {
                                 PetData petData = userData.pet_list.get(0);

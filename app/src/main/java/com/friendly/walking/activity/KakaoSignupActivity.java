@@ -123,10 +123,10 @@ public class KakaoSignupActivity extends BaseActivity {
         data.mem_email = TextUtils.isEmpty(userProfile.getEmail()) ? userProfile.getNickname() : userProfile.getEmail();
         data.mem_auto_login = true;
         data.mem_notification_yn = true;
-        data.mem_location_yn = false;
+        data.mem_location_yn = true;
 
         Date date = new Date(System.currentTimeMillis());
-        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy.MM.dd.HH:mm:ss", Locale.KOREA );
+        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd.HH:mm:ss", Locale.KOREA );
         String dateTime = formatter.format(date);
         data.mem_register_datetime = dateTime;
         data.mem_last_login_datetime = dateTime;

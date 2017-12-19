@@ -18,7 +18,7 @@ public class UserData extends Object {
     public String mem_email = "";
     public boolean mem_auto_login = false;
     public boolean mem_notification_yn = true;
-    public boolean mem_location_yn = false;
+    public boolean mem_location_yn = true;
     public Map<String, String> mem_address = new HashMap<>();
     public String mem_register_datetime = "";
     public long member_index = -1;
@@ -26,7 +26,8 @@ public class UserData extends Object {
     public List<PetData> pet_list = new ArrayList<>();
     public boolean mem_auto_stroll_mode = true;
     public Map<String, String> mem_alarm_time = new HashMap<>();
-    public Map<String, ArrayList<LocationData>> walking_list = new HashMap<>();
+    public Map<String, ArrayList<LocationData>> walking_location_list = new HashMap<>();
+    public Map<String, String> walking_time_list = new HashMap<>();
 
     public String joinBy = "";
 
@@ -34,4 +35,19 @@ public class UserData extends Object {
         Log.e("","@@@ LoginData constructor @@@");
     }
 
+    @Override
+    public String toString() {
+        return "mem_email :"+mem_email+
+                ", uid :"+uid+
+                ", mem_auto_login :"+mem_auto_login+
+                ", mem_notification_yn :"+mem_notification_yn+
+                ", mem_location_yn :"+mem_location_yn+
+                ", mem_address :"+mem_address+
+                ", mem_register_datetime :"+mem_register_datetime+
+                ", mem_last_login_datetime :"+mem_last_login_datetime+
+                ", pet_list :"+pet_list+
+                ", mem_auto_stroll_mode :"+mem_auto_stroll_mode+
+                ", mem_alarm_time :"+mem_alarm_time+
+                ", walking_location_list :"+walking_location_list;
+    }
 }

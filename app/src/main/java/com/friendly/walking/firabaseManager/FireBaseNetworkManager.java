@@ -170,6 +170,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                         PreferencePhoneShared.setAutoLoginYn(mContext, true);
                         PreferencePhoneShared.setLoginID(mContext, encryptedEmail);
                         PreferencePhoneShared.setUserUID(mContext, user.getUid());
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -491,7 +492,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         }
     }
 
-    public void updateWalkingList(String email, final ArrayList<LocationData> list, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+    public void updateWalkingLocationList(String email, final ArrayList<LocationData> list, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
         JWLog.e("email :"+email+", list :"+list.toString());
 
         final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
@@ -513,14 +514,100 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd", Locale.KOREA );
                 String dateTime = formatter.format(date);
 
-                ArrayList<LocationData> oriList = userData.walking_list.get(dateTime);
+                ArrayList<LocationData> oriList = userData.walking_location_list.get(dateTime);
                 if(oriList == null) {
                     oriList = new ArrayList<>();
                 }
                 oriList.addAll(list);
-                userData.walking_list.put(dateTime, oriList);
+                userData.walking_location_list.put(dateTime, oriList);
 
-                databaseReference.child("users").child(userData.uid).child("walking_list").setValue(userData.walking_list);
+                databaseReference.child("users").child(userData.uid).child("walking_location_list").setValue(userData.walking_location_list);
+
+                if(callback != null) {
+                    if (userData != null) {
+                        callback.onCompleted(true, userData);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
+    }
+
+    public void updateWalkingTimeList(String email, final long min, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("email :"+email+", min :"+min);
+
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData userData = null;
+                for(DataSnapshot data : dataSnapshot.getChildren()) {
+                    userData = data.getValue(UserData.class);
+                }
+                JWLog.e("","userData :"+userData);
+                if(userData == null) {
+                    Toast.makeText(mContext, "유저 데이터가 없어 산책 시간을 업데이트 하지 못했습니다.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                Date date = new Date(System.currentTimeMillis());
+                SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd", Locale.KOREA );
+                String dateTime = formatter.format(date);
+
+                String oriTime = userData.walking_time_list.get(dateTime);
+                long resultTime = Long.parseLong(oriTime) + min;
+                userData.walking_time_list.put(dateTime, ""+resultTime);
+
+                databaseReference.child("users").child(userData.uid).child("walking_time_list").setValue(userData.walking_time_list);
+
+                if(callback != null) {
+                    if (userData != null) {
+                        callback.onCompleted(true, userData);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
+    }
+
+    public void updateLastLoginTime(String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("email :"+email);
+
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData userData = null;
+                for(DataSnapshot data : dataSnapshot.getChildren()) {
+                    userData = data.getValue(UserData.class);
+                }
+                JWLog.e("","userData :"+userData);
+                if(userData == null) {
+                    return;
+                }
+
+                Date date = new Date(System.currentTimeMillis());
+                SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd.HH:mm:ss", Locale.KOREA );
+                String dateTime = formatter.format(date);
+
+                userData.mem_last_login_datetime = dateTime;
+                databaseReference.child("users").child(userData.uid).child("mem_last_login_datetime").setValue(userData.mem_last_login_datetime);
 
                 if(callback != null) {
                     if (userData != null) {

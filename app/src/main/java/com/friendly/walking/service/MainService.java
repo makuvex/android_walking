@@ -38,7 +38,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationRequest;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE;
 import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE_FINISHED;
@@ -87,6 +90,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
     LocationRequest                                 locationRequest = null;
     private ArrayList<LocationData>                 mLocationArray = null;
     private FireBaseAsyncTask                       mAsyncTask = null;
+    private long                                    mStartStrollTime = 0;
 
     class ServiceHandler extends Handler {
         @Override
@@ -123,10 +127,12 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
 
         private Context                         context;
         private ArrayList<LocationData>         list;
+        private long                            startTime;
 
-        public FireBaseAsyncTask(Context context, ArrayList<LocationData> list) {
+        public FireBaseAsyncTask(Context context, ArrayList<LocationData> list, long start) {
             this.context = context;
             this.list = list;
+            this.startTime = start;
         }
 
         @Override
@@ -147,7 +153,16 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
 
                     JWLog.e("email :"+email);
                     if(email != null) {
-                        FireBaseNetworkManager.getInstance(context).updateWalkingList(email, list, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        long min = (System.currentTimeMillis() - startTime) / 60000;
+
+                        FireBaseNetworkManager.getInstance(context).updateWalkingTimeList(email, min, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                            @Override
+                            public void onCompleted(boolean result, Object object) {
+                                Toast.makeText(context, "산책 시간 업데이트 "+(result ? "성공" :"실패"), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        FireBaseNetworkManager.getInstance(context).updateWalkingLocationList(email, list, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                             @Override
                             public void onCompleted(boolean result, Object object) {
                                 if(result) {
@@ -261,7 +276,6 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                 JWLog.e("","action :"+intent.getAction());
 
                 if(JWBroadCast.BROAD_CAST_ADD_GEOFENCE.equals(intent.getAction())) {
-
                     String address = intent.getStringExtra("address");
                     String lat = intent.getStringExtra("lat");
                     String lot = intent.getStringExtra("lot");
@@ -288,7 +302,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                             mAsyncTask.cancel(true);
                             mAsyncTask = null;
                         }
-                        mAsyncTask = new FireBaseAsyncTask(MainService.this, mLocationArray);
+                        mAsyncTask = new FireBaseAsyncTask(MainService.this, mLocationArray, mStartStrollTime);
                         mAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     } else {
                         NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE,
@@ -306,20 +320,35 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                             JWLog.e("@@@ thread is already running @@@");
                             return;
                         }
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
 
-                                NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE_MODE,
-                                        "자동으로 산책모드 실행 중 입니다.",
-                                        "자동으로 산책모드 실행 중 입니다.",
-                                        "경로를 기록중 입니다.");
+                        Date date = new Date(System.currentTimeMillis());
+                        SimpleDateFormat formatter = new SimpleDateFormat( "HHmm", Locale.KOREA );
+                        String dateTime = formatter.format(date);
 
-                                mLocationArray.clear();
-                                mThread = new ServiceThread(mHandler);
-                                mThread.start();
-                            }
-                        }, 5000);
+                        int start = Integer.parseInt(PreferencePhoneShared.getStartStrollTime(context));
+                        int end = Integer.parseInt(PreferencePhoneShared.getEndStrollTime(context));
+
+                        if(Integer.parseInt(dateTime) >= start && Integer.parseInt(dateTime) <= end) {
+                            mStartStrollTime = System.currentTimeMillis();
+
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE_MODE,
+                                            "자동으로 산책모드 실행 중 입니다.",
+                                            "자동으로 산책모드 실행 중 입니다.",
+                                            "경로를 기록중 입니다.");
+
+                                    mLocationArray.clear();
+                                    mThread = new ServiceThread(mHandler);
+                                    mThread.start();
+                                }
+                            }, 5000);
+                        } else {
+                            JWLog.e("자동 산책 시간이 아닙니다.");
+                            Toast.makeText(getApplicationContext(), "자동 산책 시간이 아닙니다.", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             }
