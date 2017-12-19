@@ -91,7 +91,7 @@ public class ProfileActivity extends BaseActivity {
                     JWLog.e("", "탈퇴");
                     quitService();
                 } else if(v == mChangeUserInfoButton) {
-
+                    startActivity(new Intent(ProfileActivity.this, UserInfoActivity.class));
                 }
             }
         };

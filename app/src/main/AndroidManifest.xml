@@ -84,7 +84,7 @@
 
         <activity android:name="com.friendly.walking.activity.KakaoSignupActivity" />
 
-
+        <activity android:name="com.friendly.walking.activity.UserInfoActivity" />
 
         //////////////////// service ////////////////////
         <service android:name="com.friendly.walking.service.MainService"/>

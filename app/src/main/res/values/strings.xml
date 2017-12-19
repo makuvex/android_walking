@@ -29,6 +29,7 @@
     <string name="check_duplication" translatable="false">중복확인</string>
     <string name="next" translatable="false">다음 ></string>
     <string name="find" translatable="false">찾기</string>
+    <string name="complete" translatable="false">완료</string>
 
     <string name="email_error" translatable="false">올바른 이메일 형식이 아닙니다.</string>
     <string name="password_error" translatable="false">잘못된 패스워드 형식 입니다.</string>
