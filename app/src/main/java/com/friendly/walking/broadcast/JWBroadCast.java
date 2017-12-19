@@ -21,6 +21,9 @@ public class JWBroadCast {
     public static final String BROAD_CAST_GEOFENCE_OUT_DETECTED = "com.friendly.walking.BROAD_CAST_BROAD_CAST_GEOFENCE_OUT_DETECTED";
     public static final String BROAD_CAST_GEOFENCE_IN_DETECTED  = "com.friendly.walking.BROAD_CAST_BROAD_CAST_GEOFENCE_IN_DETECTED";
 
+    public static final String BROAD_CAST_ADD_GEOFENCE          = "com.friendly.walking.BROAD_CAST_ADD_GEOFENCE";
+    public static final String BROAD_CAST_REMOVE_GEOFENCE       = "com.friendly.walking.BROAD_CAST_REMOVE_GEOFENCE";
+
     public JWBroadCast() {}
 
     public static void sendBroadcast(Context context, Intent intent) {

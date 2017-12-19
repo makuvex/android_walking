@@ -27,6 +27,7 @@ import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LocationData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.geofence.Constants;
+import com.friendly.walking.geofence.GeofenceManager;
 import com.friendly.walking.notification.NotificationUtil;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
@@ -40,6 +41,8 @@ import com.google.android.gms.location.LocationRequest;
 import java.util.ArrayList;
 
 import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE;
+import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE_FINISHED;
+import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE_MODE;
 //import com.google.android.gms.location.Geofence;
 
 
@@ -92,7 +95,20 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
             getLocation();
 
             JWLog.e("@@@@ lat :"+getLatitude()+", lot :"+getLongitude());
-            mLocationArray.add(new LocationData(System.currentTimeMillis(), getLatitude(), getLongitude()));
+            LocationData prevData = null;
+
+            if(mLocationArray.size() > 0) {
+                prevData = mLocationArray.get(mLocationArray.size()-1);
+            }
+            if(prevData != null) {
+                if(prevData.longtitude != getLongitude() || prevData.latitude != getLatitude()) {
+                    mLocationArray.add(new LocationData(System.currentTimeMillis(), getLatitude(), getLongitude()));
+                } else {
+                    JWLog.e("동일한 좌표여서 어레이에 애드 안함.");
+                }
+            } else {
+                mLocationArray.add(new LocationData(System.currentTimeMillis(), getLatitude(), getLongitude()));
+            }
 
             /*
             NotificationUtil.getInstance(getApplicationContext()).makeNotification(1,
@@ -135,10 +151,10 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                             @Override
                             public void onCompleted(boolean result, Object object) {
                                 if(result) {
-                                    NotificationUtil.getInstance(context).makeNotification(NOTIFICATION_ID_GEOFENCE,
-                                            "자동 산책 모드 실행 완료",
+                                    NotificationUtil.getInstance(context).makeNotification(NOTIFICATION_ID_GEOFENCE_FINISHED,
+                                            "자동 산책 완료",
                                             "산책기록을 성공적으로 업로드 했습니다.",
-                                            "자동 산책 모드 실행 완료2");
+                                            "자동 산책 완료");
                                 }
                             }
                         });
@@ -236,13 +252,25 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE);
 
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 JWLog.e("","action :"+intent.getAction());
 
-                if(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED.equals(intent.getAction())) {
+                if(JWBroadCast.BROAD_CAST_ADD_GEOFENCE.equals(intent.getAction())) {
+
+                    String address = intent.getStringExtra("address");
+                    String lat = intent.getStringExtra("lat");
+                    String lot = intent.getStringExtra("lot");
+
+                    GeofenceManager.getInstance(MainService.this).populateGeofenceList(address, lat, lot);
+                    GeofenceManager.getInstance(MainService.this).addGeofences();
+                } else if(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE.equals(intent.getAction())) {
+                    GeofenceManager.getInstance(MainService.this).removeGeofences();
+                } else if(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED.equals(intent.getAction())) {
                     JWLog.e("thread :"+(mThread != null ? mThread: "null"));
 
                     if(mThread != null) {
@@ -262,6 +290,11 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                         }
                         mAsyncTask = new FireBaseAsyncTask(MainService.this, mLocationArray);
                         mAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE,
+                                "IN NOTI",
+                                "IN NOTI",
+                                "IN NOTI");
                     }
                 } else if(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED.equals(intent.getAction())) {
                     //setProgressBar(View.INVISIBLE);
@@ -277,7 +310,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                             @Override
                             public void run() {
 
-                                NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE,
+                                NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE_MODE,
                                         "자동으로 산책모드 실행 중 입니다.",
                                         "자동으로 산책모드 실행 중 입니다.",
                                         "경로를 기록중 입니다.");

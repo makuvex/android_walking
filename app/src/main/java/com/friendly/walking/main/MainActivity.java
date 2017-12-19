@@ -1,13 +1,12 @@
 package com.friendly.walking.main;
 
-import android.app.PendingIntent;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 
@@ -39,8 +38,7 @@ import com.friendly.walking.fragment.StrollMapFragment;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.fragment.SettingFragment;
-import com.friendly.walking.geofence.GeofenceManager;
-import com.friendly.walking.geofence.GeofenceTransitionsIntentService;
+//import com.friendly.walking.geofence.GeofenceManager;
 import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.service.MainService;
@@ -189,7 +187,7 @@ public class MainActivity extends BaseActivity {
 
         PreferencePhoneShared.setLoginYn(this, false);
         if(!doLogin()) {
-            GeofenceManager.getInstance(MainActivity.this).removeGeofences();
+            JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
         }
     }
 
@@ -401,10 +399,14 @@ public class MainActivity extends BaseActivity {
 
                                 JWLog.e("address : "+address+", lat :"+lat+", lot :"+lot);
                                 if(!TextUtils.isEmpty(address) && !TextUtils.isEmpty(lat) && !TextUtils.isEmpty(lot)) {
-                                    GeofenceManager.getInstance(MainActivity.this).populateGeofenceList(address, lat, lot);
-                                    GeofenceManager.getInstance(MainActivity.this).addGeofences();
+                                    Intent intent = new Intent(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
+                                    intent.putExtra("address", address);
+                                    intent.putExtra("lat", lat);
+                                    intent.putExtra("lot", lot);
+
+                                    JWBroadCast.sendBroadcast(MainActivity.this, intent);
                                 } else {
-                                    GeofenceManager.getInstance(MainActivity.this).removeGeofences();
+                                    JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
                                 }
                             }
                             if(userData != null) {

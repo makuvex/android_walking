@@ -26,8 +26,7 @@ import java.util.HashMap;
 
 final public class Constants {
 
-    private Constants() {
-    }
+    private Constants() {}
 
     private static final String PACKAGE_NAME = "com.friendly.walking.geofence";
 

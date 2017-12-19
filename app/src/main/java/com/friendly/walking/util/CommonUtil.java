@@ -84,6 +84,14 @@ public class CommonUtil {
                         }
                     }
                 });
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
         builder.show();
     }
 

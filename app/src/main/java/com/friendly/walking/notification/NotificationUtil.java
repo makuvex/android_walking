@@ -10,7 +10,7 @@ import android.graphics.BitmapFactory;
 import android.support.v7.app.NotificationCompat;
 
 import com.friendly.walking.GlobalConstantID;
-import com.friendly.walking.landing.NotificationSomething;
+import com.friendly.walking.Landing.NotificationLanding;
 import com.friendly.walking.R;
 
 /**
@@ -20,6 +20,9 @@ import com.friendly.walking.R;
 public class NotificationUtil extends Object {
 
     public static int NOTIFICATION_ID_GEOFENCE = 0;
+    public static int NOTIFICATION_ID_GEOFENCE_MODE = 1;
+    public static int NOTIFICATION_ID_GEOFENCE_FINISHED = 2;
+    public static int NOTIFICATION_ID_GEOFENCE_CANCEL = 3;
 
     private static NotificationUtil             mSelf;
     private Context                             mContext;
@@ -38,7 +41,7 @@ public class NotificationUtil extends Object {
     public void makeNotification(int notificationId, String ticker, String title, String subTitle) {
         Resources res = mContext.getResources();
 
-        Intent notificationIntent = new Intent(mContext, NotificationSomething.class);
+        Intent notificationIntent = new Intent(mContext, NotificationLanding.class);
         notificationIntent.putExtra("notificationId", notificationId);
         PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -53,9 +56,17 @@ public class NotificationUtil extends Object {
                 .setAutoCancel(true)
                 .setWhen(System.currentTimeMillis())
                 .setDefaults(Notification.DEFAULT_ALL)
-                .addAction(R.drawable.stop, "산책 중지", contentIntent)
                 .setColor(mContext.getResources().getColor(R.color.colorPrimary))
                 .build();
+
+        if(notificationId == NOTIFICATION_ID_GEOFENCE_MODE) {
+            PendingIntent cancelPending = PendingIntent.getActivity(mContext,
+                    0,
+                    new Intent(mContext, NotificationLanding.class).putExtra("notificationId", NOTIFICATION_ID_GEOFENCE_CANCEL),
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            builder.addAction(R.drawable.stop, "산책 중지", cancelPending).build();
+        }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             builder.setCategory(Notification.CATEGORY_MESSAGE)
