@@ -12,7 +12,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,6 +25,9 @@
                 android:layout_height="wrap_content"
                 android:background="#ffffff"
                 android:orientation="horizontal">
+
+                <include
+                    layout="@layout/back_layout" />
 
                 <TextView
                     android:id="@+id/title"
@@ -46,7 +50,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp">
+                android:layout_marginTop="10dp">
 
                 <ImageButton
                     android:id="@+id/add_profile"
@@ -227,21 +231,20 @@
                 android:textSize="12dp"
                 android:textStyle="italic" />
 
-            <Button
-                android:id="@+id/sign_up"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_gravity="bottom"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
-                android:background="@color/colorPrimary"
-                android:onClick="onClickCallback"
-                android:text="@string/sign_up"
-                android:textColor="#ffffff"
-                android:textStyle="bold"/>
-
         </LinearLayout>
     </ScrollView>
+    <Button
+        android:id="@+id/sign_up"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp"
+        android:background="@color/colorPrimary"
+        android:onClick="onClickCallback"
+        android:text="@string/sign_up"
+        android:textColor="#ffffff"
+        android:textStyle="bold"/>
 </LinearLayout>

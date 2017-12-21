@@ -69,25 +69,25 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     public static final int                     REQ_CODE_SELECT_IMAGE = 101;
     public static final int                     REQ_CODE_CROP_IMAGE = 102;
 
-    private String                              mEmail;
-    private String                              mPassword;
-    private EditText                            mPetName;
-    private EditText                            mPetBirthDate;
-    private EditText                            mPetSpecies;
-    private EditText                            mPetRelation;
+    protected String                              mEmail;
+    protected String                              mPassword;
+    protected EditText                            mPetName;
+    protected EditText                            mPetBirthDate;
+    protected EditText                            mPetSpecies;
+    protected EditText                            mPetRelation;
 
-    private ImageButton                         mAddProfile;
-    private ImageButton                         mMaleCheck;
-    private ImageButton                         mFemaleCheck;
-    private Button                              mSignUp;
+    protected ImageButton                         mAddProfile;
+    protected ImageButton                         mMaleCheck;
+    protected ImageButton                         mFemaleCheck;
+    protected Button                              mSignUp;
 
-    private static PetData[]                    mPetData;
-    private static PetRelationData[]            mRelationData;
-    private int                                 mPetGender = -1;
-    private Uri                                 mImageCaptureUri;
-    private int                                 mSignUpType;
+    protected static PetData[]                    mPetData;
+    protected static PetRelationData[]            mRelationData;
+    protected int                                 mPetGender = -1;
+    protected Uri                                 mImageCaptureUri;
+    protected int                                 mSignUpType;
 
-    private UserData                            mUserData;
+    protected UserData                            mUserData;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -131,12 +131,15 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
         Intent intent = getIntent();
         //mEmail = intent.getStringExtra(GlobalConstantID.SIGN_UP_EMAIL);
-        mPassword = intent.getStringExtra(GlobalConstantID.SIGN_UP_PASSWORD);
 
-        ApplicationPool pool = (ApplicationPool)getApplicationContext();
-        mUserData = (UserData)pool.getExtra(SignUpActivity.KEY_USER_DATA, getIntent());
+        mPassword = intent.getStringExtra(GlobalConstantID.SIGN_UP_PASSWORD);
         mSignUpType = intent.getIntExtra(GlobalConstantID.SIGN_UP_TYPE, LOGIN_TYPE_EMAIL);
-        mEmail = mUserData.mem_email;
+
+        ApplicationPool pool = (ApplicationPool) getApplicationContext();
+        mUserData = (UserData) pool.getExtra(SignUpActivity.KEY_USER_DATA, getIntent());
+        if(mUserData != null) {
+            mEmail = mUserData.mem_email;
+        }
 
         JWLog.e("","mUserData : "+mUserData+", mEmail :"+mEmail);
     }

@@ -13,9 +13,7 @@ public class PetData {
     public String petRelation = "";
     //public String petProfile = "";
 
-    public PetData() {
-
-    }
+    public PetData() {}
 
     public PetData(int index, String species) {
         this.index = index;

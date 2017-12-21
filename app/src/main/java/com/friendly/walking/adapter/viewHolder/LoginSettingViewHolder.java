@@ -90,7 +90,7 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
             } else if(PreferencePhoneShared.getAutoLoginType(mContext) == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
                 loginTypeImage.setImageResource(R.drawable.g);
             } else {
-                loginTypeImage.setVisibility(View.GONE);
+                loginTypeImage.setImageResource(R.drawable.e);
             }
         }
     }

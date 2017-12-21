@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -41,6 +42,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -57,6 +60,8 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
     private ImageButton                         mDoneButton;
 
     private String                              mAddress;
+    private double                              mLat;
+    private double                              mLot;
     private Geocoder                            mGeocoder;
     private Location                            mCurrentLocation;
     private GoogleMap                           mGoogleMap;
@@ -91,6 +96,10 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         mAddressText = (EditText)findViewById(R.id.address);
         mFindButton = (ImageButton)findViewById(R.id.find);
         mDoneButton = (ImageButton)findViewById(R.id.confirm);
+
+        mGoogleMapAddressLine = getIntent().getStringExtra("address");
+        mLat = Double.parseDouble(getIntent().getStringExtra("lat"));
+        mLot = Double.parseDouble(getIntent().getStringExtra("lot"));
 
         mAddressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -284,6 +293,9 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         currentMarker = mGoogleMap.addMarker(markerOptions);
 
+        mAddressText.setText(getCurrentAddress(latLng));
+        mGoogleMapAddressLine = getCurrentAddress(latLng);
+
         if ( mMoveMapByAPI ) {
             JWLog.e( "", "setCurrentLocation :  mGoogleMap moveCamera " + latLng.latitude + " " + latLng.longitude ) ;
 
@@ -347,7 +359,10 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         mMoveMapByUser = false;
 
         //디폴트 위치, Seoul
-        LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
+        mLat = mLat == 0 ? 37.56 : mLat;
+        mLot = mLot == 0 ? 126.97 : mLot;
+
+        LatLng DEFAULT_LOCATION = new LatLng(mLat, mLot);
         String markerTitle = "위치정보 가져올 수 없음";
         String markerSnippet = "위치 퍼미션과 GPS 활성 요부 확인하세요";
 

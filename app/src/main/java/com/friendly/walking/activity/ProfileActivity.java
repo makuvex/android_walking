@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.broadcast.JWBroadCast;
@@ -32,6 +33,8 @@ import com.google.firebase.auth.AuthResult;
 import java.io.File;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 
 /**
  * Created by jungjiwon on 2017. 10. 25..
@@ -52,6 +55,8 @@ public class ProfileActivity extends BaseActivity {
     private ImageButton                         mQuitServiceButton;
     private View                                mChangePassworLayout;
     private ImageView                           mLoginTypeImage;
+
+    private UserData                            mUserData;
 
     private OnClickListener                     mClickListener;
 
@@ -86,12 +91,19 @@ public class ProfileActivity extends BaseActivity {
                     startActivity(new Intent(ProfileActivity.this, ChangePasswordActivity.class));
 
                 } else if(v == mChangePetInfoButton) {
+                    Intent i = new Intent(ProfileActivity.this, PetInfoActivity.class);
+                    i.putExtra("email", mEmailText.getText());
+                    ApplicationPool pool = (ApplicationPool)getApplicationContext();
+                    pool.putExtra(KEY_USER_DATA, i, mUserData);
 
+                    startActivity(i);
                 } else if(v == mQuitServiceButton) {
                     JWLog.e("", "탈퇴");
                     quitService();
                 } else if(v == mChangeUserInfoButton) {
-                    startActivity(new Intent(ProfileActivity.this, UserInfoActivity.class));
+                    Intent i = new Intent(ProfileActivity.this, UserInfoActivity.class);
+                    i.putExtra("email", mEmailText.getText());
+                    startActivity(i);
                 }
             }
         };
@@ -146,9 +158,9 @@ public class ProfileActivity extends BaseActivity {
             @Override
             public void onCompleted(boolean result, Object object) {
                 JWLog.e("", "result :"+result);
-                UserData userData = (UserData) object;
-                if(userData != null) {
-                    PetData petData = userData.pet_list.get(0);
+                mUserData = (UserData) object;
+                if(mUserData != null) {
+                    PetData petData = mUserData.pet_list.get(0);
 
                     mPetName.setText(petData.petName);
                     mGenderImage.setImageResource(petData.petGender == false ? R.drawable.male : R.drawable.female);

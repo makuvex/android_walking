@@ -86,6 +86,8 @@
 
         <activity android:name="com.friendly.walking.activity.UserInfoActivity" />
 
+        <activity android:name="com.friendly.walking.activity.PetInfoActivity" />
+
         //////////////////// service ////////////////////
         <service android:name="com.friendly.walking.service.MainService"/>
         <service android:name="com.friendly.walking.geofence.GeofenceTransitionsIntentService" />

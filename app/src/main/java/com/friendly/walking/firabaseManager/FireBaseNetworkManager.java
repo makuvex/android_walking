@@ -25,6 +25,7 @@ import com.friendly.walking.R;
 import com.friendly.walking.activity.ChangePasswordActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LocationData;
+import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
@@ -371,6 +372,34 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         });
     }
 
+    public void readPetData(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData userData = null;
+                for(DataSnapshot data : dataSnapshot.getChildren()) {
+                    userData = data.getValue(UserData.class);
+                }
+                JWLog.e("","userData :"+userData);
+                if(callback != null) {
+                    if (userData != null) {
+                        callback.onCompleted(true, userData.pet_list);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
+    }
+
     public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
 
         final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
@@ -624,6 +653,58 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 callback.onCompleted(false, null);
             }
         });
+    }
+
+    public void updateUserData(String email, final UserData modifiedUserData, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("email :"+email+", modifiedUserData :"+modifiedUserData);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    callback.onCompleted(true, null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(modifiedUserData.uid).setValue(modifiedUserData);
+    }
+
+    public void updatePetData(UserData userData, final PetData petData, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("email :"+userData.mem_email+", petData :"+petData);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    callback.onCompleted(true, null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        List<PetData> petList = new ArrayList<>();
+        petList.add(petData);
+        databaseReference.child("users").child(userData.uid).child("pet_list").setValue(petList);
     }
 
     public void logoutAccount() {
