@@ -168,7 +168,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                             emailUpdateUI(email);
                         }
 
-                        PreferencePhoneShared.setAutoLoginYn(mContext, true);
+                        //PreferencePhoneShared.setAutoLoginYn(mContext, true);
                         PreferencePhoneShared.setLoginID(mContext, encryptedEmail);
                         PreferencePhoneShared.setUserUID(mContext, user.getUid());
 
@@ -614,33 +614,17 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         });
     }
 
-    public void updateLastLoginTime(String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
-        JWLog.e("email :"+email);
+    public void updateLastLoginTime(String uid, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
 
-        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
-
-        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                UserData userData = null;
-                for(DataSnapshot data : dataSnapshot.getChildren()) {
-                    userData = data.getValue(UserData.class);
-                }
-                JWLog.e("","userData :"+userData);
-                if(userData == null) {
-                    return;
-                }
-
-                Date date = new Date(System.currentTimeMillis());
-                SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd.HH:mm:ss", Locale.KOREA );
-                String dateTime = formatter.format(date);
-
-                userData.mem_last_login_datetime = dateTime;
-                databaseReference.child("users").child(userData.uid).child("mem_last_login_datetime").setValue(userData.mem_last_login_datetime);
-
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
                 if(callback != null) {
-                    if (userData != null) {
-                        callback.onCompleted(true, userData);
+                    if (data != null) {
+                        callback.onCompleted(true, data);
                     } else {
                         callback.onCompleted(false, null);
                     }
@@ -649,10 +633,46 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                JWLog.e("","e :" + databaseError.getDetails());
-                callback.onCompleted(false, null);
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
             }
         });
+
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd:HH:mm:ss", Locale.KOREA );
+        String dateTime = formatter.format(date);
+        databaseReference.child("users").child(uid).child("mem_last_login_datetime").setValue(dateTime);
+    }
+
+    public void updateAutoLoginCheck(String uid, boolean result, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    if (data != null) {
+                        callback.onCompleted(true, data);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).child("mem_auto_login").setValue(result);
     }
 
     public void updateUserData(String email, final UserData modifiedUserData, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -705,6 +725,93 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         List<PetData> petList = new ArrayList<>();
         petList.add(petData);
         databaseReference.child("users").child(userData.uid).child("pet_list").setValue(petList);
+    }
+
+    public void updateLocationYn(String uid, boolean result, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    if (data != null) {
+                        callback.onCompleted(true, data);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).child("mem_location_yn").setValue(result);
+    }
+
+    public void updateNotificationYn(String uid, boolean result, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    if (data != null) {
+                        callback.onCompleted(true, data);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).child("mem_notification_yn").setValue(result);
+    }
+
+    public void updateGeoNotificationYn(String uid, boolean result, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    if (data != null) {
+                        callback.onCompleted(true, data);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).child("mem_geo_notification_yn").setValue(result);
     }
 
     public void logoutAccount() {
@@ -784,6 +891,32 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 if(callback != null) {
                     callback.onCompleted(false, null);
                 }
+            }
+        });
+    }
+
+    public void readVersionInfo(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+
+        final Query myTopPostsQuery = databaseReference.child("version");
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                JWLog.e(""+dataSnapshot+", "+dataSnapshot.getValue());
+
+                if(callback != null) {
+                    if (dataSnapshot.getValue() != null) {
+                        callback.onCompleted(true, dataSnapshot.getValue());
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
             }
         });
 

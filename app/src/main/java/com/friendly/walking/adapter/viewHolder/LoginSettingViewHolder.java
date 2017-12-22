@@ -1,5 +1,6 @@
 package com.friendly.walking.adapter.viewHolder;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
@@ -34,8 +35,8 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
 
     private View.OnClickListener mOnClickListener;
 
-    public LoginSettingViewHolder(final Context context, View itemView) {
-        super(context, itemView);
+    public LoginSettingViewHolder(final Activity activity, View itemView) {
+        super(activity, itemView);
 
         JWLog.e("", "");
 
@@ -48,15 +49,15 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
             @Override
             public void onClick(View v) {
                 if(v.getId() == R.id.login_out_action)
-                    if (PreferencePhoneShared.getLoginYn(mContext)) {
-                        Intent intent = new Intent(mContext, ProfileActivity.class);
+                    if (PreferencePhoneShared.getLoginYn(mActivity)) {
+                        Intent intent = new Intent(mActivity, ProfileActivity.class);
                         intent.putExtra("email", loginID.getText());
                         // 펫네임 젠더
-                        mContext.startActivity(intent);
+                        mActivity.startActivity(intent);
                     } else {
                         JWLog.e("", "로그인");
-                        Intent intent = new Intent(mContext, LoginActivity.class);
-                        mContext.startActivity(intent);
+                        Intent intent = new Intent(mActivity, LoginActivity.class);
+                        mActivity.startActivity(intent);
                     }
                 else if(v.getId() == R.id.autoLogin) {
                     JWLog.e("","autoLogin");
@@ -69,8 +70,8 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
     }
 
     @Override
-    public LoginSettingViewHolder setLayout(Context context) {
-        return new LoginSettingViewHolder(context, mView);
+    public LoginSettingViewHolder setLayout(Activity activity) {
+        return new LoginSettingViewHolder(activity, mView);
     }
 
     @Override
@@ -83,14 +84,16 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
             this.itemView.setTag(data);
 
             loginTypeImage.setVisibility(View.VISIBLE);
-            if(PreferencePhoneShared.getAutoLoginType(mContext) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+            if(PreferencePhoneShared.getAutoLoginType(mActivity) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
                 loginTypeImage.setImageResource(R.drawable.k);
-            } else if(PreferencePhoneShared.getAutoLoginType(mContext) == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
+            } else if(PreferencePhoneShared.getAutoLoginType(mActivity) == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
                 loginTypeImage.setImageResource(R.drawable.f);
-            } else if(PreferencePhoneShared.getAutoLoginType(mContext) == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
+            } else if(PreferencePhoneShared.getAutoLoginType(mActivity) == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
                 loginTypeImage.setImageResource(R.drawable.g);
-            } else {
+            } else if(PreferencePhoneShared.getAutoLoginType(mActivity) == GlobalConstantID.LOGIN_TYPE_EMAIL) {
                 loginTypeImage.setImageResource(R.drawable.e);
+            } else {
+                loginTypeImage.setVisibility(View.GONE);
             }
         }
     }

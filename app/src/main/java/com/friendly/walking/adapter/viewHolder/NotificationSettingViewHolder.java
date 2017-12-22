@@ -1,12 +1,18 @@
 package com.friendly.walking.adapter.viewHolder;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
+import com.friendly.walking.activity.BaseActivity;
+import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.NotificationSettingListData;
 import com.friendly.walking.R;
 import com.friendly.walking.adapter.baseInterface.BaseSettingViewHolderInterface;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
 
 /**
@@ -23,8 +29,8 @@ public class NotificationSettingViewHolder extends BaseViewHolder implements Bas
 
     private View.OnClickListener mOnClickListener;
 
-    public NotificationSettingViewHolder(Context context, View itemView) {
-        super(context, itemView);
+    public NotificationSettingViewHolder(Activity activity, View itemView) {
+        super(activity, itemView);
         JWLog.e("", "");
 
         acceptButton = (ImageButton) itemView.findViewById(R.id.accept_notification);
@@ -33,7 +39,22 @@ public class NotificationSettingViewHolder extends BaseViewHolder implements Bas
         mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                v.setSelected(!v.isSelected());
+                boolean loginYn = PreferencePhoneShared.getLoginYn(mActivity);
+                if(loginYn) {
+                    v.setSelected(!v.isSelected());
+
+                    if(v == acceptButton) {
+                        PreferencePhoneShared.setNotificationYn(mActivity, v.isSelected());
+
+                        if(mActivity instanceof BaseActivity) {
+                            //JWBroadCast.sendBroadcast(mActivity, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+                        }
+                    } else if(v == acceptGeofenceButton) {
+                        PreferencePhoneShared.setGeoNotificationYn(mActivity, v.isSelected());
+                    }
+                } else {
+                    Toast.makeText(mActivity, "로그인 후 설정 가능합니다.", Toast.LENGTH_SHORT).show();
+                }
             }
         };
 
@@ -42,8 +63,8 @@ public class NotificationSettingViewHolder extends BaseViewHolder implements Bas
     }
 
     @Override
-    public NotificationSettingViewHolder setLayout(Context context) {
-        return new NotificationSettingViewHolder(context, mView);
+    public NotificationSettingViewHolder setLayout(Activity activity) {
+        return new NotificationSettingViewHolder(activity, mView);
     }
 
     @Override

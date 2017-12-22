@@ -4,6 +4,7 @@ package com.friendly.walking.adapter.viewHolder;
  * Created by jungjiwon on 2017. 10. 23..
  */
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.widget.ImageButton;
@@ -23,8 +24,8 @@ public class SettingViewHolder extends BaseViewHolder implements BaseSettingView
     public TextView title;
     public TextView titleDesc;
 
-    public SettingViewHolder(Context context, View itemView) {
-        super(context, itemView);
+    public SettingViewHolder(Activity activity, View itemView) {
+        super(activity, itemView);
         JWLog.e("", "");
 
         imageButton = (ImageButton) itemView.findViewById(R.id.img_button);
@@ -34,8 +35,8 @@ public class SettingViewHolder extends BaseViewHolder implements BaseSettingView
 
 
     @Override
-    public SettingViewHolder setLayout(Context context) {
-        return new SettingViewHolder(context, mView);
+    public SettingViewHolder setLayout(Activity activity) {
+        return new SettingViewHolder(activity, mView);
     }
 
     @Override

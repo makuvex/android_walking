@@ -42,6 +42,10 @@ public class VersionInfoSettingListData implements BaseSettingDataSetInterface {
 
     @Override
     public void setDataSet(Object object) {
-
+        if(object instanceof VersionInfoSettingListData) {
+            VersionInfoSettingListData data = (VersionInfoSettingListData)object;
+            this.currentVersion = data.currentVersion;
+            this.latestVersion = data.latestVersion;
+        }
     }
 }

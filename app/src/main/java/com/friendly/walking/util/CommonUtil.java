@@ -3,6 +3,7 @@ package com.friendly.walking.util;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
@@ -161,5 +162,22 @@ public class CommonUtil {
 
         return matcher.matches();
 
+    }
+
+    public static String getAppVersion(Context context) {
+        String version = "0";
+
+        if (null == context) {
+            return version;
+        }
+
+        try {
+            PackageInfo i = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            version = i.versionName;
+        } catch (Exception e) {
+            version = "0";
+        }
+
+        return version;
     }
 }

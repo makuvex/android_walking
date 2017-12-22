@@ -80,6 +80,7 @@
     <string name="version_information" translatable="false">버전 정보</string>
     <string name="current_version" translatable="false">현재 버전</string>
     <string name="latest_version" translatable="false">최신 버전</string>
+    <string name="update" translatable="false">업데이트</string>
 
     <string name="current_password_hint" translatable="false">현재 비밀번호</string>
     <string name="new_password_hint" translatable="false">새 비밀번호(대소문자 8글자 이상, 숫자 및 특수문자 포함)</string>

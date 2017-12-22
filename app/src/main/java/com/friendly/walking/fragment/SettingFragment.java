@@ -36,6 +36,8 @@ import com.friendly.walking.dataSet.PermissionSettingListData;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.friendly.walking.adapter.SettingRecyclerAdapter.INDEX_DATA_VERSION;
+
 public class SettingFragment extends Fragment {
 
     private static String[] contentTitle = {"로그인 정보", "알림 설정", "권한 설정", "위치 서비스", "생활패턴 인식", "버전 정보"};
@@ -83,6 +85,7 @@ public class SettingFragment extends Fragment {
                     mAdapter.notifyDataSetChanged();
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
                     mAdapter.setDataWithIndex(0, new LoginSettingListData(getString(R.string.login_guide), false));
+
                     mAdapter.notifyDataSetChanged();
                 }
             }
@@ -139,10 +142,10 @@ public class SettingFragment extends Fragment {
         }
 
         list.add(new LoginSettingListData(loginText, true));
-        list.add(new NotificationSettingListData(false, true));
+        list.add(new NotificationSettingListData(false, false));
         list.add(new PermissionSettingListData());
-        list.add(new LocationSettingListData(false, true));
-        list.add(new VersionInfoSettingListData("v1.0.0", "v1.0.1"));
+        list.add(new LocationSettingListData(false, false));
+        list.add(new VersionInfoSettingListData("", ""));
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext());
         mRecyclerView.addItemDecoration(dividerItemDecoration);
@@ -152,6 +155,20 @@ public class SettingFragment extends Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
+        FireBaseNetworkManager.getInstance(getActivity()).readVersionInfo(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+            @Override
+            public void onCompleted(boolean result, Object object) {
+                if(result && object != null) {
+                    PreferencePhoneShared.setVersionInfo(mContext, (String)object);
+
+                    String latestVersion = PreferencePhoneShared.getVersionInfo(mContext);
+                    String currentVersion = CommonUtil.getAppVersion(mContext);
+                    JWLog.e("currentVersion :"+currentVersion+", latestVersion :"+latestVersion);
+
+                    mAdapter.setDataWithIndex(INDEX_DATA_VERSION, new VersionInfoSettingListData(currentVersion, latestVersion));
+                }
+            }
+        });
     }
 
 }

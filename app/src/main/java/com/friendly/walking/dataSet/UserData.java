@@ -18,6 +18,7 @@ public class UserData extends Object {
     public String mem_email = "";
     public boolean mem_auto_login = false;
     public boolean mem_notification_yn = true;
+    public boolean mem_geo_notification_yn = true;
     public boolean mem_location_yn = true;
     public Map<String, String> mem_address = new HashMap<>();
     public String mem_register_datetime = "";
@@ -28,6 +29,7 @@ public class UserData extends Object {
     public Map<String, String> mem_alarm_time = new HashMap<>();
     public Map<String, ArrayList<LocationData>> walking_location_list = new HashMap<>();
     public Map<String, String> walking_time_list = new HashMap<>();
+
 
     public String joinBy = "";
 
@@ -41,6 +43,7 @@ public class UserData extends Object {
                 ", uid :"+uid+
                 ", mem_auto_login :"+mem_auto_login+
                 ", mem_notification_yn :"+mem_notification_yn+
+                ", mem_geo_notification_yn :"+mem_geo_notification_yn+
                 ", mem_location_yn :"+mem_location_yn+
                 ", mem_address :"+mem_address+
                 ", mem_register_datetime :"+mem_register_datetime+

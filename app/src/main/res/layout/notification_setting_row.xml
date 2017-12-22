@@ -48,7 +48,8 @@
             android:layout_marginLeft="10dp"
             android:scaleType="fitCenter"
             android:background="@color/colorTransparent"
-            android:src="@drawable/on_off_selector"/>
+            android:src="@drawable/on_off_selector"
+            />
 
     </LinearLayout>
 

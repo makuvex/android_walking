@@ -1,12 +1,15 @@
 package com.friendly.walking.adapter.viewHolder;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.adapter.baseInterface.BaseSettingViewHolderInterface;
 import com.friendly.walking.dataSet.NotificationSettingListData;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
 
 /**
@@ -19,8 +22,8 @@ public class PermissionSettingViewHolder extends BaseViewHolder implements BaseS
 
     private View.OnClickListener mOnClickListener;
 
-    public PermissionSettingViewHolder(Context context, View itemView) {
-        super(context, itemView);
+    public PermissionSettingViewHolder(Activity activity, View itemView) {
+        super(activity, itemView);
         JWLog.e("", "");
 
         moreButton = (ImageButton) itemView.findViewById(R.id.permission_more);
@@ -29,6 +32,12 @@ public class PermissionSettingViewHolder extends BaseViewHolder implements BaseS
             @Override
             public void onClick(View v) {
                 JWLog.e("","moreButton");
+                boolean loginYn = PreferencePhoneShared.getLoginYn(mActivity);
+                if(loginYn) {
+
+                } else {
+                    Toast.makeText(mActivity, "로그인 후 설정 가능합니다.", Toast.LENGTH_SHORT).show();
+                }
             }
         };
 
@@ -36,8 +45,8 @@ public class PermissionSettingViewHolder extends BaseViewHolder implements BaseS
     }
 
     @Override
-    public PermissionSettingViewHolder setLayout(Context context) {
-        return new PermissionSettingViewHolder(context, mView);
+    public PermissionSettingViewHolder setLayout(Activity activity) {
+        return new PermissionSettingViewHolder(mActivity, mView);
     }
 
     @Override

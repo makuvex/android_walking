@@ -4,6 +4,7 @@ package com.friendly.walking.adapter.viewHolder;
  * Created by jungjiwon on 2017. 10. 23..
  */
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -13,14 +14,14 @@ import android.view.View;
  */
 public abstract class BaseViewHolder extends RecyclerView.ViewHolder{
 
-    protected View mView;
-    protected static Context mContext;
+    protected View                      mView;
+    protected static Activity mActivity;
 
-    public BaseViewHolder(Context context, View itemView) {
+    public BaseViewHolder(Activity activity, View itemView) {
         super(itemView);
         mView = itemView;
-        mContext = context;
+        mActivity = activity;
     }
 
-     public abstract  BaseViewHolder setLayout(Context context);
+     public abstract  BaseViewHolder setLayout(Activity activity);
 }

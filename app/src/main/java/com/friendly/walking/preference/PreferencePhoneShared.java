@@ -19,6 +19,12 @@ public class PreferencePhoneShared extends BasePreference {
     private static final String KEY_AUTO_END_STROLL_TIME                    = "KEY_AUTO_END_STROLL_TIME";
     private static final String KEY_AUTO_STROLL_MODE                        = "KEY_AUTO_STROLL_MODE";
 
+    private static final String KEY_NOTIFICATION_YN                         = "KEY_NOTIFICATION_YN";
+    private static final String KEY_GEO_NOTIFICATION_YN                     = "KEY_GEO_NOTIFICATION_YN";
+    private static final String KEY_LOCATION_YN                             = "KEY_LOCATION_YN";
+
+    private static final String KEY_VERSION_INFO                            = "KEY_VERSION_INFO";
+
     public static void setAutoLoginYn(Context cxt, boolean autoLoginYn){
         putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_YN, autoLoginYn);
     }
@@ -33,6 +39,30 @@ public class PreferencePhoneShared extends BasePreference {
 
     public static boolean getLoginYn(Context cxt){
         return getBoolean(cxt, PREFERENCE_NAME, KEY_LOGIN_YN, false);
+    }
+
+    public static void setNotificationYn(Context cxt, boolean notificationYn){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_NOTIFICATION_YN, notificationYn);
+    }
+
+    public static boolean getNotificationYn(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_NOTIFICATION_YN, false);
+    }
+
+    public static void setGeoNotificationYn(Context cxt, boolean geoNotificationYn){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_GEO_NOTIFICATION_YN, geoNotificationYn);
+    }
+
+    public static boolean getGeoNotificationYn(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_GEO_NOTIFICATION_YN, false);
+    }
+
+    public static void setLocationYn(Context cxt, boolean locationYn){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_LOCATION_YN, locationYn);
+    }
+
+    public static boolean getLocationYn(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_LOCATION_YN, false);
     }
 
     public static void setLoginID(Context cxt, String id){
@@ -90,4 +120,14 @@ public class PreferencePhoneShared extends BasePreference {
     public static boolean getAutoStrollMode(Context cxt){
         return getBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_STROLL_MODE, false);
     }
+
+    public static void setVersionInfo(Context cxt, String version){
+        putString(cxt, PREFERENCE_NAME, KEY_VERSION_INFO, version);
+    }
+
+    public static String getVersionInfo(Context cxt){
+        return getString(cxt, PREFERENCE_NAME, KEY_VERSION_INFO, null);
+    }
+
+
 }

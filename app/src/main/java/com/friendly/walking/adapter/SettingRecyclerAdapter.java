@@ -1,5 +1,6 @@
 package com.friendly.walking.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import com.friendly.walking.adapter.viewHolder.PermissionSettingViewHolder;
 import com.friendly.walking.adapter.viewHolder.VersionInfoSettingViewHolder;
 import com.friendly.walking.dataSet.LocationSettingListData;
 import com.friendly.walking.dataSet.LoginSettingListData;
+import com.friendly.walking.dataSet.VersionInfoSettingListData;
 import com.friendly.walking.util.JWLog;
 import com.friendly.walking.R;
 
@@ -30,36 +32,32 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     public static final int INDEX_DATA_LOCATION                 = 3;
     public static final int INDEX_DATA_VERSION                  = 4;
 
-    private HashMap<Integer, Integer> layoutMap;
-    private HashMap<Integer, Class<?>> holderMap;
-    private List<BaseSettingDataSetInterface> dataList;
-    private int itemLayout;
-    private Context mContext;
+    private HashMap<Integer, Integer>                           layoutMap;
+    private HashMap<Integer, RecyclerView.ViewHolder>           holderMap;
+    private List<BaseSettingDataSetInterface>                   dataList;
+    private int                                                 itemLayout;
+    private Activity                                            mActivity;
 
     /**
      * 생성자
      * @param items
      */
-    public SettingRecyclerAdapter(Context context, List<BaseSettingDataSetInterface> items){
+    public SettingRecyclerAdapter(Activity activity, List<BaseSettingDataSetInterface> items){
 
-        mContext = context;
+        mActivity = activity;
         this.dataList = items;
         if(layoutMap == null) {
             layoutMap = new HashMap<Integer, Integer>();
         }
         if(holderMap == null) {
-            holderMap = new HashMap<Integer, Class<?>>();
+            holderMap = new HashMap<Integer, RecyclerView.ViewHolder>();
         }
 
         layoutMap.put(0, R.layout.login_setting_row);
-        //layoutMap.put(1, R.layout.setting_recycle_row);
         layoutMap.put(1, R.layout.notification_setting_row);
         layoutMap.put(2, R.layout.permission_setting_row);
         layoutMap.put(3, R.layout.location_setting_row);
         layoutMap.put(4, R.layout.version_info_setting_row);
-
-//        holderMap.put(0, LoginSettingViewHolder.class);
-//        holderMap.put(1, SettingViewHolder.class);
     }
 
     /**
@@ -73,16 +71,38 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         //JWLog.e("","");
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutMap.get(viewType), viewGroup,false);
+        RecyclerView.ViewHolder holder = holderMap.get(viewType);
+
         if(viewType == INDEX_DATA_LOGIN) {
-            return new LoginSettingViewHolder(mContext, view).setLayout(mContext);
+            if(holder == null) {
+                holder = new LoginSettingViewHolder(mActivity, view).setLayout(mActivity);
+                holderMap.put(viewType, holder);
+            }
+            return holder;
         } else if(viewType == INDEX_DATA_NOTIFICATION) {
-            return new NotificationSettingViewHolder(mContext, view).setLayout(mContext);
+            if(holder == null) {
+                holder = new NotificationSettingViewHolder(mActivity, view).setLayout(mActivity);
+                holderMap.put(viewType, holder);
+            }
+            return holder;
         } else if(viewType == INDEX_DATA_PERMISSION) {
-            return new PermissionSettingViewHolder(mContext, view).setLayout(mContext);
+            if(holder == null) {
+                holder = new PermissionSettingViewHolder(mActivity, view).setLayout(mActivity);
+                holderMap.put(viewType, holder);
+            }
+            return holder;
         } else if(viewType == INDEX_DATA_LOCATION) {
-            return new LocationSettingViewHolder(mContext, view).setLayout(mContext);
+            if(holder == null) {
+                holder = new LocationSettingViewHolder(mActivity, view).setLayout(mActivity);
+                holderMap.put(viewType, holder);
+            }
+            return holder;
         } else if(viewType == INDEX_DATA_VERSION) {
-            return new VersionInfoSettingViewHolder(mContext, view).setLayout(mContext);
+            if(holder == null) {
+                holder = new VersionInfoSettingViewHolder(mActivity, view).setLayout(mActivity);
+                holderMap.put(viewType, holder);
+            }
+            return holder;
         } else {
             return null;
         }
@@ -105,7 +125,6 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             BaseSettingDataSetInterface item = dataList.get(position);
             holder.setDataSet(item.getDataSet());
         }
-
     }
 
     @Override
@@ -123,7 +142,23 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         if(index == INDEX_DATA_LOGIN) {
             LoginSettingListData data = (LoginSettingListData)dataList.get(index);
             data.setDataSet(object);
+        } else if(index == INDEX_DATA_VERSION) {
+            VersionInfoSettingListData data = (VersionInfoSettingListData)dataList.get(index);
+            data.setDataSet(object);
+
+            VersionInfoSettingViewHolder holder = (VersionInfoSettingViewHolder)holderMap.get(INDEX_DATA_VERSION);
+            if(Float.parseFloat(data.getCurrentVersion()) >= Float.parseFloat(data.getLatestVersion())) {
+                holder.updateButton.setVisibility(View.GONE);
+            } else {
+                holder.updateButton.setVisibility(View.VISIBLE);
+            }
+
+            notifyDataSetChanged();
         }
+    }
+
+    public RecyclerView.ViewHolder getViewHolderByViewType(int viewType) {
+        return holderMap.get(viewType);
     }
 
 }

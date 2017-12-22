@@ -203,6 +203,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         data.mem_email = mEmailText.getText().toString();
         data.mem_auto_login = mAutoLogin.isChecked();
         data.mem_notification_yn = true;
+        data.mem_geo_notification_yn = true;
         data.mem_location_yn = true;
 
         if(!TextUtils.isEmpty(mAddress)) {
@@ -211,7 +212,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
             data.mem_address.put("lot", mLot);
         }
         Date date = new Date(System.currentTimeMillis());
-        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd.HH:mm:ss", Locale.KOREA );
+        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd:HH:mm:ss", Locale.KOREA );
         String dateTime = formatter.format(date);
         data.mem_register_datetime = dateTime;
 

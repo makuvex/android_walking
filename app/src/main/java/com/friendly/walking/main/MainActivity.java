@@ -367,6 +367,9 @@ public class MainActivity extends BaseActivity {
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_KAKAO_LOGIN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGOUT);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_EMAIL_LOGIN);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR);
+
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -389,14 +392,24 @@ public class MainActivity extends BaseActivity {
                         @Override
                         public void onCompleted(boolean result, Object object) {
                             JWLog.e("", "result :"+result);
-                            setProgressBar(View.INVISIBLE);
 
+                            setProgressBar(View.INVISIBLE);
                             UserData userData = (UserData) object;
 
                             JWLog.e("userData :"+userData);
                             if(!TextUtils.isEmpty(userData.mem_email)) {
-                                FireBaseNetworkManager.getInstance(MainActivity.this).updateLastLoginTime(userData.mem_email, null);
+                                FireBaseNetworkManager.getInstance(MainActivity.this).updateLastLoginTime(userData.uid, null);
+                                FireBaseNetworkManager.getInstance(MainActivity.this).updateAutoLoginCheck(userData.uid, PreferencePhoneShared.getAutoLoginYn(MainActivity.this), null);
                             }
+
+                            if(userData != null) {
+                                PetData petData = userData.pet_list.get(0);
+                                mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
+                            }
+
+                            PreferencePhoneShared.setNotificationYn(getApplicationContext(), userData.mem_notification_yn);
+                            PreferencePhoneShared.setGeoNotificationYn(getApplicationContext(), userData.mem_geo_notification_yn);
+                            PreferencePhoneShared.setLocationYn(getApplicationContext(), userData.mem_location_yn);
 
                             PreferencePhoneShared.setStartStrollTime(getApplicationContext(), userData.mem_alarm_time.get("start"));
                             PreferencePhoneShared.setEndStrollTime(getApplicationContext(), userData.mem_alarm_time.get("end"));
@@ -435,6 +448,12 @@ public class MainActivity extends BaseActivity {
                     mProfileText.setText("누구의 산책에 온거 축하");
                     mProfileImageView.setImageResource(R.drawable.default_profile);
                     mProfileView.setBackgroundResource(R.drawable.profile_bg);
+                } else if(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR.equals(intent.getAction())) {
+                    JWLog.e("");
+                    setProgressBar(View.VISIBLE);
+                } else if(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR.equals(intent.getAction())) {
+                    JWLog.e("");
+                    setProgressBar(View.INVISIBLE);
                 }
             }
         };
@@ -480,17 +499,17 @@ public class MainActivity extends BaseActivity {
                                 updateUI(user.getEmail());
                                 readPetProfileImage(user.getEmail());
 
-                                FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(user.getEmail(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                                    @Override
-                                    public void onCompleted(boolean result, Object object) {
-                                        JWLog.e("", "result :"+result);
-                                        UserData userData = (UserData) object;
-                                        if(userData != null) {
-                                            PetData petData = userData.pet_list.get(0);
-                                            mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
-                                        }
-                                    }
-                                });
+//                                FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(user.getEmail(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
+//                                    @Override
+//                                    public void onCompleted(boolean result, Object object) {
+//                                        JWLog.e("", "result :"+result);
+//                                        UserData userData = (UserData) object;
+//                                        if(userData != null) {
+//                                            PetData petData = userData.pet_list.get(0);
+//                                            mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
+//                                        }
+//                                    }
+//                                });
 
                             } catch (Exception e) {
                                 e.printStackTrace();
