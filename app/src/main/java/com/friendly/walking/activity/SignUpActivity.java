@@ -231,6 +231,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
 
         data.walking_location_list.put(dateTime2, list);
         data.walking_time_list.put(dateTime2, "0");
+        data.mem_auto_stroll_distance = 100;
 
         data.joinBy = "email";
         JWLog.e("","@@@ userData : "+data);

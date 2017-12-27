@@ -217,6 +217,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             } else if(TextUtils.isEmpty(mPasswordText.getText().toString())) {
                 Toast.makeText(getApplicationContext(), "비밀번호를 입력해 주세요", Toast.LENGTH_SHORT).show();
             } else {
+                PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
+
                 FireBaseNetworkManager.getInstance(this).loginEmailWithPassword(email, mPasswordText.getText().toString(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
                     @Override
                     public void onCompleted(boolean result, Object object) {

@@ -36,13 +36,13 @@
             android:layout_marginLeft="5dp"
             android:scaleType="fitCenter"
             android:layout_gravity="center_vertical"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/loginID"
             android:layout_width="0dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="5dp"
+            android:layout_marginLeft="10dp"
             android:textSize="15dp"
             android:gravity="center_vertical"
             android:typeface="sans"
@@ -78,7 +78,7 @@
             android:gravity="center_vertical"
             android:typeface="sans"
             android:text="@string/auto_login"
-            android:lines="1"
+            android:singleLine="true"
             android:layout_weight="1"
             android:ellipsize="marquee"/>
 

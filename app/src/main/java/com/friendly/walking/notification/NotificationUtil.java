@@ -9,9 +9,12 @@ import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.NotificationCompat;
 
+import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.Landing.NotificationLanding;
 import com.friendly.walking.R;
+import com.friendly.walking.dataSet.RemoteNotificationData;
+import com.friendly.walking.util.JWLog;
 
 /**
  * Created by JungJiWon on 2017-10-21.
@@ -23,14 +26,18 @@ public class NotificationUtil extends Object {
     public static int NOTIFICATION_ID_GEOFENCE_MODE = 1;
     public static int NOTIFICATION_ID_GEOFENCE_FINISHED = 2;
     public static int NOTIFICATION_ID_GEOFENCE_CANCEL = 3;
+    public static int NOTIFICATION_ID_REMOTE_DATA = 4;
 
     private static NotificationUtil             mSelf;
     private Context                             mContext;
+    private RemoteNotificationData              mData;
+
 
     public static NotificationUtil getInstance(Context context) {
         if(mSelf == null) {
             mSelf = new NotificationUtil(context);
         }
+        mSelf.mData = null;
         return mSelf;
     }
 
@@ -38,11 +45,17 @@ public class NotificationUtil extends Object {
         mContext = context;
     }
 
+    public void makeNotification(int notificationId, RemoteNotificationData data) {
+        mData = data;
+        makeNotification(notificationId, data.title, data.title, data.message);
+    }
+
     public void makeNotification(int notificationId, String ticker, String title, String subTitle) {
         Resources res = mContext.getResources();
 
         Intent notificationIntent = new Intent(mContext, NotificationLanding.class);
         notificationIntent.putExtra("notificationId", notificationId);
+        notificationIntent.putExtra("data", mData);
         PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);

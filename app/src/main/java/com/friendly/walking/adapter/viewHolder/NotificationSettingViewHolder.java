@@ -36,6 +36,9 @@ public class NotificationSettingViewHolder extends BaseViewHolder implements Bas
         acceptButton = (ImageButton) itemView.findViewById(R.id.accept_notification);
         acceptGeofenceButton = (ImageButton) itemView.findViewById(R.id.accept_geofence_notification);
 
+        acceptButton.setSelected(PreferencePhoneShared.getNotificationYn(mActivity));
+        acceptGeofenceButton.setSelected(PreferencePhoneShared.getGeoNotificationYn(mActivity));
+
         mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -44,13 +47,13 @@ public class NotificationSettingViewHolder extends BaseViewHolder implements Bas
                     v.setSelected(!v.isSelected());
 
                     if(v == acceptButton) {
-                        PreferencePhoneShared.setNotificationYn(mActivity, v.isSelected());
-
-                        if(mActivity instanceof BaseActivity) {
-                            //JWBroadCast.sendBroadcast(mActivity, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-                        }
+                        Intent i = new Intent(JWBroadCast.BROAD_CAST_CHANGE_NOTIFICATION_YN);
+                        i.putExtra("value", v.isSelected());
+                        JWBroadCast.sendBroadcast(mActivity, i);
                     } else if(v == acceptGeofenceButton) {
-                        PreferencePhoneShared.setGeoNotificationYn(mActivity, v.isSelected());
+                        Intent i = new Intent(JWBroadCast.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN);
+                        i.putExtra("value", v.isSelected());
+                        JWBroadCast.sendBroadcast(mActivity, i);
                     }
                 } else {
                     Toast.makeText(mActivity, "로그인 후 설정 가능합니다.", Toast.LENGTH_SHORT).show();

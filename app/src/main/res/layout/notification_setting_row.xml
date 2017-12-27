@@ -36,7 +36,7 @@
             android:gravity="center_vertical"
             android:typeface="sans"
             android:text="@string/notification_accept"
-            android:lines="1"
+            android:singleLine="true"
             android:layout_weight="1"
             android:ellipsize="marquee"/>
 
@@ -67,7 +67,7 @@
             android:gravity="center_vertical"
             android:typeface="sans"
             android:text="@string/suggest_geofence_notification"
-            android:lines="1"
+            android:singleLine="true"
             android:layout_weight="1"
             android:ellipsize="marquee"/>
 

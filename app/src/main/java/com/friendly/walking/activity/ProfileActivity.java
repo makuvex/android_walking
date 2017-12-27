@@ -29,6 +29,7 @@ import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.File;
 
@@ -183,6 +184,8 @@ public class ProfileActivity extends BaseActivity {
                             Toast.makeText(getApplicationContext(), "유저 데이터 삭제 성공", Toast.LENGTH_SHORT).show();
 
                             if(result) {
+                                FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
+
                                 if (PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
                                     KakaoLoginManager.getInstance(ProfileActivity.this).unlinkApp(new KakaoLoginManager.KakaoLoginManagerCallback() {
                                         @Override

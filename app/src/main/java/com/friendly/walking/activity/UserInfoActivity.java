@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -40,6 +41,9 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
     private Button                                  mDoneButton;
     private CheckBox                                mAutoStroll;
 
+    private SeekBar                                 mDistanceBar;
+    private TextView                                mDistanceText;
+
     private String                                  mAddress = "";
     private String                                  mLat = "";
     private String                                  mLot = "";
@@ -62,13 +66,33 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         mInputStrollEndTimeText = (EditText)findViewById(R.id.stroll_end_time);
 
         mAutoStroll = (CheckBox)findViewById(R.id.auto_stroll_check);
-
         mDoneButton = (Button)findViewById(R.id.done_button);
         //mDoneButton.setEnabled(false);
+        mDistanceBar = (SeekBar) findViewById(R.id.seek_bar);
+        mDistanceText = (TextView)findViewById(R.id.distance_text);
 
         mInputAddressText.setOnFocusChangeListener(this);
         mInputStrollStartTimeText.setOnFocusChangeListener(this);
         mInputStrollEndTimeText.setOnFocusChangeListener(this);
+
+        mDistanceBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int progressChanged = 0;
+
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+                JWLog.e("progress :"+progress);
+                progressChanged = progress;
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                JWLog.e("");
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                JWLog.e("");
+                mUserData.mem_auto_stroll_distance = progressChanged == 0 ? 100 : progressChanged  * 100;
+                mDistanceText.setText(mUserData.mem_auto_stroll_distance + " m");
+            }
+        });
 
         mEmail = getIntent().getStringExtra("email");
 
@@ -93,6 +117,8 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
                     mInputStrollEndTimeText.setText(TextUtils.isEmpty(endTime) ? "" : "종료 " +endTime.substring(0, 2) +":"+endTime.substring(2, 4));
 
                     mAutoStroll.setChecked(mUserData.mem_auto_stroll_mode);
+                    mDistanceBar.setProgress(mUserData.mem_auto_stroll_distance/100);
+                    mDistanceText.setText(mUserData.mem_auto_stroll_distance + " m");
                 } else {
                     Toast.makeText(UserInfoActivity.this, "유저 데이터 로드 실패", Toast.LENGTH_SHORT).show();
                 }

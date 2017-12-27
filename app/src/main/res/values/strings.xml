@@ -16,6 +16,7 @@
     <string name="stroll_start_time" translatable="false">산책 시작 예정 시간</string>
     <string name="stroll_end_time" translatable="false">산책 종료 예정 시간</string>
     <string name="stroll_time_hint" translatable="false">자동 산책 모드 체크 후 시간을 입력하시면 집 밖으로 외출 시 자동으로 산책모드가 실행됩니다.</string>
+    <string name="stroll_distance_hint" translatable="false">집에서 선택한 반경을 기준으로 진입 시 알림을 받습니다.</string>
 
     <string name="address_hint" translatable="false">집 주소(선택, 지번까지만 입력)</string>
     <string name="find_address" translatable="false">집 주소 찾기</string>
@@ -59,6 +60,7 @@
     <string name="auto_login" translatable="false">자동 로그인</string>
     <string name="auto_stroll" translatable="false">자동 산책 모드</string>
     <string name="auto_stroll_time" translatable="false">자동 산책 설정</string>
+    <string name="auto_stroll_distance" translatable="false">자동 산책 거리</string>
 
     <string name="logout" translatable="false">로그아웃</string>
     <string name="change_password" translatable="false">비밀번호 변경</string>

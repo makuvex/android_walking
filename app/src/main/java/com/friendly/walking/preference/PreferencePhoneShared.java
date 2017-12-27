@@ -25,6 +25,8 @@ public class PreferencePhoneShared extends BasePreference {
 
     private static final String KEY_VERSION_INFO                            = "KEY_VERSION_INFO";
 
+    private static final String KEY_FCM_TOKEN                               = "KEY_FCM_TOKEN";
+
     public static void setAutoLoginYn(Context cxt, boolean autoLoginYn){
         putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_YN, autoLoginYn);
     }
@@ -129,5 +131,11 @@ public class PreferencePhoneShared extends BasePreference {
         return getString(cxt, PREFERENCE_NAME, KEY_VERSION_INFO, null);
     }
 
+    public static void setFCMToken(Context cxt, String token){
+        putString(cxt, PREFERENCE_NAME, KEY_FCM_TOKEN, token);
+    }
 
+    public static String getFCMToken(Context cxt){
+        return getString(cxt, PREFERENCE_NAME, KEY_FCM_TOKEN, null);
+    }
 }

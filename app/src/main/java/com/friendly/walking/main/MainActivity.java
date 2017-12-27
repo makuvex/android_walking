@@ -27,7 +27,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.friendly.walking.GlobalConstantID;
+import com.friendly.walking.activity.GoogleMapActivity;
 import com.friendly.walking.activity.KakaoSignupActivity;
+import com.friendly.walking.activity.PieChartActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
@@ -40,6 +42,7 @@ import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.fragment.SettingFragment;
 //import com.friendly.walking.geofence.GeofenceManager;
 import com.friendly.walking.network.KakaoLoginManager;
+import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.service.MainService;
 import com.friendly.walking.util.CommonUtil;
@@ -49,7 +52,9 @@ import com.friendly.walking.util.JWLog;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.kakao.usermgmt.response.model.UserProfile;
 
 
@@ -95,6 +100,7 @@ public class MainActivity extends BaseActivity {
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
 
+        //GoogleApiAvailability.makeGooglePlayServicesAvailable();
 
         mStrollSelected = findViewById(R.id.stroll_page);
         mMapSelected = findViewById(R.id.map_page);
@@ -165,8 +171,12 @@ public class MainActivity extends BaseActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+
+
+                startActivity(new Intent(MainActivity.this, PieChartActivity.class));
+
             }
         });
 
@@ -189,6 +199,9 @@ public class MainActivity extends BaseActivity {
         if(!doLogin()) {
             JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
         }
+
+        String fcmToken = PreferencePhoneShared.getFCMToken(this);
+        JWLog.e("FCM TOKEN :"+fcmToken);
     }
 
     @Override
@@ -386,6 +399,7 @@ public class MainActivity extends BaseActivity {
                     String email = intent.getStringExtra("email");
                     setProgressBar(View.VISIBLE);
 
+                    FirebaseMessaging.getInstance().subscribeToTopic("news");
                     readPetProfileImage(email);
 
                     FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
@@ -407,6 +421,7 @@ public class MainActivity extends BaseActivity {
                                 mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
                             }
 
+                            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), userData.mem_auto_login);
                             PreferencePhoneShared.setNotificationYn(getApplicationContext(), userData.mem_notification_yn);
                             PreferencePhoneShared.setGeoNotificationYn(getApplicationContext(), userData.mem_geo_notification_yn);
                             PreferencePhoneShared.setLocationYn(getApplicationContext(), userData.mem_location_yn);
@@ -415,29 +430,34 @@ public class MainActivity extends BaseActivity {
                             PreferencePhoneShared.setEndStrollTime(getApplicationContext(), userData.mem_alarm_time.get("end"));
                             PreferencePhoneShared.setAutoStrollMode(getApplicationContext(), userData.mem_auto_stroll_mode);
 
-                            if(userData.mem_auto_stroll_mode) {
-                                if (userData != null && userData.mem_address != null) {
-                                    String address = userData.mem_address.get("address");
-                                    String lat = userData.mem_address.get("lat");
-                                    String lot = userData.mem_address.get("lot");
+                            if(PermissionManager.isAcceptedLocationPermission(MainActivity.this)) {
+                                if(userData.mem_auto_stroll_mode) {
+                                    if (userData != null && userData.mem_address != null) {
+                                        String address = userData.mem_address.get("address");
+                                        String lat = userData.mem_address.get("lat");
+                                        String lot = userData.mem_address.get("lot");
 
-                                    JWLog.e("address : " + address + ", lat :" + lat + ", lot :" + lot);
-                                    if (!TextUtils.isEmpty(address) && !TextUtils.isEmpty(lat) && !TextUtils.isEmpty(lot)) {
-                                        Intent intent = new Intent(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
-                                        intent.putExtra("address", address);
-                                        intent.putExtra("lat", lat);
-                                        intent.putExtra("lot", lot);
+                                        JWLog.e("address : " + address + ", lat :" + lat + ", lot :" + lot);
+                                        if (!TextUtils.isEmpty(address) && !TextUtils.isEmpty(lat) && !TextUtils.isEmpty(lot)) {
+                                            Intent intent = new Intent(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
+                                            intent.putExtra("address", address);
+                                            intent.putExtra("lat", lat);
+                                            intent.putExtra("lot", lot);
 
-                                        JWBroadCast.sendBroadcast(MainActivity.this, intent);
-                                    } else {
-                                        JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
+                                            JWBroadCast.sendBroadcast(MainActivity.this, intent);
+                                        } else {
+                                            JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
+                                        }
                                     }
+                                } else {
+                                    JWLog.e("자동 산책 모드가 아닙니다.");
+                                    Toast.makeText(MainActivity.this, "자동 산책 모드가 아닙니다.", Toast.LENGTH_SHORT).show();
+                                    JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
                                 }
                             } else {
-                                JWLog.e("자동 산책 모드가 아닙니다.");
-                                Toast.makeText(MainActivity.this, "자동 산책 모드가 아닙니다.", Toast.LENGTH_SHORT).show();
-                                JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
+                                PermissionManager.requestLocationPermission(MainActivity.this);
                             }
+
                             if(userData != null) {
                                 PetData petData = userData.pet_list.get(0);
                                 mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
@@ -445,6 +465,8 @@ public class MainActivity extends BaseActivity {
                         }
                     });
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
+
                     mProfileText.setText("누구의 산책에 온거 축하");
                     mProfileImageView.setImageResource(R.drawable.default_profile);
                     mProfileView.setBackgroundResource(R.drawable.profile_bg);

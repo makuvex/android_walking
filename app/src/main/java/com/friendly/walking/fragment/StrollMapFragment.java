@@ -113,13 +113,12 @@ public class StrollMapFragment extends SupportMapFragment
 
     @Override
     public void onStart() {
-
+/*
         if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false){
-
             JWLog.d(TAG, "onStart: mGoogleApiClient connect");
             mGoogleApiClient.connect();
         }
-
+*/
         super.onStart();
     }
 
@@ -127,7 +126,7 @@ public class StrollMapFragment extends SupportMapFragment
     public void onResume() {
         JWLog.e("","");
         super.onResume();
-
+/*
         if(PermissionManager.isAcceptedLocationPermission(getActivity())) {
             if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
                 if (!mRequestingLocationUpdates) {
@@ -137,6 +136,7 @@ public class StrollMapFragment extends SupportMapFragment
         } else {
             PermissionManager.requestLocationPermission(getActivity());
         }
+*/
     }
 
     @Override

@@ -33,6 +33,17 @@
             android:name="com.kakao.sdk.AppKey"
             android:value="@string/kakao_app_key" />
 
+        <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
+        See README(https://goo.gl/l4GJaQ) for more. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+        <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
+             notification message. See README(https://goo.gl/6BKBk7) for more. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+
         <activity android:name="com.friendly.walking.main.IntroActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,8 +55,7 @@
         <activity
             android:name="com.friendly.walking.main.MainActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            >
+            android:screenOrientation="portrait">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -88,9 +98,32 @@
 
         <activity android:name="com.friendly.walking.activity.PetInfoActivity" />
 
+        <activity android:name="com.friendly.walking.activity.PieChartActivity" />
+
+
         //////////////////// service ////////////////////
         <service android:name="com.friendly.walking.service.MainService"/>
         <service android:name="com.friendly.walking.geofence.GeofenceTransitionsIntentService" />
+        <service
+            android:name="com.friendly.walking.service.FirebaseMessagingWalkingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.friendly.walking.service.FirebaseInstanceIDWalkingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <service android:name="com.friendly.walking.service.JobWalkingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
 
 
         //////////////////// receiver ////////////////////

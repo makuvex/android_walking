@@ -147,9 +147,15 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
                 if (user != null) {
                     try {
-                        JWLog.e("", "facebook onAuthStateChanged");
                         List<String> list = user.getProviders();
                         String provider = list.get(0).toString();
+
+                        JWLog.e("", "onAuthStateChanged provider :"+provider);
+
+                        if(!PreferencePhoneShared.getAutoLoginYn(mContext)) {
+                            logoutAccount();
+                            return;
+                        }
 
                         String key = user.getUid().substring(0, 16);
                         String email = user.getEmail();
@@ -188,6 +194,10 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                         PreferencePhoneShared.setAutoLoginYn(mContext, false);
                         PreferencePhoneShared.setLoginID(mContext, "");
                         PreferencePhoneShared.setUserUID(mContext, "");
+
+                        PreferencePhoneShared.setNotificationYn(mContext, false);
+                        PreferencePhoneShared.setGeoNotificationYn(mContext, false);
+                        PreferencePhoneShared.setLocationYn(mContext, false);
                     }
                 }
             }

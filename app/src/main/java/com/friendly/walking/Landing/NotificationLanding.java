@@ -8,8 +8,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.R;
+import com.friendly.walking.activity.SignUpActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.dataSet.RemoteNotificationData;
+import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
 
@@ -35,6 +39,10 @@ public class NotificationLanding extends AppCompatActivity {
         }
         JWLog.e("id :"+id);
 
+        RemoteNotificationData data = extras.getParcelable("data");
+
+        JWLog.e("data :"+data);
+
         if(id == NOTIFICATION_ID_GEOFENCE_CANCEL) {
             CommonUtil.alertDialogShow(NotificationLanding.this, "알림", "산책을 그만 하시려구요?.", new CommonUtil.CompleteCallback() {
                 @Override
@@ -51,7 +59,7 @@ public class NotificationLanding extends AppCompatActivity {
                 }
             });
         } else {
-
+            Toast.makeText(this, "NotificationLanding id :"+id, Toast.LENGTH_SHORT).show();
         }
     }
 

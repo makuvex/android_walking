@@ -32,6 +32,7 @@ import com.friendly.walking.util.JWLog;
 import com.friendly.walking.views.DividerItemDecoration;
 import com.friendly.walking.R;
 import com.friendly.walking.dataSet.PermissionSettingListData;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,9 @@ public class SettingFragment extends Fragment {
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGOUT);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_NOTIFICATION_YN);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_LOCATION_YN);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -85,8 +89,57 @@ public class SettingFragment extends Fragment {
                     mAdapter.notifyDataSetChanged();
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
                     mAdapter.setDataWithIndex(0, new LoginSettingListData(getString(R.string.login_guide), false));
-
                     mAdapter.notifyDataSetChanged();
+                } else if(JWBroadCast.BROAD_CAST_CHANGE_NOTIFICATION_YN.equals(intent.getAction())) {
+                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+
+                    String uid = PreferencePhoneShared.getUserUid(mContext);
+                    final boolean result = intent.getBooleanExtra("value", false);
+                    FireBaseNetworkManager.getInstance(getActivity()).updateNotificationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
+                            if(result) {
+                                PreferencePhoneShared.setNotificationYn(mContext, result);
+                            }
+                        }
+                    });
+                    if(result) {
+                        FirebaseMessaging.getInstance().subscribeToTopic("news");
+                    } else {
+                        FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
+                    }
+
+                } else if(JWBroadCast.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN.equals(intent.getAction())) {
+                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+
+                    String uid = PreferencePhoneShared.getUserUid(mContext);
+                    final boolean result = intent.getBooleanExtra("value", false);
+                    FireBaseNetworkManager.getInstance(getActivity()).updateGeoNotificationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
+                            if(result) {
+                                PreferencePhoneShared.setGeoNotificationYn(mContext, result);
+                            }
+                        }
+                    });
+
+                } else if(JWBroadCast.BROAD_CAST_CHANGE_LOCATION_YN.equals(intent.getAction())) {
+                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+
+                    String uid = PreferencePhoneShared.getUserUid(mContext);
+                    final boolean result = intent.getBooleanExtra("value", false);
+                    FireBaseNetworkManager.getInstance(getActivity()).updateLocationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                        @Override
+                        public void onCompleted(boolean result, Object object) {
+                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
+                            if(result) {
+                                PreferencePhoneShared.setLocationYn(mContext, result);
+                            }
+                        }
+                    });
+
                 }
             }
         };
@@ -141,10 +194,10 @@ public class SettingFragment extends Fragment {
             loginText = getString(R.string.login_guide);
         }
 
-        list.add(new LoginSettingListData(loginText, true));
-        list.add(new NotificationSettingListData(false, false));
+        list.add(new LoginSettingListData(loginText, PreferencePhoneShared.getAutoLoginYn(getActivity())));
+        list.add(new NotificationSettingListData(PreferencePhoneShared.getNotificationYn(getActivity()), PreferencePhoneShared.getGeoNotificationYn(getActivity())));
         list.add(new PermissionSettingListData());
-        list.add(new LocationSettingListData(false, false));
+        list.add(new LocationSettingListData(PreferencePhoneShared.getLocationYn(getActivity()), false));
         list.add(new VersionInfoSettingListData("", ""));
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext());

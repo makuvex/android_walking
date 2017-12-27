@@ -55,6 +55,9 @@ public class LoginOutReceiver extends BroadcastReceiver {
             PreferencePhoneShared.setLoginID(context, "");
             PreferencePhoneShared.setUserUID(context, "");
 
+            PreferencePhoneShared.setNotificationYn(context, false);
+            PreferencePhoneShared.setGeoNotificationYn(context, false);
+            PreferencePhoneShared.setLocationYn(context, false);
         }
     }
 }

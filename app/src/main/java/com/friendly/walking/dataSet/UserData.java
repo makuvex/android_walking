@@ -29,7 +29,7 @@ public class UserData extends Object {
     public Map<String, String> mem_alarm_time = new HashMap<>();
     public Map<String, ArrayList<LocationData>> walking_location_list = new HashMap<>();
     public Map<String, String> walking_time_list = new HashMap<>();
-
+    public int mem_auto_stroll_distance = 100;
 
     public String joinBy = "";
 
@@ -51,6 +51,7 @@ public class UserData extends Object {
                 ", pet_list :"+pet_list+
                 ", mem_auto_stroll_mode :"+mem_auto_stroll_mode+
                 ", mem_alarm_time :"+mem_alarm_time+
-                ", walking_location_list :"+walking_location_list;
+                ", walking_location_list :"+walking_location_list +
+                ", mem_auto_stroll_distance :"+mem_auto_stroll_distance;
     }
 }

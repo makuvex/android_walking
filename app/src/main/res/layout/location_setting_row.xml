@@ -36,7 +36,7 @@
             android:gravity="center_vertical"
             android:typeface="sans"
             android:text="@string/use_location"
-            android:lines="1"
+            android:singleLine="true"
             android:layout_weight="1"
             android:ellipsize="marquee"/>
 
@@ -48,7 +48,7 @@
             android:layout_marginLeft="10dp"
             android:scaleType="fitCenter"
             android:background="@color/colorTransparent"
-            android:src="@drawable/common_btn_toggle_off"/>
+            android:src="@drawable/on_off_selector"/>
 
     </LinearLayout>
 

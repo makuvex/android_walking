@@ -2,6 +2,9 @@ package com.friendly.walking.adapter.viewHolder;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -34,7 +37,9 @@ public class PermissionSettingViewHolder extends BaseViewHolder implements BaseS
                 JWLog.e("","moreButton");
                 boolean loginYn = PreferencePhoneShared.getLoginYn(mActivity);
                 if(loginYn) {
-
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            .setData(Uri.parse("package:" + mActivity.getPackageName()));
+                    mActivity.startActivity(intent);
                 } else {
                     Toast.makeText(mActivity, "로그인 후 설정 가능합니다.", Toast.LENGTH_SHORT).show();
                 }
