@@ -31,7 +31,6 @@ public class JWBroadCast {
     public static final String BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN    = "com.friendly.walking.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN";
     public static final String BROAD_CAST_CHANGE_LOCATION_YN            = "com.friendly.walking.BROAD_CAST_CHANGE_LOCATION_YN";
 
-
     public JWBroadCast() {}
 
     public static void sendBroadcast(Context context, Intent intent) {

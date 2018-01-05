@@ -81,6 +81,8 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
                 JWLog.e("progress :"+progress);
                 progressChanged = progress;
+                mUserData.mem_auto_stroll_distance = progressChanged == 0 ? 100 : progressChanged  * 100;
+                mDistanceText.setText(mUserData.mem_auto_stroll_distance + " m");
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -112,9 +114,13 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
 
                     String startTime = mUserData.mem_alarm_time.get("start");
                     mInputStrollStartTimeText.setText(TextUtils.isEmpty(startTime) ? "" : "시작 "+startTime.substring(0, 2) +":"+startTime.substring(2, 4));
+                    mStartStrollHour = Integer.parseInt(startTime.substring(0, 2));
+                    mStartStrollMin = Integer.parseInt(startTime.substring(2, 4));
 
                     String endTime = mUserData.mem_alarm_time.get("end");
                     mInputStrollEndTimeText.setText(TextUtils.isEmpty(endTime) ? "" : "종료 " +endTime.substring(0, 2) +":"+endTime.substring(2, 4));
+                    mEndStrollHour = Integer.parseInt(endTime.substring(0, 2));
+                    mEndStrollMin = Integer.parseInt(endTime.substring(2, 4));
 
                     mAutoStroll.setChecked(mUserData.mem_auto_stroll_mode);
                     mDistanceBar.setProgress(mUserData.mem_auto_stroll_distance/100);
@@ -130,6 +136,14 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         JWLog.e("","next_button");
 
         if(v == mDoneButton) {
+            if(mStartStrollHour != -1 && mStartStrollMin != -1) {
+                if((mStartStrollHour*100 + mStartStrollMin) > (mEndStrollHour*100 + mEndStrollMin)) {
+                    Toast.makeText(UserInfoActivity.this, "산책 종료 시간은 시작 시간 보다 커야 합니다.", Toast.LENGTH_LONG).show();
+                    showTimePickerDialog(mInputStrollEndTimeText);
+                    return;
+                }
+            }
+
             setProgressBar(View.VISIBLE);
             FireBaseNetworkManager.getInstance(this).updateUserData(mUserData.mem_email, mUserData, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
@@ -186,18 +200,25 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         TimePickerDialog dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int hour, int min) {
+
                 if(view == mInputStrollStartTimeText) {
                     mStartStrollHour = hour;
                     mStartStrollMin = min;
 
-                    mInputStrollStartTimeText.setText("시작 "+mStartStrollHour+":"+mStartStrollMin);
-                    mUserData.mem_alarm_time.put("start",""+mStartStrollHour+mStartStrollMin);
+                    String sHour = String.format("%02d", hour);
+                    String sMin = String.format("%02d", min);
+
+                    mInputStrollStartTimeText.setText("시작 "+sHour+":"+sMin);
+                    mUserData.mem_alarm_time.put("start",""+sHour+sMin);
                 } else {
                     mEndStrollHour = hour;
                     mEndStrollMin = min;
 
-                    mInputStrollEndTimeText.setText("종료 "+mEndStrollHour+":"+mEndStrollMin);
-                    mUserData.mem_alarm_time.put("end",""+mEndStrollHour+mEndStrollMin);
+                    String sHour = String.format("%02d", hour);
+                    String sMin = String.format("%02d", min);
+
+                    mInputStrollEndTimeText.setText("종료 "+sHour+":"+sMin);
+                    mUserData.mem_alarm_time.put("end",""+sHour+sMin);
                 }
             }
         }, Calendar.HOUR_OF_DAY, Calendar.MINUTE, true);

@@ -100,6 +100,8 @@
 
         <activity android:name="com.friendly.walking.activity.PieChartActivity" />
 
+        <activity android:name="com.friendly.walking.activity.BarChartActivity" />
+
 
         //////////////////// service ////////////////////
         <service android:name="com.friendly.walking.service.MainService"/>

@@ -243,6 +243,7 @@ public class ProfileActivity extends BaseActivity {
             public void onCompleted(boolean result, Object object) {
                 if(result) {
                     if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+                        FireBaseNetworkManager.getInstance(ProfileActivity.this).reset();
                         KakaoLoginManager.getInstance(ProfileActivity.this).requestLogout(new KakaoLoginManager.KakaoLoginManagerCallback() {
                             @Override
                             public void onCompleted(boolean result, Object object) {

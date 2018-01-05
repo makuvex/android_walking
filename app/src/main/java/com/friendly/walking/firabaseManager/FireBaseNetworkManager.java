@@ -106,6 +106,9 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
     // facebook login
     private CallbackManager                     mCallbackManager;
 
+    private UserData                            mUserData;
+    private List<PetData>                       mPetList;
+
     private long                                mUserIndex = -1;
 
 
@@ -187,6 +190,8 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 } else {
                     // User is signed out
                     JWLog.e("", "@@@ onAuthStateChanged:signed_out");
+                    mUserData = null;
+                    mPetList = null;
 
                     if(PreferencePhoneShared.getAutoLoginType(mContext) != GlobalConstantID.LOGIN_TYPE_KAKAO) {
                         PreferencePhoneShared.setLoginYn(mContext, false);
@@ -206,6 +211,11 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
 
+    }
+
+    public void reset() {
+        mUserData = null;
+        mPetList = null;
     }
 
     public void onStart() {
@@ -367,6 +377,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 JWLog.e("","userData :"+userData);
                 if(callback != null) {
                     if (userData != null) {
+                        mUserData = userData;
                         callback.onCompleted(true, userData);
                     } else {
                         callback.onCompleted(false, null);
@@ -395,6 +406,9 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 JWLog.e("","userData :"+userData);
                 if(callback != null) {
                     if (userData != null) {
+                        if(userData.pet_list != null) {
+                            mPetList = userData.pet_list;
+                        }
                         callback.onCompleted(true, userData.pet_list);
                     } else {
                         callback.onCompleted(false, null);
@@ -408,6 +422,52 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 callback.onCompleted(false, null);
             }
         });
+    }
+
+    public void readWalkingTimeList(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        if(mUserData != null) {
+            if(callback != null) {
+                JWLog.e("userData walking_list : "+mUserData.walking_time_list);
+                callback.onCompleted(true, mUserData.walking_time_list);
+            }
+        } else {
+            readUserData(email, new FireBaseNetworkCallback() {
+                @Override
+                public void onCompleted(boolean result, Object object) {
+                    if(result) {
+                        if(mUserData != null) {
+                            if(callback != null) {
+                                JWLog.e("callback walking_list : "+mUserData.walking_time_list);
+                                callback.onCompleted(true, mUserData.walking_time_list);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public void readWalkingLocationList(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        if(mUserData != null) {
+            if(callback != null) {
+                JWLog.e("userData walking_location_list : "+mUserData.walking_location_list);
+                callback.onCompleted(true, mUserData.walking_location_list);
+            }
+        } else {
+            readUserData(email, new FireBaseNetworkCallback() {
+                @Override
+                public void onCompleted(boolean result, Object object) {
+                    if(result) {
+                        if(mUserData != null) {
+                            if(callback != null) {
+                                JWLog.e("callback walking_location_list : "+mUserData.walking_location_list);
+                                callback.onCompleted(true, mUserData.walking_location_list);
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -602,6 +662,9 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 String dateTime = formatter.format(date);
 
                 String oriTime = userData.walking_time_list.get(dateTime);
+                if(oriTime == null) {
+                    oriTime = "0";
+                }
                 long resultTime = Long.parseLong(oriTime) + min;
                 userData.walking_time_list.put(dateTime, ""+resultTime);
 

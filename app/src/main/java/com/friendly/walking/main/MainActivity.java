@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,7 +15,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 
 import android.widget.LinearLayout;
@@ -27,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.friendly.walking.GlobalConstantID;
+import com.friendly.walking.activity.BarChartActivity;
 import com.friendly.walking.activity.GoogleMapActivity;
 import com.friendly.walking.activity.KakaoSignupActivity;
 import com.friendly.walking.activity.PieChartActivity;
@@ -48,6 +47,7 @@ import com.friendly.walking.service.MainService;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
+import com.friendly.walking.main.DataExchangeInterface;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -90,6 +90,12 @@ public class MainActivity extends BaseActivity {
     private IntentFilter                            mIntentFilter = null;
     private boolean                                 mIsRegisterdReceiver = false;
 
+    private StrollFragment                          mStrollFragment;
+    private StrollMapFragment                       mStrollMapFragment;
+    private ReportFragment                          mReportFragment;
+    private SettingFragment                         mSettingFragment;
+
+    private DataExchangeInterface                   mCurrentFragmentInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +122,6 @@ public class MainActivity extends BaseActivity {
         mProfileView = (LinearLayout)findViewById(R.id.profileBackgroundImageView);
         //mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
         mProfileView.setBackgroundResource(R.drawable.profile_bg);
-
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
@@ -129,7 +134,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onPageSelected(int position) {
-                Log.e("@@@","@@@ onPageSelected position : "+position);
+                JWLog.e("@@@","@@@ onPageSelected position : "+position);
 
                 if(mPreviousSelectedView != null) {
                     mPreviousSelectedView.setBackgroundResource(R.color.colorTapUnselected);
@@ -141,21 +146,25 @@ public class MainActivity extends BaseActivity {
                         showProfileView(true);
                         mStrollSelected.setBackgroundResource(selectedTapColor);
                         mPreviousSelectedView = mStrollSelected;
+                        mCurrentFragmentInterface = mStrollFragment;
                         break;
                     case 1 :
                         showProfileView(false);
                         mMapSelected.setBackgroundResource(selectedTapColor);
                         mPreviousSelectedView = mMapSelected;
+                        mCurrentFragmentInterface = null;
                         break;
                     case 2 :
                         showProfileView(false);
                         mReportSelected.setBackgroundResource(selectedTapColor);
                         mPreviousSelectedView = mReportSelected;
+                        mCurrentFragmentInterface = null;
                         break;
                     case 3 :
                         showProfileView(false);
                         mSettingSelected.setBackgroundResource(selectedTapColor);
                         mPreviousSelectedView = mSettingSelected;
+                        mCurrentFragmentInterface = null;
                         break;
 
                     default:
@@ -175,7 +184,9 @@ public class MainActivity extends BaseActivity {
 //                        .setAction("Action", null).show();
 
 
-                startActivity(new Intent(MainActivity.this, PieChartActivity.class));
+//                startActivity(new Intent(MainActivity.this, PieChartActivity.class));
+
+                startActivity(new Intent(MainActivity.this, BarChartActivity.class));
 
             }
         });
@@ -242,18 +253,30 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public Fragment getItem(int position) {
-            Log.d("","@@@ getItem position :"+position);
+            JWLog.e("","@@@ getItem position :"+position);
             currentPosition = position;
             if(position == 0) {
-                return StrollFragment.newInstance(position + 1);
+                if(mStrollFragment == null) {
+                    mStrollFragment = StrollFragment.newInstance(position);
+                    mCurrentFragmentInterface = mStrollFragment;
+                }
+                return mStrollFragment;
             } else if(position == 1) {
-                StrollMapFragment fragment = StrollMapFragment.newInstance(position + 1);
-                fragment.selectedThisFragment();
-                return fragment;
+                if(mStrollMapFragment == null) {
+                    mStrollMapFragment = StrollMapFragment.newInstance(position);
+                }
+                mStrollMapFragment.selectedThisFragment();
+                return mStrollMapFragment;
             } else if(position == 2) {
-                return ReportFragment.newInstance(position + 1);
+                if(mReportFragment == null) {
+                    mReportFragment = ReportFragment.newInstance(position);
+                }
+                return mReportFragment;
             } else if(position == 3) {
-                return SettingFragment.newInstance(position + 1);
+                if(mSettingFragment == null) {
+                    mSettingFragment = SettingFragment.newInstance(position);
+                }
+                return mSettingFragment;
             }
             return null;
         }
@@ -262,21 +285,6 @@ public class MainActivity extends BaseActivity {
         public int getCount() {
             // Show 3 total pages.
             return 4;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "SECTION 1";
-                case 1:
-                    return "SECTION 2";
-                case 2:
-                    return "SECTION 3";
-                case 3:
-                    return "SECTION 4";
-            }
-            return null;
         }
 
         public int getCurrentPosition() {
@@ -411,6 +419,7 @@ public class MainActivity extends BaseActivity {
                             UserData userData = (UserData) object;
 
                             JWLog.e("userData :"+userData);
+
                             if(!TextUtils.isEmpty(userData.mem_email)) {
                                 FireBaseNetworkManager.getInstance(MainActivity.this).updateLastLoginTime(userData.uid, null);
                                 FireBaseNetworkManager.getInstance(MainActivity.this).updateAutoLoginCheck(userData.uid, PreferencePhoneShared.getAutoLoginYn(MainActivity.this), null);
@@ -461,6 +470,10 @@ public class MainActivity extends BaseActivity {
                             if(userData != null) {
                                 PetData petData = userData.pet_list.get(0);
                                 mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
+                            }
+
+                            if(mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
+                                mCurrentFragmentInterface.functionByCommand(userData.mem_email, DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST);
                             }
                         }
                     });
