@@ -26,6 +26,7 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.MPPointF;
@@ -147,32 +148,36 @@ public class StrollFragment extends Fragment implements OnChartValueSelectedList
         float sum = 0;
 
         if(count == 0) {
-            entries.add(new PieEntry((float)0,
-                    "",
+            entries.add(new PieEntry((float)1,
+                    "없음",
                     getResources().getDrawable(R.drawable.star)));
         } else {
            for(StrollTimeData data : mWeekTimeList) {
-                sum += data.min;
+                sum += Float.parseFloat(data.min);
            }
             for(StrollTimeData data : mWeekTimeList) {
                JWLog.e("key :"+data.day+", value :"+data.min);
 
-               float percent = data.min * ((float)100 / sum);
-               entries.add(new PieEntry((float) data.min, data.day + "(" + data.min + "분)", getResources().getDrawable(R.drawable.star)));
+               float percent = (Float.parseFloat(data.min)) * ((float)100 / sum);
+               entries.add(new PieEntry((float) Float.parseFloat(data.min), data.day + "(" + data.min + "분)", getResources().getDrawable(R.drawable.star)));
            }
 
-        }
-
-        if(sum != 0) {
-            mChart.setCenterText(generateCenterSpannableText("" + (int)sum));
-        } else {
-            mChart.setCenterText(new SpannableString("산책 기록 없음"));
         }
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setDrawIcons(false);
         dataSet.setSliceSpace(3f);
         dataSet.setIconsOffset(new MPPointF(0, 40));
         dataSet.setSelectionShift(5f);
+
+        if(sum != 0) {
+            mChart.setCenterText(generateCenterSpannableText("" + (int)sum));
+            mChart.setDrawEntryLabels(true);
+            dataSet.setDrawValues(true);
+        } else {
+            mChart.setCenterText(new SpannableString("산책 기록 없음"));
+            mChart.setDrawEntryLabels(false);
+            dataSet.setDrawValues(false);
+        }
 
         // add a lot of colors
         ArrayList<Integer> colors = new ArrayList<Integer>();
@@ -296,15 +301,23 @@ public class StrollFragment extends Fragment implements OnChartValueSelectedList
             JWLog.e("min :"+min);
 
             if(min != null) {
+                //min = min.substring(min.indexOf(".")+1, min.length());
                 if(!min.equals("0")) {
-                    mWeekTimeList.add( new StrollTimeData(getDayOfWeek(i), Integer.parseInt(min)));
+                    mWeekTimeList.add( new StrollTimeData(getDayOfWeek(i), min));
                 }
             }
         }
 
-        JWLog.e("mWeekTimeList :"+mWeekTimeList);
 
-        initChart();
+        JWLog.e("mWeekTimeList :"+mWeekTimeList);
+        float sum = 0;
+        for(StrollTimeData data : mWeekTimeList) {
+            sum += Float.parseFloat(data.min);
+        }
+
+        if(sum > 0) {
+            initChart();
+        }
     }
 
     private String getDayOfWeek(int nWeek) {

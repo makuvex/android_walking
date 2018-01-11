@@ -16,8 +16,10 @@ import com.friendly.walking.R;
 import com.friendly.walking.activity.DayAxisValueFormatter;
 import com.friendly.walking.activity.MyAxisValueFormatter;
 import com.friendly.walking.activity.XYMarkerView;
+import com.friendly.walking.dataSet.StrollTimeData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.main.DataExchangeInterface;
+import com.friendly.walking.util.JWLog;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -33,16 +35,46 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.MPPointF;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Map;
+import java.time.LocalDate;
+
 
 import static com.friendly.walking.main.DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST;
 
 public class ReportFragment extends Fragment implements OnChartValueSelectedListener, DataExchangeInterface {
 
-    protected BarChart mChart;
-    protected RectF mOnValueSelectedRectF = new RectF();
-    private View    mView;
+    protected BarChart                          mChart;
+    protected RectF                             mOnValueSelectedRectF = new RectF();
+    private View                                mView;
+    private Map<String, String>                 mWalkingTimeList;
+    private static ArrayList<StrollTimeData>    mMonthDataList;
+    private int                                 mPeekMin = 0;
+    private int                                 mCurrentChart = 0;
+
+    private View.OnClickListener                mClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if(view.getId() == R.id.month) {
+                if(mCurrentChart != 1) {
+                    mCurrentChart = 1;
+                    updateChartData();
+                }
+            } else if(view.getId() == R.id.quarter) {
+                if(mCurrentChart != 3) {
+                    mCurrentChart = 3;
+                    updateChartData();
+                }
+            } else {
+                JWLog.e("미구현");
+            }
+        }
+    };
 
     public ReportFragment() {
         // Required empty public constructor
@@ -63,7 +95,18 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mView = inflater.inflate(R.layout.fragment_report, container, false);
+        if(mMonthDataList == null) {
+            mMonthDataList = new ArrayList<>();
+        }
+
+        mView.findViewById(R.id.month).setOnClickListener(mClickListener);
+        mView.findViewById(R.id.quarter).setOnClickListener(mClickListener);
+        mView.findViewById(R.id.year).setOnClickListener(mClickListener);
+
         initChart();
+        long cur = System.currentTimeMillis();
+        JWLog.e("################ "+cur+" #################");
+
         return mView;
     }
 
@@ -112,6 +155,100 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         }
     }
 
+
+    private void updateChartData() {
+        if(mWalkingTimeList == null) {
+            JWLog.e("mWalkingTimeList is empty");
+            return;
+        }
+        mMonthDataList.clear();
+        Calendar cal = Calendar.getInstance();
+        int today = cal.get(Calendar.DAY_OF_MONTH);
+
+        JWLog.e("@@@ today :"+today);
+
+        if(mCurrentChart == 3) {
+            Calendar calendar = new GregorianCalendar();
+            calendar.add(calendar.MONTH, 0);
+            SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM");
+            String currentYear = sd.format(calendar.getTime()).substring(0,4);
+            String currentMonth = sd.format(calendar.getTime()).substring(4,6);
+
+            String beforeYear = currentYear;
+            String beforeMonth = currentMonth;
+
+            if(Integer.parseInt(currentMonth) <= 2) {
+                beforeYear = "" + (Integer.parseInt(currentYear) - 1);
+                beforeMonth = "11";
+            } else {
+                beforeMonth = "" + (Integer.parseInt(currentMonth) - 1);
+            }
+
+            for (int i = 1; i <= 31; i++) {
+                String day = String.format("%02d", i);
+               String key = beforeYear + "-" + beforeMonth + "-" + day;
+                JWLog.e("key :" + key);
+                String min = mWalkingTimeList.get(key);
+                JWLog.e("min :" + min);
+
+                if (min != null) {
+                    if (!min.equals("0")) {
+                        mMonthDataList.add(new StrollTimeData(beforeMonth + day, min));
+                    }
+                }
+            }
+
+            if(Integer.parseInt(currentMonth) <= 1) {
+                beforeYear = "" + (Integer.parseInt(currentYear) - 1);
+                beforeMonth = "12";
+            } else {
+                beforeMonth = "" + (Integer.parseInt(currentMonth) - 1);
+            }
+
+            for (int i = 1; i <= 31; i++) {
+                String day = String.format("%02d", i);
+
+                String key = beforeYear + "-" + beforeMonth + "-" + day;
+                JWLog.e("key :" + key);
+                String min = mWalkingTimeList.get(key);
+                JWLog.e("min :" + min);
+
+                if (min != null) {
+                    if (!min.equals("0")) {
+                        mMonthDataList.add(new StrollTimeData(beforeMonth + day, min));
+                    }
+                }
+            }
+        }
+
+        for(int i=1; i<=today; i++) {
+            Calendar tempCal = new GregorianCalendar();
+            tempCal.add(Calendar.DATE, i-today);
+            String month = String.format("%02d", (tempCal.get(Calendar.MONTH) + 1));
+            String day = String.format("%02d", tempCal.get(Calendar.DAY_OF_MONTH));
+
+            String key = tempCal.get(Calendar.YEAR) + "-" + month + "-" + day;
+            JWLog.e("key :"+key);
+            String min = mWalkingTimeList.get(key);
+            JWLog.e("min :"+min);
+
+            if(min != null) {
+                if(!min.equals("0")) {
+                    mMonthDataList.add( new StrollTimeData(month + day, min));
+                }
+            }
+        }
+
+        for(StrollTimeData data : mMonthDataList) {
+            if(mPeekMin < (int)(Float.parseFloat(data.min) - (int)Float.parseFloat(data.min))) {
+                mPeekMin = (int)(Float.parseFloat(data.min) - (int)Float.parseFloat(data.min));
+            }
+        }
+        JWLog.e("mMonthDataList :"+mMonthDataList);
+
+        initChart();
+    }
+
     private void initChart() {
         mChart = (BarChart) mView.findViewById(R.id.chart1);
         mChart.setOnChartValueSelectedListener(this);
@@ -123,7 +260,7 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
 
         // if more than 60 entries are displayed in the chart, no values will be
         // drawn
-        mChart.setMaxVisibleValueCount(60);
+        mChart.setMaxVisibleValueCount(93);
 
         // scaling can now only be done on x- and y-axis separately
         mChart.setPinchZoom(false);
@@ -131,7 +268,7 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         mChart.setDrawGridBackground(false);
         // mChart.setDrawYLabels(false);
 
-        IAxisValueFormatter xAxisFormatter = new DayAxisValueFormatter(mChart);
+        DayAxisValueFormatter xAxisFormatter = new DayAxisValueFormatter(mChart);
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -139,6 +276,7 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         xAxis.setDrawGridLines(false);
         xAxis.setGranularity(1f); // only intervals of 1 day
         xAxis.setLabelCount(7);
+        xAxisFormatter.setDayArray(mMonthDataList);
         xAxis.setValueFormatter(xAxisFormatter);
 
         IAxisValueFormatter custom = new MyAxisValueFormatter();
@@ -168,34 +306,45 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         l.setFormSize(9f);
         l.setTextSize(11f);
         l.setXEntrySpace(4f);
-        // l.setExtra(ColorTemplate.VORDIPLOM_COLORS, new String[] { "abc",
-        // "def", "ghj", "ikl", "mno" });
-        // l.setCustom(ColorTemplate.VORDIPLOM_COLORS, new String[] { "abc",
-        // "def", "ghj", "ikl", "mno" });
 
         XYMarkerView mv = new XYMarkerView(getActivity(), xAxisFormatter);
         mv.setChartView(mChart); // For bounds control
         mChart.setMarker(mv); // Set the marker to the chart
 
-        setData(12, 100);
+        setData(mMonthDataList.size(), mPeekMin);
 
     }
 
     private void setData(int count, float range) {
-
-        float start = 1f;
-
+//        float start = 1f;
         ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
 
-        for (int i = (int) start; i < start + count + 1; i++) {
-            float mult = (range + 1);
-            float val = (float) (Math.random() * mult);
+//        for (int i = (int) start; i < start + count + 1; i++) {
+//            float mult = (range + 1);
+//            float val = (float) (Math.random() * mult);
+//
+//            if (Math.random() * 100 < 25) {
+//                yVals1.add(new BarEntry(i, val, getResources().getDrawable(R.drawable.star)));
+//            } else {
+//                yVals1.add(new BarEntry(i, val));
+//            }
+//            JWLog.e("i :"+i+", val :"+val);
+//        }
 
-            if (Math.random() * 100 < 25) {
-                yVals1.add(new BarEntry(i, val, getResources().getDrawable(R.drawable.star)));
-            } else {
-                yVals1.add(new BarEntry(i, val));
-            }
+        for(int i=0; i<mMonthDataList.size(); i++) {
+//            String f = mMonthDataList.get(i).min.substring(0, mMonthDataList.get(i).min.indexOf("."));
+//            String min = mMonthDataList.get(i).min.substring(mMonthDataList.get(i).min.indexOf(".")+1, mMonthDataList.get(i).min.length());
+//
+//            JWLog.e("1 ################## "+(float)Long.parseLong(f)+ " ############");
+//            JWLog.e("2 ################## "+Float.parseFloat(min)+ " ############");
+//
+//            String time = "" + (long)Long.parseLong(f);
+//            Date day = new Date(Long.parseLong(time));
+//            SimpleDateFormat sd = new SimpleDateFormat("D");
+//
+//            JWLog.e("@@@ "+sd.format(day));
+
+            yVals1.add(new BarEntry(i+1, Float.parseFloat(mMonthDataList.get(i).min)));
         }
 
         BarDataSet set1;
@@ -206,10 +355,11 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
             mChart.getData().notifyDataChanged();
             mChart.notifyDataSetChanged();
         } else {
-            set1 = new BarDataSet(yVals1, "The year 2017");
+            Calendar tempCal = new GregorianCalendar();
+            int month = tempCal.get(Calendar.MONTH)+1;
 
+            set1 = new BarDataSet(yVals1, getMonth(month));
             set1.setDrawIcons(false);
-
             set1.setColors(ColorTemplate.MATERIAL_COLORS);
 
             ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
@@ -222,8 +372,13 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
 
             mChart.setData(data);
         }
+
+        mChart.animateXY(1400, 1400);
     }
 
-
+    private String getMonth(int mon) {
+        String month[] = {"Janury", "February", "March", "April", "May", "June", "August", "September", "October", "November", "December"};
+        return  month[mon-1];
+    }
 
 }

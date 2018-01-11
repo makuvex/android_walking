@@ -1,8 +1,14 @@
 package com.friendly.walking.activity;
 
+import com.friendly.walking.dataSet.StrollTimeData;
+import com.friendly.walking.util.JWLog;
 import com.github.mikephil.charting.charts.BarLineChartBase;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by philipp on 02/06/16.
@@ -15,14 +21,23 @@ public class DayAxisValueFormatter implements IAxisValueFormatter
     };
 
     private BarLineChartBase<?> chart;
+    private static ArrayList<StrollTimeData>    mMonthDataList;
 
     public DayAxisValueFormatter(BarLineChartBase<?> chart) {
         this.chart = chart;
     }
 
+    public void setDayArray(ArrayList<StrollTimeData> list) {
+        mMonthDataList = list;
+    }
+
     @Override
     public String getFormattedValue(float value, AxisBase axis) {
 
+        String day = mMonthDataList.get((int)value-1).day;
+        return day.substring(0, 2) +"/" +day.substring(2, 4);
+
+        /*
         int days = (int) value;
 
         int year = determineYear(days);
@@ -66,6 +81,7 @@ public class DayAxisValueFormatter implements IAxisValueFormatter
 
             return dayOfMonth == 0 ? "" : dayOfMonth + appendix + " " + monthName;
         }
+        */
     }
 
     private int getDaysForMonth(int month, int year) {

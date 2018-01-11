@@ -10,11 +10,11 @@ import java.util.Date;
 public class StrollTimeData {
 
     public String day;
-    public int min;
+    public String min;
 
     public StrollTimeData() {}
 
-    public StrollTimeData(String day, int min) {
+    public StrollTimeData(String day, String min) {
         this.day = day;
         this.min = min;
     }

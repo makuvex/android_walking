@@ -14,6 +14,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
+            android:background="@color/colorBG"
             android:orientation="horizontal">
 
             <Button
@@ -21,8 +22,9 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:layout_marginRight="1dp"
                 android:background="@color/colorTransparent"
-                android:text="1달"
+                android:text="월 별"
                 android:textSize="12dp"/>
 
             <Button
@@ -30,8 +32,9 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:layout_marginRight="1dp"
                 android:background="@color/colorTransparent"
-                android:text="분기"
+                android:text="분기 별"
                 android:textSize="12dp"/>
 
             <Button
@@ -40,7 +43,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@color/colorTransparent"
-                android:text="년"
+                android:text="년도 별"
                 android:textSize="12dp"/>
 
         </LinearLayout>

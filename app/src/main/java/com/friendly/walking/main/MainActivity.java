@@ -95,6 +95,7 @@ public class MainActivity extends BaseActivity {
     private ReportFragment                          mReportFragment;
     private SettingFragment                         mSettingFragment;
 
+    private UserData                                mUserDta;
     private DataExchangeInterface                   mCurrentFragmentInterface;
 
     @Override
@@ -158,7 +159,7 @@ public class MainActivity extends BaseActivity {
                         showProfileView(false);
                         mReportSelected.setBackgroundResource(selectedTapColor);
                         mPreviousSelectedView = mReportSelected;
-                        mCurrentFragmentInterface = null;
+                        mCurrentFragmentInterface = mReportFragment;
                         break;
                     case 3 :
                         showProfileView(false);
@@ -169,6 +170,10 @@ public class MainActivity extends BaseActivity {
 
                     default:
                         break;
+                }
+
+                if(mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
+                    mCurrentFragmentInterface.functionByCommand(mUserDta.mem_email, DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST);
                 }
             }
 
@@ -258,8 +263,8 @@ public class MainActivity extends BaseActivity {
             if(position == 0) {
                 if(mStrollFragment == null) {
                     mStrollFragment = StrollFragment.newInstance(position);
-                    mCurrentFragmentInterface = mStrollFragment;
                 }
+                mCurrentFragmentInterface = mStrollFragment;
                 return mStrollFragment;
             } else if(position == 1) {
                 if(mStrollMapFragment == null) {
@@ -417,6 +422,7 @@ public class MainActivity extends BaseActivity {
 
                             setProgressBar(View.INVISIBLE);
                             UserData userData = (UserData) object;
+                            mUserDta = userData;
 
                             JWLog.e("userData :"+userData);
 
@@ -479,7 +485,7 @@ public class MainActivity extends BaseActivity {
                     });
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
                     FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
-
+                    mUserDta = null;
                     mProfileText.setText("누구의 산책에 온거 축하");
                     mProfileImageView.setImageResource(R.drawable.default_profile);
                     mProfileView.setBackgroundResource(R.drawable.profile_bg);

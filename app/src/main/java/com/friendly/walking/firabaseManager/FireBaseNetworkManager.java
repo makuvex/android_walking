@@ -657,7 +657,8 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                     return;
                 }
 
-                Date date = new Date(System.currentTimeMillis());
+                long cur = System.currentTimeMillis();
+                Date date = new Date(cur);
                 SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd", Locale.KOREA );
                 String dateTime = formatter.format(date);
 
