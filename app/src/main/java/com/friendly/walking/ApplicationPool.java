@@ -446,7 +446,7 @@ public class ApplicationPool extends Application {
 			}
 			long extraId = putData(key, data);
 			i.putExtra(key, extraId);
-		}*/
+		}*///
 		
 		/**
 		 * 데이터를 저장합니다.
