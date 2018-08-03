@@ -3,7 +3,7 @@ package com.friendly.walking.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
@@ -44,7 +44,7 @@ public class LoginOutReceiver extends BroadcastReceiver {
                         i.putExtra("email", email);
                         JWBroadCast.sendBroadcast(context, i);
                     } else {
-                        Toast.makeText(context, "로그인 실패", Toast.LENGTH_SHORT).show();
+                        JWToast.showToast("로그인 실패");
                     }
                 }
             });
@@ -54,6 +54,10 @@ public class LoginOutReceiver extends BroadcastReceiver {
             PreferencePhoneShared.setAutoLoginYn(context, false);
             PreferencePhoneShared.setLoginID(context, "");
             PreferencePhoneShared.setUserUID(context, "");
+            PreferencePhoneShared.setNickName(context, "");
+            PreferencePhoneShared.setWalkingCoin(context, 0);
+            PreferencePhoneShared.setMyLocationAcceptedYn(context, false);
+            PreferencePhoneShared.setChattingAcceptYn(context, false);
 
             PreferencePhoneShared.setNotificationYn(context, false);
             PreferencePhoneShared.setGeoNotificationYn(context, false);

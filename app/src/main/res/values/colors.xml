@@ -9,5 +9,10 @@
     <color name="colorTransparent">#ffffffff</color>
     <color name="colorBG">#e3deda</color>
     <color name="colorBG2">#c2b7c6</color>
+    <color name="colorBG3">#fef9e8</color>
     <color name="colorPrimaryLighten">#79c4e5</color>
+    <color name="red">#f2100c</color>
+    <color name="dark_red">#40000c</color>
+    <color name="window_background">#FFF5F5F5</color>
+    <color name="colorBG4">#fbf8f3</color>
 </resources>

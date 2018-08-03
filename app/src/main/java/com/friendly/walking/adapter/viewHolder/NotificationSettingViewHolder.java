@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
@@ -56,7 +56,7 @@ public class NotificationSettingViewHolder extends BaseViewHolder implements Bas
                         JWBroadCast.sendBroadcast(mActivity, i);
                     }
                 } else {
-                    Toast.makeText(mActivity, "로그인 후 설정 가능합니다.", Toast.LENGTH_SHORT).show();
+                    JWToast.showToast("로그인 후 설정 가능합니다.");
                 }
             }
         };

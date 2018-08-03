@@ -27,6 +27,14 @@ public class PreferencePhoneShared extends BasePreference {
 
     private static final String KEY_FCM_TOKEN                               = "KEY_FCM_TOKEN";
 
+    private static final String KEY_MY_LOCATION_ACCEPTED_YN                 = "KEY_MY_LOCATION_ACCEPTED_YN";
+    private static final String KEY_CHATTING_ACCEPTED_YN                    = "KEY_CHATTING_ACCEPTED_YN";
+
+    private static final String KEY_USER_NICK_NAME                          = "KEY_USER_NICK_NAME";
+    private static final String KEY_WALKING_COIN                            = "KEY_WALKING_COIN";
+
+    private static final String KEY_PET_NAME                                = "KEY_PET_NAME";
+
     public static void setAutoLoginYn(Context cxt, boolean autoLoginYn){
         putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_YN, autoLoginYn);
     }
@@ -138,4 +146,45 @@ public class PreferencePhoneShared extends BasePreference {
     public static String getFCMToken(Context cxt){
         return getString(cxt, PREFERENCE_NAME, KEY_FCM_TOKEN, null);
     }
+
+    public static boolean getMyLocationAcceptedYn(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_MY_LOCATION_ACCEPTED_YN, false);
+    }
+
+    public static void setMyLocationAcceptedYn(Context cxt, boolean myLocationYn){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_MY_LOCATION_ACCEPTED_YN, myLocationYn);
+    }
+
+    public static boolean getChattingAcceptYn(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_CHATTING_ACCEPTED_YN, false);
+    }
+
+    public static void setChattingAcceptYn(Context cxt, boolean chattingYn){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_CHATTING_ACCEPTED_YN, chattingYn);
+    }
+
+    public static void setNickName(Context cxt, String nickName){
+        putString(cxt, PREFERENCE_NAME, KEY_USER_NICK_NAME, nickName);
+    }
+
+    public static String getNickName(Context cxt){
+        return getString(cxt, PREFERENCE_NAME, KEY_USER_NICK_NAME, "");
+    }
+
+    public static void setPetName(Context cxt, String petName){
+        putString(cxt, PREFERENCE_NAME, KEY_PET_NAME, petName);
+    }
+
+    public static String getPetName(Context cxt){
+        return getString(cxt, PREFERENCE_NAME, KEY_PET_NAME, "");
+    }
+
+    public static void setWalkingCoin(Context cxt, int coin){
+        putInt(cxt, PREFERENCE_NAME, KEY_WALKING_COIN, coin);
+    }
+
+    public static int getWalkingCoin(Context cxt){
+        return getInt(cxt, PREFERENCE_NAME, KEY_WALKING_COIN, 0);
+    }
+
 }

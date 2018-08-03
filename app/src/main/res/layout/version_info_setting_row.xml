@@ -87,7 +87,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/updte_button"
+        android:id="@+id/update_button"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_margin="10dp"

@@ -14,7 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;

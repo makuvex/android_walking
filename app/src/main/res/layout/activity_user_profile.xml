@@ -42,6 +42,59 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:background="@color/colorPrimary"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/nick_name" />
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp"
+                        android:layout_marginRight="14dp"
+                        android:layout_marginLeft="9dp"
+                        android:layout_marginTop="11dp"
+                        android:background="#bce1f2" />
+
+                    <EditText
+                        android:id="@+id/nickname_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:paddingLeft="5dp"
+                        android:background="#ffffff"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginRight="15dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginBottom="12dp"
+                        android:textSize="14dp"
+                        android:hint="@string/nickname_hint"
+                        android:gravity="center_vertical"
+                        android:onClick="onClickCallback"/>
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
                 android:layout_marginBottom="10dp"
                 android:background="@color/colorPrimary"/>
 

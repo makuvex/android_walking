@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
@@ -20,6 +20,8 @@ import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
 
+import org.w3c.dom.Text;
+
 /**
  * Created by jungjiwon on 2017. 10. 23..
  */
@@ -31,6 +33,8 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
     public ImageView loginTypeImage;
 
     public TextView loginID;
+    public TextView nickName;
+    public TextView walking_coin;
     public boolean isAutoLogin;
 
     private View.OnClickListener mOnClickListener;
@@ -41,6 +45,8 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
         JWLog.e("", "");
 
         loginID = (TextView) itemView.findViewById(R.id.loginID);
+        nickName = (TextView) itemView.findViewById(R.id.nickname);
+        walking_coin = (TextView) itemView.findViewById(R.id.walking_coin);
         logoutButton = (ImageButton) itemView.findViewById(R.id.login_out_action);
         autoLoginButton = (ImageButton) itemView.findViewById(R.id.autoLogin);
         loginTypeImage = (ImageView) itemView.findViewById(R.id.loginTypeImage);
@@ -80,7 +86,9 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
             LoginSettingListData data = (LoginSettingListData)object;
 
             this.loginID.setText(data.getLoginID());
+            this.nickName.setText(data.getNickName());
             this.isAutoLogin = data.getAutoLogin();
+            this.walking_coin.setText(""+data.getWalkingCoin()+"개");
             this.itemView.setTag(data);
 
             loginTypeImage.setVisibility(View.VISIBLE);

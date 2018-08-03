@@ -3,6 +3,7 @@ package com.friendly.walking.activity;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -20,7 +21,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
@@ -38,6 +39,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -52,8 +54,16 @@ import java.util.Locale;
  * Created by jungjiwon on 2017. 10. 25..
  */
 
-public class GoogleMapActivity extends BaseActivity implements View.OnClickListener, OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class GoogleMapActivity extends BaseActivity implements View.OnClickListener,
+                                                                OnMapReadyCallback,
+                                                                LocationListener,
+                                                                GoogleApiClient.ConnectionCallbacks,
+                                                                GoogleApiClient.OnConnectionFailedListener {
+
+    private static final int                    GPS_ENABLE_REQUEST_CODE = 2001;
+    private static final int                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
+    private static final int                    UPDATE_INTERVAL_MS = 1000;  // 1초
+    private static final int                    FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
 
     private EditText                            mAddressText;
     private ImageButton                         mFindButton;
@@ -66,11 +76,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
     private Location                            mCurrentLocation;
     private GoogleMap                           mGoogleMap;
     private String                              mGoogleMapAddressLine;
-
-    private static final int GPS_ENABLE_REQUEST_CODE = 2001;
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
-    private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
-    private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
+    private String                              mNickName;
 
     private boolean mMoveMapByUser = true;
     private boolean mMoveMapByAPI = true;
@@ -98,9 +104,33 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         mDoneButton = (ImageButton)findViewById(R.id.confirm);
 
         mGoogleMapAddressLine = getIntent().getStringExtra("address");
-        mLat = Double.parseDouble(getIntent().getStringExtra("lat"));
-        mLot = Double.parseDouble(getIntent().getStringExtra("lot"));
+        mNickName = getIntent().getStringExtra("user");
+        String title = getIntent().getStringExtra("title");
 
+        if(title != null) {
+            TextView textView = (TextView)findViewById(R.id.title);
+            textView.setText(title);
+
+            findViewById(R.id.address_layout).setVisibility(View.GONE);
+        }
+        try {
+            mLat = Double.parseDouble(getIntent().getStringExtra("lat"));
+            mLot = Double.parseDouble(getIntent().getStringExtra("lot"));
+
+            if(mGoogleMapAddressLine == null) {
+                mGoogleMapAddressLine = getCurrentAddress(new LatLng(mLat, mLot));
+            }
+
+            JWLog.e("mGoogleMapAddressLine "+mGoogleMapAddressLine+ ", lat : "+mLat+", mLot :"+mLot);
+            if(mLot != 0 && mLat != 0) {
+                mRequestingLocationUpdates = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        mAddressText.setText(mGoogleMapAddressLine);
         mAddressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -144,7 +174,9 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
         if (mGoogleApiClient.isConnected()) {
             if (!mRequestingLocationUpdates) {
-                startLocationUpdates();
+                if(findViewById(R.id.address_layout).getVisibility() == View.VISIBLE) {
+                    startLocationUpdates();
+                }
             }
         }
     }
@@ -219,6 +251,8 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
             public boolean onMyLocationButtonClick() {
                 JWLog.e( "", "onMyLocationButtonClick : 위치에 따른 카메라 이동 활성화");
                 mMoveMapByAPI = true;
+                mRequestingLocationUpdates = false;
+                startLocationUpdates();
 
                 if(mCurrentLocation != null) {
                     String markerTitle = getCurrentAddress(mCurrentLocation);
@@ -332,16 +366,16 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
                     1);
         } catch (IOException ioException) {
             //네트워크 문제
-            Toast.makeText(getApplicationContext(), "지오코더 서비스 사용불가", Toast.LENGTH_LONG).show();
+            JWToast.showToast("지오코더 서비스 사용불가");
             return "지오코더 서비스 사용불가";
         } catch (IllegalArgumentException illegalArgumentException) {
-            Toast.makeText(getApplicationContext(), "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
+            JWToast.showToast("잘못된 GPS 좌표");
             return "잘못된 GPS 좌표";
 
         }
 
         if (addresses == null || addresses.size() == 0) {
-            Toast.makeText(getApplicationContext(), "주소 미발견", Toast.LENGTH_LONG).show();
+            JWToast.showToast("주소 미발견");
             return "주소 미발견";
 
         } else {
@@ -363,19 +397,27 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         mLot = mLot == 0 ? 126.97 : mLot;
 
         LatLng DEFAULT_LOCATION = new LatLng(mLat, mLot);
-        String markerTitle = "위치정보 가져올 수 없음";
-        String markerSnippet = "위치 퍼미션과 GPS 활성 요부 확인하세요";
+        String markerTitle = mNickName == null ? "위치정보 가져올 수 없음" : mNickName;
+        //String markerSnippet = "위치 퍼미션과 GPS 활성 여부 확인하세요";
 
         if (currentMarker != null) currentMarker.remove();
 
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(DEFAULT_LOCATION);
         markerOptions.title(markerTitle);
-        markerOptions.snippet(markerSnippet);
+        //markerOptions.snippet(markerSnippet);
         markerOptions.draggable(true);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         currentMarker = mGoogleMap.addMarker(markerOptions);
 
+        if(mNickName != null) {
+            CircleOptions circle = new CircleOptions().center(DEFAULT_LOCATION) //원점
+                    .radius(300)      //반지름 단위 : m
+                    .strokeWidth(0f)  //선너비 0f : 선없음
+                    .fillColor(Color.parseColor("#66BEEEFF")); //배경색
+
+            mGoogleMap.addCircle(circle);
+        }
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15);
         mGoogleMap.moveCamera(cameraUpdate);
     }
@@ -435,7 +477,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
             mGoogleMap.setMyLocationEnabled(true);
         } else {
             JWLog.e("", "onConnected : call startLocationUpdates");
-            startLocationUpdates();
+            //startLocationUpdates();
             mGoogleMap.setMyLocationEnabled(true);
         }
     }
@@ -464,13 +506,13 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         } catch (Exception e) {
             e.printStackTrace();
             JWLog.e("test","입출력 오류 - 서버에서 주소변환시 에러발생");
-            Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
+            JWToast.showToast("입력한 주소를 구글맵에서 변환할 수 없습니다.");
         }
 
         if (list != null) {
             if (list.size() == 0) {
                 JWLog.e("", "해당되는 주소 정보는 없습니다");
-                Toast.makeText(this, "입력한 주소를 구글맵에서 변환할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                JWToast.showToast("입력한 주소를 구글맵에서 변환할 수 없습니다.");
             } else {
                 JWLog.e("", list.get(0).toString());
 

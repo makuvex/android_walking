@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 import android.content.pm.PackageInstaller;
 
 import com.facebook.FacebookSdk;
@@ -173,20 +173,20 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                             setProgressBar(View.INVISIBLE);
 
                                             if(result) {
-                                                Toast.makeText(getApplicationContext(), "아이디가 디비에 있음", Toast.LENGTH_SHORT).show();
+                                                JWToast.showToast("아이디가 디비에 있음");
 
                                                 Intent intent = new Intent(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN);
                                                 intent.putExtra("email", displayName);
                                                 JWBroadCast.sendBroadcast(LoginActivity.this, intent);
                                             } else {
-                                                Toast.makeText(getApplicationContext(), "아이디가 디비에 없음", Toast.LENGTH_SHORT).show();
+                                                JWToast.showToast("아이디가 디비에 없음");
 
                                                 Intent intent = new Intent(LoginActivity.this, SignUpPetActivity.class);
                                                 intent.putExtra(GlobalConstantID.SIGN_UP_TYPE, GlobalConstantID.LOGIN_TYPE_FACEBOOK);
                                                 //intent.putExtra(GlobalConstantID.SIGN_UP_PASSWORD, mPasswordText.getText().toString());
 
                                                 ApplicationPool pool = (ApplicationPool)getApplicationContext();
-                                                pool.putExtra(KEY_USER_DATA, intent, getUserData(displayName, task.getResult().getUser().getUid(), "facebook"));
+                                                pool.putExtra(KEY_USER_DATA, intent, getUserData(displayName, task.getResult().getUser().getDisplayName(), task.getResult().getUser().getUid(), "facebook"));
 
                                                 startActivity(intent);
                                             }
@@ -202,7 +202,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     }
                 });
             } else {
-                Toast.makeText(LoginActivity.this, "로그인 안됨" , Toast.LENGTH_SHORT).show();
+                JWToast.showToast("로그인 안됨" );
             }
         } else if(view == mSignInKakaoButton) {
             //kakaoRequestMe();
@@ -213,9 +213,9 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
             final String email = mEmailText.getText().toString().trim();
             if(TextUtils.isEmpty(email)) {
-                Toast.makeText(getApplicationContext(), "이메일을 입력해 주세요", Toast.LENGTH_SHORT).show();
+                JWToast.showToast( "이메일을 입력해 주세요");
             } else if(TextUtils.isEmpty(mPasswordText.getText().toString())) {
-                Toast.makeText(getApplicationContext(), "비밀번호를 입력해 주세요", Toast.LENGTH_SHORT).show();
+                JWToast.showToast("비밀번호를 입력해 주세요");
             } else {
                 PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
 
@@ -242,6 +242,20 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                        } else {
+                            setProgressBar(View.VISIBLE);
+                            FireBaseNetworkManager.getInstance(getApplicationContext()).findUserEmail(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                @Override
+                                public void onCompleted(boolean result, Object object) {
+                                    setProgressBar(View.INVISIBLE);
+
+                                    if(result) {
+                                        JWToast.showToast( "로그인에 실패 했습니다. 비밀번호를 확인해주세요.");
+                                    } else {
+                                        JWToast.showToast( "로그인에 실패 했습니다. 아이디 또는 비밀번호를 확인해주세요.");
+                                    }
+                                }
+                            });
                         }
                     }
                 });
@@ -282,12 +296,12 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                         setProgressBar(View.INVISIBLE);
 
                                         if(result) {
-                                            Toast.makeText(getApplicationContext(), "아이디가 디비에 있음", Toast.LENGTH_SHORT).show();
+                                            JWToast.showToast("아이디가 디비에 있음");
                                             Intent intent = new Intent(JWBroadCast.BROAD_CAST_GOOGLE_LOGIN);
                                             intent.putExtra("email", user.getEmail());
                                             JWBroadCast.sendBroadcast(LoginActivity.this, intent);
                                         } else {
-                                            Toast.makeText(getApplicationContext(), "아이디가 디비에 없음", Toast.LENGTH_SHORT).show();
+                                            JWToast.showToast( "아이디가 디비에 없음");
 
                                             Intent intent = new Intent(LoginActivity.this, SignUpPetActivity.class);
                                             intent.putExtra(GlobalConstantID.SIGN_UP_TYPE, GlobalConstantID.LOGIN_TYPE_GOOGLE);
@@ -298,7 +312,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                             if(TextUtils.isEmpty(email)) {
                                                 email = mFirebaseUser.getDisplayName();
                                             }
-                                            pool.putExtra(KEY_USER_DATA, intent, getUserData(email, mFirebaseUser.getUid(), "google"));
+                                            pool.putExtra(KEY_USER_DATA, intent, getUserData(email, mFirebaseUser.getDisplayName(), mFirebaseUser.getUid(), "google"));
 
                                             startActivity(intent);
                                         }
@@ -347,10 +361,11 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         finish();
     }
 
-    private UserData getUserData(String email, String uid, String joinBy) {
+    private UserData getUserData(String email, String nickName, String uid, String joinBy) {
         UserData data = new UserData();
 
         data.mem_email = email;
+        data.mem_nickname = nickName;
         data.mem_auto_login = true;
         data.mem_notification_yn = true;
         data.mem_geo_notification_yn = true;
@@ -369,6 +384,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         data.mem_auto_stroll_mode = false;
         data.uid = uid;
         data.joinBy = joinBy;
+        data.walking_coin = 3;
 
         JWLog.e("","@@@ userData : "+data);
 

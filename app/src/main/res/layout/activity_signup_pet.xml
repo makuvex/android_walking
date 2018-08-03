@@ -232,19 +232,22 @@
                 android:textStyle="italic" />
 
         </LinearLayout>
+
+        <Button
+            android:id="@+id/sign_up"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/colorPrimary"
+            android:onClick="onClickCallback"
+            android:text="@string/sign_up"
+            android:textColor="#ffffff"
+            android:textStyle="bold"/>
+
     </ScrollView>
-    <Button
-        android:id="@+id/sign_up"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="10dp"
-        android:background="@color/colorPrimary"
-        android:onClick="onClickCallback"
-        android:text="@string/sign_up"
-        android:textColor="#ffffff"
-        android:textStyle="bold"/>
+
 </LinearLayout>

@@ -12,7 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
@@ -75,6 +75,7 @@ public class KakaoSignupActivity extends BaseActivity {
                         PreferencePhoneShared.setUserUID(getApplicationContext(), paddedKey);
                         PreferencePhoneShared.setLoginID(getApplicationContext(), encryptedId);
                         PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
+                        PreferencePhoneShared.setNickName(getApplicationContext(), mUserProfile.getNickname());
 
                         Intent i = new Intent(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
                         i.putExtra("email", id);
@@ -87,14 +88,14 @@ public class KakaoSignupActivity extends BaseActivity {
                                 if(!result) {
                                     startSignUpPet(KakaoSignupActivity.this, (UserProfile)userProfile);
                                 } else {
-                                    Toast.makeText(KakaoSignupActivity.this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show();
+                                    JWToast.showToast("로그인 되었습니다.");
                                     updateUI(resultId);
                                 }
                             }
                         });
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Toast.makeText(KakaoSignupActivity.this, "카톡 로그인 오류 되었습니다.", Toast.LENGTH_SHORT).show();
+                        JWToast.showToast("카톡 로그인 오류 되었습니다.");
                     }
                 } else {
                     JWLog.e("@@@ requestMe failed");
@@ -120,6 +121,7 @@ public class KakaoSignupActivity extends BaseActivity {
         UserData data = new UserData();
 
         data.uid = PreferencePhoneShared.getUserUid(cxt);
+        data.mem_nickname = userProfile.getNickname();
         data.mem_email = TextUtils.isEmpty(userProfile.getEmail()) ? userProfile.getNickname() : userProfile.getEmail();
         data.mem_auto_login = true;
         data.mem_notification_yn = true;
@@ -136,6 +138,7 @@ public class KakaoSignupActivity extends BaseActivity {
 
         JWLog.e("","@@@ userData : "+data);
         data.joinBy = "kakao";
+        data.walking_coin = 3;
 
         return data;
     }

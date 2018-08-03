@@ -14,6 +14,7 @@ import com.friendly.walking.adapter.viewHolder.LoginSettingViewHolder;
 import com.friendly.walking.adapter.viewHolder.NotificationSettingViewHolder;
 import com.friendly.walking.adapter.viewHolder.PermissionSettingViewHolder;
 import com.friendly.walking.adapter.viewHolder.VersionInfoSettingViewHolder;
+import com.friendly.walking.adapter.viewHolder.WalkingSettingViewHolder;
 import com.friendly.walking.dataSet.LocationSettingListData;
 import com.friendly.walking.dataSet.LoginSettingListData;
 import com.friendly.walking.dataSet.VersionInfoSettingListData;
@@ -31,6 +32,7 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     public static final int INDEX_DATA_PERMISSION               = 2;
     public static final int INDEX_DATA_LOCATION                 = 3;
     public static final int INDEX_DATA_VERSION                  = 4;
+    public static final int INDEX_DATA_WALKING                  = 5;
 
     private HashMap<Integer, Integer>                           layoutMap;
     private HashMap<Integer, RecyclerView.ViewHolder>           holderMap;
@@ -58,6 +60,7 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         layoutMap.put(2, R.layout.permission_setting_row);
         layoutMap.put(3, R.layout.location_setting_row);
         layoutMap.put(4, R.layout.version_info_setting_row);
+        layoutMap.put(5, R.layout.walking_option_row);
     }
 
     /**
@@ -103,6 +106,12 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 holderMap.put(viewType, holder);
             }
             return holder;
+        } else if(viewType == INDEX_DATA_WALKING) {
+            if(holder == null) {
+                holder = new WalkingSettingViewHolder(mActivity, view).setLayout(mActivity);
+                holderMap.put(viewType, holder);
+            }
+            return holder;
         } else {
             return null;
         }
@@ -138,23 +147,20 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         return position;
     }
 
+    public List<?> getItems() {
+        return dataList;
+    }
+
     public void setDataWithIndex(int index, Object object) {
-        if(index == INDEX_DATA_LOGIN) {
-            LoginSettingListData data = (LoginSettingListData)dataList.get(index);
-            data.setDataSet(object);
-        } else if(index == INDEX_DATA_VERSION) {
-            VersionInfoSettingListData data = (VersionInfoSettingListData)dataList.get(index);
-            data.setDataSet(object);
 
-            VersionInfoSettingViewHolder holder = (VersionInfoSettingViewHolder)holderMap.get(INDEX_DATA_VERSION);
-            if(Float.parseFloat(data.getCurrentVersion()) >= Float.parseFloat(data.getLatestVersion())) {
-                holder.updateButton.setVisibility(View.GONE);
-            } else {
-                holder.updateButton.setVisibility(View.VISIBLE);
-            }
+        dataList.get(index).setDataSet(object);
 
-            notifyDataSetChanged();
-        }
+//        if(index == INDEX_DATA_LOGIN) {
+//            LoginSettingListData data = (LoginSettingListData)dataList.get(index);
+//            data.setDataSet(object);
+//        } else if(index == INDEX_DATA_VERSION) {
+//            dataList.get(index).setDataSet(object);
+//        }
     }
 
     public RecyclerView.ViewHolder getViewHolderByViewType(int viewType) {

@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
@@ -36,16 +36,18 @@ public class PetInfoActivity extends SignUpPetActivity {
     protected TextView                      mTitleTextView;
     protected Button                        mDoneButton;
     protected PetData                       mPetData;
+    protected PetInfoActivity               mThis;
 
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-
+        mThis = this;
         mEmail = getIntent().getStringExtra("email");
         mTitleTextView = (TextView)findViewById(R.id.title);
         mDoneButton = (Button)findViewById(R.id.sign_up);
         mTitleTextView.setText(R.string.change_pet_info);
         mDoneButton.setText(R.string.complete);
+        this.setResult(RESULT_CANCELED);
 
         setProgressBar(View.VISIBLE);
         FireBaseNetworkManager.getInstance(this).readPetData(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
@@ -79,7 +81,7 @@ public class PetInfoActivity extends SignUpPetActivity {
                     JWLog.e("result :"+result+", object :"+object);
 
                     if(result) {
-                        Toast.makeText(PetInfoActivity.this, "반려견 정보가 변경되었습니다.", Toast.LENGTH_SHORT).show();
+                        JWToast.showToast("반려견 정보가 변경되었습니다.");
 
                         JWLog.e("mImageCaptureUri :"+mImageCaptureUri);
                         if (mImageCaptureUri != null) {
@@ -88,21 +90,25 @@ public class PetInfoActivity extends SignUpPetActivity {
                                     @Override
                                     public void onCompleted(boolean result, Object object) {
                                         if (result) {
-                                            Toast.makeText(getApplicationContext(), "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                            JWToast.showToast("프로필 사진 업로드 성공");
+                                            mThis.setResult(RESULT_OK);
                                         } else {
-                                            Toast.makeText(getApplicationContext(), "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
+                                            JWToast.showToast("프로필 사진 업로드 실패");
                                         }
+                                        finish();
                                     }
                                 });
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                        } else {
+                            finish();
                         }
 
                     } else {
-                        Toast.makeText(PetInfoActivity.this, "반려견 정보 변경이 실패했습니다.", Toast.LENGTH_SHORT).show();
+                        JWToast.showToast("반려견 정보 변경이 실패했습니다.");
                     }
-                    finish();
+
                 }
             });
         } else {

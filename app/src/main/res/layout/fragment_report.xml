@@ -9,12 +9,47 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#ffffff"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/title_text"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:textSize="20dp"
+                android:typeface="sans"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="@string/walking_report" />
+
+            <ImageButton
+                android:id="@+id/close_button"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginRight="10dp"
+                android:scaleType="centerCrop"
+                android:layout_gravity="right|center_vertical"
+                android:src="@drawable/close_selector"
+                android:background="@color/colorTransparent"
+                android:visibility="gone"/>
+
+        </FrameLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/colorPrimary"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
             android:background="@color/colorBG"
+            android:paddingTop="1px"
+            android:paddingBottom="1px"
             android:orientation="horizontal">
 
             <Button
@@ -22,8 +57,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:layout_marginRight="1dp"
-                android:background="@color/colorTransparent"
+                android:layout_marginRight="1px"
+                android:background="@drawable/tap_selector"
                 android:text="월 별"
                 android:textSize="12dp"/>
 
@@ -32,8 +67,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:layout_marginRight="1dp"
-                android:background="@color/colorTransparent"
+                android:layout_marginRight="1px"
+                android:background="@drawable/tap_selector"
                 android:text="분기 별"
                 android:textSize="12dp"/>
 
@@ -42,17 +77,34 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@color/colorTransparent"
+                android:background="@drawable/tap_selector"
                 android:text="년도 별"
                 android:textSize="12dp"/>
 
         </LinearLayout>
 
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/chart1"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/seekBar1" />
+            android:background="#ffffff">
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/chart1"
+                android:background="#ffffff"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/seekBar1" />
+
+            <TextView
+                android:id="@+id/no_data_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:background="#ffffff"
+                android:text="산책 데이터가 없습니다."
+                android:visibility="visible"/>
+
+        </FrameLayout>
 
     </LinearLayout>
 </FrameLayout>

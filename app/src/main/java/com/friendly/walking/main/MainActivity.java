@@ -22,24 +22,24 @@ import android.widget.LinearLayout;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
+import com.friendly.walking.BuildConfig;
 import com.friendly.walking.GlobalConstantID;
-import com.friendly.walking.activity.BarChartActivity;
-import com.friendly.walking.activity.GoogleMapActivity;
 import com.friendly.walking.activity.KakaoSignupActivity;
-import com.friendly.walking.activity.PieChartActivity;
+import com.friendly.walking.activity.UserInfoActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.fragment.ReportFragment;
-import com.friendly.walking.fragment.StrollFragment;
+import com.friendly.walking.fragment.WalkingChartFragment;
 import com.friendly.walking.fragment.StrollMapFragment;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.fragment.SettingFragment;
 //import com.friendly.walking.geofence.GeofenceManager;
+import com.friendly.walking.fragment.WalkingShareFragment;
 import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
@@ -47,12 +47,16 @@ import com.friendly.walking.service.MainService;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
-import com.friendly.walking.main.DataExchangeInterface;
 
+import com.friendly.walking.util.JWToast;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.location.Geofence;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.kakao.usermgmt.response.model.UserProfile;
@@ -71,15 +75,13 @@ public class MainActivity extends BaseActivity {
 
     private ViewPager                               mViewPager = null;
 
-    private View                                    mStrollSelected = null;
-    private View                                    mMapSelected = null;
+    private View                                    mChartSelected = null;
+    private View                                    mShareSelected = null;
     private View                                    mReportSelected = null;
     private View                                    mSettingSelected = null;
     private View                                    mPreviousSelectedView = null;
-    private CircleImageView                         mProfileImageView = null;
-    private TextView                                mProfileText = null;
 
-    private LinearLayout                            mProfileView = null;
+
 
     private long                                    mDoublePressInterval = 2000;
     private long                                    mPreviousTouchTime = 0;
@@ -90,13 +92,16 @@ public class MainActivity extends BaseActivity {
     private IntentFilter                            mIntentFilter = null;
     private boolean                                 mIsRegisterdReceiver = false;
 
-    private StrollFragment                          mStrollFragment;
-    private StrollMapFragment                       mStrollMapFragment;
+    private WalkingChartFragment                    mWalkingChartFragment;
+    private WalkingShareFragment                    mWalkingShareFragment;
     private ReportFragment                          mReportFragment;
     private SettingFragment                         mSettingFragment;
 
     private UserData                                mUserDta;
     private DataExchangeInterface                   mCurrentFragmentInterface;
+
+    private AdView                                  mAdView;
+    private boolean                                 mIsWalking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,20 +114,17 @@ public class MainActivity extends BaseActivity {
 
         //GoogleApiAvailability.makeGooglePlayServicesAvailable();
 
-        mStrollSelected = findViewById(R.id.stroll_page);
-        mMapSelected = findViewById(R.id.map_page);
+        mChartSelected = findViewById(R.id.chart_page);
+        mShareSelected = findViewById(R.id.share_page);
         mReportSelected = findViewById(R.id.report_page);
         mSettingSelected = findViewById(R.id.setting_page);
-        mProfileImageView = (CircleImageView)findViewById(R.id.profileImageView);
-        mProfileText = (TextView)findViewById(R.id.profileText);
-        mProfileText.setText("누구의 산책에 온거 축하");
 
-        mPreviousSelectedView = mStrollSelected;
+        mPreviousSelectedView = mChartSelected;
 
-        mStrollSelected.setBackgroundResource(R.color.colorTapSelected);
-        mProfileView = (LinearLayout)findViewById(R.id.profileBackgroundImageView);
+        mChartSelected.setBackgroundResource(R.color.colorPrimaryLighten);
+
         //mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
-        mProfileView.setBackgroundResource(R.drawable.profile_bg);
+
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
@@ -141,28 +143,28 @@ public class MainActivity extends BaseActivity {
                     mPreviousSelectedView.setBackgroundResource(R.color.colorTapUnselected);
                 }
 
-                int selectedTapColor = R.color.colorTapSelected;
+                int selectedTapColor = R.color.colorPrimaryLighten;
                 switch(position) {
                     case 0 :
-                        showProfileView(true);
-                        mStrollSelected.setBackgroundResource(selectedTapColor);
-                        mPreviousSelectedView = mStrollSelected;
-                        mCurrentFragmentInterface = mStrollFragment;
+                        //showProfileView(true);
+                        mChartSelected.setBackgroundResource(selectedTapColor);
+                        mPreviousSelectedView = mChartSelected;
+                        mCurrentFragmentInterface = mWalkingChartFragment;
                         break;
                     case 1 :
-                        showProfileView(false);
-                        mMapSelected.setBackgroundResource(selectedTapColor);
-                        mPreviousSelectedView = mMapSelected;
+                        //showProfileView(false);
+                        mShareSelected.setBackgroundResource(selectedTapColor);
+                        mPreviousSelectedView = mShareSelected;
                         mCurrentFragmentInterface = null;
                         break;
                     case 2 :
-                        showProfileView(false);
+                        //showProfileView(false);
                         mReportSelected.setBackgroundResource(selectedTapColor);
                         mPreviousSelectedView = mReportSelected;
                         mCurrentFragmentInterface = mReportFragment;
                         break;
                     case 3 :
-                        showProfileView(false);
+                        //showProfileView(false);
                         mSettingSelected.setBackgroundResource(selectedTapColor);
                         mPreviousSelectedView = mSettingSelected;
                         mCurrentFragmentInterface = null;
@@ -172,13 +174,54 @@ public class MainActivity extends BaseActivity {
                         break;
                 }
 
-                if(mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
-                    mCurrentFragmentInterface.functionByCommand(mUserDta.mem_email, DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST);
+                if(mUserDta != null) {
+                    if (mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
+                        mCurrentFragmentInterface.functionByCommand(mUserDta.mem_email, DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST);
+                    }
                 }
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {}
+        });
+
+        MobileAds.initialize(this, "ca-app-pub-5000421881432235~3347969295");
+        mAdView = (AdView)findViewById(R.id.ad_view);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+                JWLog.e("");
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Code to be executed when an ad request fails.
+                JWLog.e("");
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
+                JWLog.e("");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+                JWLog.e("");
+            }
+
+            @Override
+            public void onAdClosed() {
+                // Code to be executed when when the user is about to return
+                // to the app after tapping on an ad.
+                JWLog.e("");
+            }
         });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -191,10 +234,29 @@ public class MainActivity extends BaseActivity {
 
 //                startActivity(new Intent(MainActivity.this, PieChartActivity.class));
 
-                startActivity(new Intent(MainActivity.this, BarChartActivity.class));
+//                startActivity(new Intent(MainActivity.this, BarChartActivity.class));
 
+                if(BuildConfig.IS_DEBUG) {
+                    String msg = JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED;
+                    int transition = Geofence.GEOFENCE_TRANSITION_EXIT;
+                    if (mIsWalking) {
+                        msg = JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED;
+                        transition = Geofence.GEOFENCE_TRANSITION_ENTER;
+                        mIsWalking = false;
+                    } else {
+                        mIsWalking = true;
+                    }
+
+                    Intent i = new Intent(msg);
+                    i.putExtra("transition", transition);
+                    JWBroadCast.sendBroadcast(getApplicationContext(), i);
+
+                    JWToast.showToast("산책 모드 "+(mIsWalking ? "시작" : "중지"));
+                }
             }
         });
+
+//        fab.setVisibility(View.GONE);
 
 //        CircleImageView imageview = (CircleImageView)findViewById(R.id.profileImageView);
 //
@@ -218,13 +280,15 @@ public class MainActivity extends BaseActivity {
 
         String fcmToken = PreferencePhoneShared.getFCMToken(this);
         JWLog.e("FCM TOKEN :"+fcmToken);
+
+
     }
 
     @Override
     public void onBackPressed() {
         long currentTime = System.currentTimeMillis();
         if (0 >= mPreviousTouchTime || mDoublePressInterval < (currentTime - mPreviousTouchTime)) {
-            Toast.makeText(this, "'뒤로' 버튼을 한번 더 누르시면 종료 됩니다.", Toast.LENGTH_SHORT).show();
+            JWToast.showToast("'뒤로' 버튼을 한번 더 누르시면 종료 됩니다.");
             mPreviousTouchTime = currentTime;
             return;
         }
@@ -261,17 +325,17 @@ public class MainActivity extends BaseActivity {
             JWLog.e("","@@@ getItem position :"+position);
             currentPosition = position;
             if(position == 0) {
-                if(mStrollFragment == null) {
-                    mStrollFragment = StrollFragment.newInstance(position);
+                if(mWalkingChartFragment == null) {
+                    mWalkingChartFragment = WalkingChartFragment.newInstance(position);
                 }
-                mCurrentFragmentInterface = mStrollFragment;
-                return mStrollFragment;
+                mCurrentFragmentInterface = mWalkingChartFragment;
+                return mWalkingChartFragment;
             } else if(position == 1) {
-                if(mStrollMapFragment == null) {
-                    mStrollMapFragment = StrollMapFragment.newInstance(position);
+                if(mWalkingShareFragment == null) {
+                    mWalkingShareFragment = WalkingShareFragment.newInstance(position);
                 }
-                mStrollMapFragment.selectedThisFragment();
-                return mStrollMapFragment;
+                //mWalkingShareFragment.selectedThisFragment();
+                return mWalkingShareFragment;
             } else if(position == 2) {
                 if(mReportFragment == null) {
                     mReportFragment = ReportFragment.newInstance(position);
@@ -309,9 +373,9 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    public void showProfileView(boolean show) {
-        mProfileView.setVisibility(show ? View.VISIBLE : View.GONE);
-    }
+//    public void showProfileView(boolean show) {
+//        mProfileView.setVisibility(show ? View.VISIBLE : View.GONE);
+//    }
 
     private boolean doLogin() {
 
@@ -395,7 +459,7 @@ public class MainActivity extends BaseActivity {
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_EMAIL_LOGIN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR);
-
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REFRESH_USER_DATA);
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -407,13 +471,14 @@ public class MainActivity extends BaseActivity {
                 } else if(JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN.equals(intent.getAction())
                         || JWBroadCast.BROAD_CAST_GOOGLE_LOGIN.equals(intent.getAction())
                         || JWBroadCast.BROAD_CAST_KAKAO_LOGIN.equals(intent.getAction())
-                        || JWBroadCast.BROAD_CAST_EMAIL_LOGIN.equals(intent.getAction())) {
+                        || JWBroadCast.BROAD_CAST_EMAIL_LOGIN.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction())) {
 
                     String email = intent.getStringExtra("email");
                     setProgressBar(View.VISIBLE);
 
                     FirebaseMessaging.getInstance().subscribeToTopic("news");
-                    readPetProfileImage(email);
+                    //readPetProfileImage(email);
 
                     FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                         @Override
@@ -431,19 +496,22 @@ public class MainActivity extends BaseActivity {
                                 FireBaseNetworkManager.getInstance(MainActivity.this).updateAutoLoginCheck(userData.uid, PreferencePhoneShared.getAutoLoginYn(MainActivity.this), null);
                             }
 
-                            if(userData != null) {
-                                PetData petData = userData.pet_list.get(0);
-                                mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
-                            }
-
+                            PreferencePhoneShared.setNickName(getApplicationContext(), userData.mem_nickname);
                             PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), userData.mem_auto_login);
                             PreferencePhoneShared.setNotificationYn(getApplicationContext(), userData.mem_notification_yn);
                             PreferencePhoneShared.setGeoNotificationYn(getApplicationContext(), userData.mem_geo_notification_yn);
                             PreferencePhoneShared.setLocationYn(getApplicationContext(), userData.mem_location_yn);
+                            PreferencePhoneShared.setWalkingCoin(getApplicationContext(), userData.walking_coin);
+                            PreferencePhoneShared.setMyLocationAcceptedYn(getApplicationContext(), userData.mem_walking_my_location_yn);
+                            PreferencePhoneShared.setChattingAcceptYn(getApplicationContext(), userData.mem_walking_chatting_yn);
 
                             PreferencePhoneShared.setStartStrollTime(getApplicationContext(), userData.mem_alarm_time.get("start"));
                             PreferencePhoneShared.setEndStrollTime(getApplicationContext(), userData.mem_alarm_time.get("end"));
                             PreferencePhoneShared.setAutoStrollMode(getApplicationContext(), userData.mem_auto_stroll_mode);
+
+                            if(userData.pet_list.size() > 0) {
+                                PreferencePhoneShared.setPetName(getApplicationContext(), userData.pet_list.get(0).petName);
+                            }
 
                             if(PermissionManager.isAcceptedLocationPermission(MainActivity.this)) {
                                 if(userData.mem_auto_stroll_mode) {
@@ -466,7 +534,7 @@ public class MainActivity extends BaseActivity {
                                     }
                                 } else {
                                     JWLog.e("자동 산책 모드가 아닙니다.");
-                                    Toast.makeText(MainActivity.this, "자동 산책 모드가 아닙니다.", Toast.LENGTH_SHORT).show();
+                                    JWToast.showToast("자동 산책 모드가 아닙니다.");
                                     JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
                                 }
                             } else {
@@ -474,8 +542,10 @@ public class MainActivity extends BaseActivity {
                             }
 
                             if(userData != null) {
-                                PetData petData = userData.pet_list.get(0);
-                                mProfileText.setText("우리" + petData.petName + "와 함께 산책을 해볼까요!");
+                                JWBroadCast.sendBroadcast(getApplicationContext(), new Intent(JWBroadCast.BROAD_CAST_UPDATE_PROFILE));
+
+//                                PetData petData = userData.pet_list.get(0);
+//                                mProfileText.setText(userData.mem_nickname+"님 "+"우리" + petData.petName + "와 함께 산책을 해볼까요!");
                             }
 
                             if(mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
@@ -486,9 +556,7 @@ public class MainActivity extends BaseActivity {
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
                     FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
                     mUserDta = null;
-                    mProfileText.setText("누구의 산책에 온거 축하");
-                    mProfileImageView.setImageResource(R.drawable.default_profile);
-                    mProfileView.setBackgroundResource(R.drawable.profile_bg);
+
                 } else if(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR.equals(intent.getAction())) {
                     JWLog.e("");
                     setProgressBar(View.VISIBLE);
@@ -538,7 +606,7 @@ public class MainActivity extends BaseActivity {
 
                                 PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
                                 updateUI(user.getEmail());
-                                readPetProfileImage(user.getEmail());
+                                //readPetProfileImage(user.getEmail());
 
 //                                FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(user.getEmail(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
 //                                    @Override
@@ -563,25 +631,5 @@ public class MainActivity extends BaseActivity {
             }
         }
     }
-
-    private void readPetProfileImage(String email) {
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        Uri uri = Uri.parse(path.getAbsolutePath() + "/" + email +"_pet_profile.jpg");
-        JWLog.e("","uri :"+uri.toString());
-
-        FireBaseNetworkManager.getInstance(this).downloadProfileImage(uri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-            @Override
-            public void onCompleted(boolean result, Object object) {
-                if(result) {
-                    Bitmap bitmap = (Bitmap)object;
-                    Bitmap blurred = CommonUtil.blurRenderScript(getApplicationContext(), bitmap, 25);//second parametre is radius
-
-                    mProfileImageView.setImageBitmap(bitmap);
-                    mProfileView.setBackground(new BitmapDrawable(blurred));
-                }
-            }
-        });
-    }
-
 
 }

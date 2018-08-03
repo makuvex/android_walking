@@ -31,7 +31,7 @@ public class VersionInfoSettingViewHolder extends BaseViewHolder implements Base
 
         currentVersion = (TextView) itemView.findViewById(R.id.current_version);
         latestVersion = (TextView) itemView.findViewById(R.id.latest_version);
-        updateButton = (Button) itemView.findViewById(R.id.updte_button);
+        updateButton = (Button) itemView.findViewById(R.id.update_button);
 
 
         updateButton.setOnClickListener(new View.OnClickListener() {

@@ -1,10 +1,16 @@
 package com.friendly.walking.dataSet;
 
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.friendly.walking.util.JWLog;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -16,6 +22,7 @@ public class UserData extends Object {
     public String uid = "0";
 
     public String mem_email = "";
+    public String mem_nickname = "";
     public boolean mem_auto_login = false;
     public boolean mem_notification_yn = true;
     public boolean mem_geo_notification_yn = true;
@@ -32,6 +39,12 @@ public class UserData extends Object {
     public int mem_auto_stroll_distance = 100;
 
     public String joinBy = "";
+    public LocationData mem_current_location = new LocationData();
+
+    public boolean mem_is_walking = false;
+    public int walking_coin = 0;
+    public boolean mem_walking_my_location_yn = true;
+    public boolean mem_walking_chatting_yn = true;
 
     public UserData() {
         Log.e("","@@@ LoginData constructor @@@");
@@ -52,6 +65,7 @@ public class UserData extends Object {
                 ", mem_auto_stroll_mode :"+mem_auto_stroll_mode+
                 ", mem_alarm_time :"+mem_alarm_time+
                 ", walking_location_list :"+walking_location_list +
-                ", mem_auto_stroll_distance :"+mem_auto_stroll_distance;
+                ", mem_auto_stroll_distance :"+mem_auto_stroll_distance +
+                ", walking_coin :"+walking_coin;
     }
 }

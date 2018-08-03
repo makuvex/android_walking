@@ -34,7 +34,14 @@ public class DayAxisValueFormatter implements IAxisValueFormatter
     @Override
     public String getFormattedValue(float value, AxisBase axis) {
 
-        String day = mMonthDataList.get((int)value-1).day;
+        if(mMonthDataList == null) {
+            return "";
+        }
+        StrollTimeData data = mMonthDataList.size() > value-1 ? mMonthDataList.get((int)value-1) : null;
+        if(data == null) {
+            return "";
+        }
+        String day = data.day;
         return day.substring(0, 2) +"/" +day.substring(2, 4);
 
         /*

@@ -17,7 +17,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.permission.PermissionManager;
@@ -45,11 +45,10 @@ import java.util.Locale;
 
 import static android.content.Context.LOCATION_SERVICE;
 
-public class StrollMapFragment extends SupportMapFragment
-        implements  OnMapReadyCallback,
-                    GoogleApiClient.ConnectionCallbacks,
-                    GoogleApiClient.OnConnectionFailedListener,
-                    LocationListener {
+public class StrollMapFragment extends SupportMapFragment implements    OnMapReadyCallback,
+                                                                        GoogleApiClient.ConnectionCallbacks,
+                                                                        GoogleApiClient.OnConnectionFailedListener,
+                                                                        LocationListener {
 
     private static final String TAG = "makuvex";
 
@@ -63,15 +62,15 @@ public class StrollMapFragment extends SupportMapFragment
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
-    private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
-    private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
+    private static final int UPDATE_INTERVAL_MS = 3000;  // 3초
+    private static final int FASTEST_UPDATE_INTERVAL_MS = 1000; // 1.0초
 
     boolean mRequestingLocationUpdates = false;
     Location mCurrentLocatiion;
     boolean mMoveMapByUser = true;
     boolean mMoveMapByAPI = true;
 
-    LocationRequest locationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+    LocationRequest locationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
                                                            .setInterval(UPDATE_INTERVAL_MS)
                                                            .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
     ////////////////////////
@@ -96,12 +95,13 @@ public class StrollMapFragment extends SupportMapFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
         JWLog.e("","");
+        /*
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-
+*/
         return rootView;
     }
 
@@ -113,12 +113,10 @@ public class StrollMapFragment extends SupportMapFragment
 
     @Override
     public void onStart() {
-/*
         if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false){
             JWLog.d(TAG, "onStart: mGoogleApiClient connect");
             mGoogleApiClient.connect();
         }
-*/
         super.onStart();
     }
 
@@ -126,7 +124,7 @@ public class StrollMapFragment extends SupportMapFragment
     public void onResume() {
         JWLog.e("","");
         super.onResume();
-/*
+
         if(PermissionManager.isAcceptedLocationPermission(getActivity())) {
             if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
                 if (!mRequestingLocationUpdates) {
@@ -136,7 +134,6 @@ public class StrollMapFragment extends SupportMapFragment
         } else {
             PermissionManager.requestLocationPermission(getActivity());
         }
-*/
     }
 
     @Override
@@ -304,17 +301,17 @@ public class StrollMapFragment extends SupportMapFragment
                     1);
         } catch (IOException ioException) {
             //네트워크 문제
-            Toast.makeText(getContext(), "지오코더 서비스 사용불가", Toast.LENGTH_LONG).show();
+            JWToast.showToast("지오코더 서비스 사용불가");
             return "지오코더 서비스 사용불가";
         } catch (IllegalArgumentException illegalArgumentException) {
-            Toast.makeText(getContext(), "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
+            JWToast.showToast("잘못된 GPS 좌표");
             return "잘못된 GPS 좌표";
 
         }
 
 
         if (addresses == null || addresses.size() == 0) {
-            Toast.makeText(getContext(), "주소 미발견", Toast.LENGTH_LONG).show();
+            JWToast.showToast("주소 미발견");
             return "주소 미발견";
 
         } else {
@@ -373,7 +370,7 @@ public class StrollMapFragment extends SupportMapFragment
         //디폴트 위치, Seoul
         LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
         String markerTitle = "위치정보 가져올 수 없음";
-        String markerSnippet = "위치 퍼미션과 GPS 활성 요부 확인하세요";
+        String markerSnippet = "위치 퍼미션과 GPS 활성 여부 확인하세요";
 
 
         if (currentMarker != null) currentMarker.remove();

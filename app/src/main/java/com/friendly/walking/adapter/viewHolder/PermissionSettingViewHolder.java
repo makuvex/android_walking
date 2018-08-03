@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.adapter.baseInterface.BaseSettingViewHolderInterface;
@@ -41,7 +41,7 @@ public class PermissionSettingViewHolder extends BaseViewHolder implements BaseS
                             .setData(Uri.parse("package:" + mActivity.getPackageName()));
                     mActivity.startActivity(intent);
                 } else {
-                    Toast.makeText(mActivity, "로그인 후 설정 가능합니다.", Toast.LENGTH_SHORT).show();
+                    JWToast.showToast("로그인 후 설정 가능합니다.");
                 }
             }
         };

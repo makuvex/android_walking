@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.R;
@@ -51,7 +51,7 @@ public class NotificationLanding extends AppCompatActivity {
                         JWBroadCast.sendBroadcast(NotificationLanding.this, new Intent(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED));
                         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                         nm.cancel(id);
-                        Toast.makeText(NotificationLanding.this, "산책 모드를 종료했습니다.", Toast.LENGTH_SHORT).show();
+                        JWToast.showToast("산책 모드를 종료했습니다.");
                     } else {
 
                     }
@@ -59,7 +59,7 @@ public class NotificationLanding extends AppCompatActivity {
                 }
             });
         } else {
-            Toast.makeText(this, "NotificationLanding id :"+id, Toast.LENGTH_SHORT).show();
+            JWToast.showToast("NotificationLanding id :"+id);
         }
     }
 

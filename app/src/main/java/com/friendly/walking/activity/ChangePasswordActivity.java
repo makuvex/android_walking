@@ -14,7 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.dataSet.PetData;
@@ -79,7 +79,7 @@ public class ChangePasswordActivity extends BaseActivity {
 
     private void doChangePassword() {
         if(!checkEmptyFields()) {
-            Toast.makeText(this, R.string.input_password, Toast.LENGTH_SHORT).show();
+            JWToast.showToast(R.string.input_password);
             return;
         }
         final String currentPassword = mCurrentPasswordEdit.getText().toString();
@@ -87,17 +87,17 @@ public class ChangePasswordActivity extends BaseActivity {
         final String newPasswordConfirm = mNewPasswordConfirmEdit.getText().toString();
 
         if(currentPassword.equals(newPassword)) {
-            Toast.makeText(this, R.string.same_password, Toast.LENGTH_SHORT).show();
+            JWToast.showToast(getText(R.string.same_password).toString());
             return;
         }
 
         if(!newPassword.equals(newPasswordConfirm)) {
-            Toast.makeText(this, R.string.password_compare_error, Toast.LENGTH_SHORT).show();
+            JWToast.showToast(getText(R.string.password_compare_error).toString());
             return;
         }
 
         if(!CommonUtil.isValidPassword(newPassword)) {
-            Toast.makeText(this, R.string.password_error, Toast.LENGTH_SHORT).show();
+            JWToast.showToast(getText(R.string.password_error).toString());
             return;
         }
 
@@ -114,13 +114,13 @@ public class ChangePasswordActivity extends BaseActivity {
                         String encryptedPassword = Crypto.encryptAES(CommonUtil.urlEncoding(newPassword, 0), paddedKey);
 
                         PreferencePhoneShared.setLoginPassword(getApplicationContext(), encryptedPassword);
-                        Toast.makeText(ChangePasswordActivity.this, R.string.succeed_change_password, Toast.LENGTH_SHORT).show();
+                        JWToast.showToast(R.string.succeed_change_password);
                     } catch(Exception e) {
                         e.printStackTrace();
-                        Toast.makeText(ChangePasswordActivity.this, R.string.failed_change_password, Toast.LENGTH_SHORT).show();
+                        JWToast.showToast(R.string.failed_change_password);
                     }
                 } else {
-                    Toast.makeText(ChangePasswordActivity.this, R.string.failed_change_password, Toast.LENGTH_SHORT).show();
+                    JWToast.showToast(R.string.failed_change_password);
                 }
                 finish();
             }

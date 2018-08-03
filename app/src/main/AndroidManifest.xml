@@ -44,7 +44,9 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
 
-        <activity android:name="com.friendly.walking.main.IntroActivity">
+        <activity
+            android:name="com.friendly.walking.main.IntroActivity"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -72,7 +74,6 @@
         <activity
             android:name="com.friendly.walking.activity.LoginActivity"
             android:screenOrientation="portrait"/>
-
 
         <activity
             android:name="com.friendly.walking.activity.SignUpActivity"

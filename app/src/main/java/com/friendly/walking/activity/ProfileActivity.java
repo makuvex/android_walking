@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
@@ -43,12 +43,15 @@ import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 
 public class ProfileActivity extends BaseActivity {
 
+    public static final int                     REQ_CODE_UPDATE_INFO = 100;
+
     private ImageView                           mProfileBackgroundImage;
     private ImageButton                         mSettingButton;
     private CircleImageView                     mProfileImage;
     private TextView                            mPetName;
     private ImageView                           mGenderImage;
     private TextView                            mEmailText;
+    private TextView                            mNickNameText;
     private ImageButton                         mLogoutButton;
     private ImageButton                         mChangePasswordButton;
     private ImageButton                         mChangeUserInfoButton;
@@ -74,6 +77,7 @@ public class ProfileActivity extends BaseActivity {
         mPetName = (TextView) findViewById(R.id.pet_name);
         mGenderImage = (ImageView)findViewById(R.id.gender);
         mEmailText = (TextView)findViewById(R.id.email);
+        mNickNameText = (TextView)findViewById(R.id.nickname);
         mLogoutButton = (ImageButton)findViewById(R.id.logout);
         mChangePasswordButton = (ImageButton)findViewById(R.id.change_password);
         mChangeUserInfoButton = (ImageButton)findViewById(R.id.change_user_info);
@@ -97,7 +101,7 @@ public class ProfileActivity extends BaseActivity {
                     ApplicationPool pool = (ApplicationPool)getApplicationContext();
                     pool.putExtra(KEY_USER_DATA, i, mUserData);
 
-                    startActivity(i);
+                    startActivityForResult(i, REQ_CODE_UPDATE_INFO);
                 } else if(v == mQuitServiceButton) {
                     JWLog.e("", "탈퇴");
                     quitService();
@@ -121,8 +125,8 @@ public class ProfileActivity extends BaseActivity {
         String email = getIntent().getStringExtra("email");
         mEmailText.setText(email);
 
-        readUserData(email);
-        readPetProfileImage(email);
+//        readUserData(email);
+//        readPetProfileImage(email);
 
         if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
             mLoginTypeImage.setImageResource(R.drawable.k);
@@ -133,6 +137,14 @@ public class ProfileActivity extends BaseActivity {
         } else {
             mLoginTypeImage.setImageResource(R.drawable.e);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        readUserData(mEmailText.getText().toString());
+        readPetProfileImage(mEmailText.getText().toString());
     }
 
     private void readPetProfileImage(String email) {
@@ -163,6 +175,7 @@ public class ProfileActivity extends BaseActivity {
                 if(mUserData != null) {
                     PetData petData = mUserData.pet_list.get(0);
 
+                    mNickNameText.setText(mUserData.mem_nickname);
                     mPetName.setText(petData.petName);
                     mGenderImage.setImageResource(petData.petGender == false ? R.drawable.male : R.drawable.female);
                 }
@@ -181,7 +194,7 @@ public class ProfileActivity extends BaseActivity {
                         @Override
                         public void onCompleted(boolean result, Object object) {
                             //Toast.makeText(getApplicationContext(), "정상적으로 탈퇴 되었습니다", Toast.LENGTH_SHORT).show();
-                            Toast.makeText(getApplicationContext(), "유저 데이터 삭제 성공", Toast.LENGTH_SHORT).show();
+                            JWToast.showToast("유저 데이터 삭제 성공");
 
                             if(result) {
                                 FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
@@ -191,9 +204,9 @@ public class ProfileActivity extends BaseActivity {
                                         @Override
                                         public void onCompleted(boolean result, Object object) {
                                             if (result) {
-                                                Toast.makeText(getApplicationContext(), "카카오 계정 삭제 성공", Toast.LENGTH_SHORT).show();
+                                                JWToast.showToast("카카오 계정 삭제 성공");
                                             } else {
-                                                Toast.makeText(getApplicationContext(), "계정 삭제 실패", Toast.LENGTH_SHORT).show();
+                                                JWToast.showToast("계정 삭제 실패");
                                             }
                                             updateUI("");
                                             finish();
@@ -204,9 +217,9 @@ public class ProfileActivity extends BaseActivity {
                                         @Override
                                         public void onCompleted(boolean result, Object object) {
                                             if (result) {
-                                                Toast.makeText(getApplicationContext(), "계정 삭제 성공", Toast.LENGTH_SHORT).show();
+                                                JWToast.showToast("계정 삭제 성공");
                                             } else {
-                                                Toast.makeText(getApplicationContext(), "계정 삭제 실패", Toast.LENGTH_SHORT).show();
+                                                JWToast.showToast("계정 삭제 실패");
                                             }
                                             updateUI("");
                                             finish();
@@ -214,7 +227,7 @@ public class ProfileActivity extends BaseActivity {
                                     });
                                 }
                             } else {
-                                Toast.makeText(getApplicationContext(), "유저 데이터 삭제 실패", Toast.LENGTH_SHORT).show();
+                                JWToast.showToast("유저 데이터 삭제 실패");
                             }
                             FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserImage(new FireBaseNetworkManager.FireBaseNetworkCallback() {
                                 @Override
@@ -222,9 +235,9 @@ public class ProfileActivity extends BaseActivity {
                                     JWLog.e("result :"+result);
 
                                     if(result) {
-                                        Toast.makeText(getApplicationContext(), "펫 이미지 삭제 성공", Toast.LENGTH_SHORT).show();
+                                        JWToast.showToast("펫 이미지 삭제 성공");
                                     } else {
-                                        Toast.makeText(getApplicationContext(), "펫 이미지 삭제 실패", Toast.LENGTH_SHORT).show();
+                                        JWToast.showToast("펫 이미지 삭제 실패");
                                     }
                                 }
                             });
@@ -248,7 +261,7 @@ public class ProfileActivity extends BaseActivity {
                             @Override
                             public void onCompleted(boolean result, Object object) {
                                 if(result) {
-                                    Toast.makeText(getApplicationContext(), "정상적으로 로그아웃 되었습니다", Toast.LENGTH_SHORT).show();
+                                    JWToast.showToast("정상적으로 로그아웃 되었습니다");
 
                                     PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
                                     PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
@@ -256,13 +269,13 @@ public class ProfileActivity extends BaseActivity {
                                     PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
                                     PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
                                 } else {
-                                    Toast.makeText(getApplicationContext(), "로그아웃 실패 되었습니다", Toast.LENGTH_SHORT).show();
+                                    JWToast.showToast("로그아웃 실패 되었습니다");
                                 }
                             }
                         });
                     } else {
                         FireBaseNetworkManager.getInstance(ProfileActivity.this).logoutAccount();
-                        Toast.makeText(ProfileActivity.this, "정상적으로 로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+                        JWToast.showToast("정상적으로 로그아웃 되었습니다.");
                     }
 
 
@@ -271,6 +284,24 @@ public class ProfileActivity extends BaseActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode != RESULT_OK) {
+            return;
+        }
+        JWLog.e("resultCode "+resultCode+", requestCode "+requestCode);
+        switch(requestCode) {
+            case REQ_CODE_UPDATE_INFO:
+                readPetProfileImage(mEmailText.getText().toString());
+
+                Intent i = new Intent(JWBroadCast.BROAD_CAST_REFRESH_USER_DATA);
+                i.putExtra("email", mEmailText.getText().toString());
+                JWBroadCast.sendBroadcast(ProfileActivity.this, i);
+
+                break;
+        }
     }
 
 }

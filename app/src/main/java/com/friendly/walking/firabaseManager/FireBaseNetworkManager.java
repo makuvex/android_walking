@@ -11,8 +11,10 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.widget.Toast;
+import android.widget.ImageView;
+import com.friendly.walking.util.JWToast;
 
+import com.bumptech.glide.Glide;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -27,6 +29,7 @@ import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LocationData;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.UserData;
+import com.friendly.walking.dataSet.WalkingData;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
@@ -123,7 +126,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         mSelf.mContext = activity;
 
         if(!mSelf.checkInternetConnection()) {
-            Toast.makeText(activity, R.string.internet_connection_faild, Toast.LENGTH_SHORT).show();
+            JWToast.showToast(R.string.internet_connection_faild);
         }
 
         return mSelf;
@@ -136,7 +139,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         mSelf.mContext = context;
 
         if(!mSelf.checkInternetConnection()) {
-            Toast.makeText(context, R.string.internet_connection_faild, Toast.LENGTH_SHORT).show();
+            JWToast.showToast(R.string.internet_connection_faild);
         }
         return mSelf;
     }
@@ -180,6 +183,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                         //PreferencePhoneShared.setAutoLoginYn(mContext, true);
                         PreferencePhoneShared.setLoginID(mContext, encryptedEmail);
                         PreferencePhoneShared.setUserUID(mContext, user.getUid());
+                        //PreferencePhoneShared.setNickName(mContext, user.getDisplayName());
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -199,10 +203,15 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                         PreferencePhoneShared.setAutoLoginYn(mContext, false);
                         PreferencePhoneShared.setLoginID(mContext, "");
                         PreferencePhoneShared.setUserUID(mContext, "");
+                        PreferencePhoneShared.setNickName(mContext, "");
+                        PreferencePhoneShared.setWalkingCoin(mContext, 0);
 
                         PreferencePhoneShared.setNotificationYn(mContext, false);
                         PreferencePhoneShared.setGeoNotificationYn(mContext, false);
                         PreferencePhoneShared.setLocationYn(mContext, false);
+
+                        PreferencePhoneShared.setMyLocationAcceptedYn(mContext, false);
+                        PreferencePhoneShared.setChattingAcceptYn(mContext, false);
                     }
                 }
             }
@@ -285,7 +294,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
         if(user == null) {
             JWLog.e("계정 삭제중 오류 발생 user : "+user);
-            Toast.makeText(mContext, "계정 삭제중 오류 발생", Toast.LENGTH_LONG).show();
+            JWToast.showToast("계정 삭제중 오류 발생");
             return;
         }
         user.delete()
@@ -447,6 +456,26 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         }
     }
 
+    public void refreshWalkingTimeList(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        mUserData = null;
+        readUserData(email, new FireBaseNetworkCallback() {
+            @Override
+            public void onCompleted(boolean result, Object object) {
+                if(result) {
+                    if(mUserData != null) {
+                        if(callback != null) {
+                            JWLog.e("callback walking_list : "+mUserData.walking_time_list);
+                            callback.onCompleted(true, mUserData.walking_time_list);
+                        } else {
+                            callback.onCompleted(false, null);
+                        }
+                    }
+                }
+            }
+        });
+
+    }
+
     public void readWalkingLocationList(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
         if(mUserData != null) {
             if(callback != null) {
@@ -468,6 +497,70 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 }
             });
         }
+    }
+
+    public void readCurrentWalkingList(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        final Query myTopPostsQuery = databaseReference.child("walking");
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                WalkingData walkingData = null;
+                ArrayList<WalkingData> list = new ArrayList<>();
+                for(DataSnapshot data : dataSnapshot.getChildren()) {
+                    walkingData = data.getValue(WalkingData.class);
+                    list.add(walkingData);
+                    JWLog.e("","walkingData :"+walkingData);
+                }
+
+                if(callback != null) {
+                    if (list.size() > 0) {
+                        callback.onCompleted(true, list);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
+
+    }
+
+    public void readPetSpeciesList(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        final Query myTopPostsQuery = databaseReference.child("pet").child("species");
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String species;
+                ArrayList<String> list = new ArrayList<>();
+                for(DataSnapshot data : dataSnapshot.getChildren()) {
+                    species = data.getValue(String.class);
+                    list.add(species);
+                    JWLog.e("","species :"+species);
+                }
+
+                if(callback != null) {
+                    if (list.size() > 0) {
+                        callback.onCompleted(true, list);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
+
     }
 
     public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -562,6 +655,29 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
     }
 
+    public void downloadImageForUri(String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        String url = "profile/"+email+"_pet_profile.jpg";
+        storageRef.child(url).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                // Got the download URL for 'users/me/profile.png'
+                JWLog.e("@@@@ uri :"+uri.toString());
+                if(callback != null) {
+                    if(uri != null) {
+                        callback.onCompleted(true, uri.toString());
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                exception.printStackTrace();
+            }
+        });
+    }
+
     public void changePassword(String password, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
         try {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -605,7 +721,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 }
                 JWLog.e("","userData :"+userData);
                 if(userData == null) {
-                    Toast.makeText(mContext, "유저 데이터가 없어 위치 정보를 업데이트 하지 못했습니다.", Toast.LENGTH_LONG).show();
+                    JWToast.showToast("유저 데이터가 없어 위치 정보를 업데이트 하지 못했습니다.");
                     return;
                 }
 
@@ -653,7 +769,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                 }
                 JWLog.e("","userData :"+userData);
                 if(userData == null) {
-                    Toast.makeText(mContext, "유저 데이터가 없어 산책 시간을 업데이트 하지 못했습니다.", Toast.LENGTH_LONG).show();
+                    JWToast.showToast("유저 데이터가 없어 산책 시간을 업데이트 하지 못했습니다.");
                     return;
                 }
 
@@ -888,6 +1004,64 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         databaseReference.child("users").child(uid).child("mem_geo_notification_yn").setValue(result);
     }
 
+    public void updateWalkingMyLocationYn(String uid, boolean result, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    if (data != null) {
+                        callback.onCompleted(true, data);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).child("mem_walking_my_location_yn").setValue(result);
+    }
+
+    public void updateWalkingChattingYn(String uid, boolean result, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    if (data != null) {
+                        callback.onCompleted(true, data);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).child("mem_walking_chatting_yn").setValue(result);
+    }
+
     public void logoutAccount() {
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
@@ -952,7 +1126,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
             @Override
             public void onCancel() {
                 JWLog.d("", "facebook:onCancel");
-                Toast.makeText(mContext, "취소 되었습니다", Toast.LENGTH_SHORT).show();
+                JWToast.showToast("취소 되었습니다");
                 if(callback != null) {
                     callback.onCompleted(false, null);
                 }
@@ -961,7 +1135,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
             @Override
             public void onError(FacebookException error) {
                 JWLog.d("", "facebook:onError" + error);
-                Toast.makeText(mContext, "에러가 발생 했습니다.", Toast.LENGTH_SHORT).show();
+                JWToast.showToast("에러가 발생 했습니다.");
                 if(callback != null) {
                     callback.onCompleted(false, null);
                 }
@@ -1026,7 +1200,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                         } else {
                             // If sign in fails, display a message to the user.
                             JWLog.w("", "signInWithCredential:failure" + task.getException());
-                            Toast.makeText(mContext, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                            JWToast.showToast("Authentication failed.");
                             if(callback != null) {
                                 callback.onCompleted(task.isSuccessful(), null);
                             }
@@ -1092,7 +1266,6 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
         return isConnected;
-
     }
 
     public long getUserIndex() {
@@ -1113,5 +1286,84 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         intent.putExtra("email", email);
 
         JWBroadCast.sendBroadcast(mContext, intent);
+    }
+
+    public void updteWalkingData(WalkingData data, final FireBaseNetworkCallback callback) {
+        JWLog.e("", "@@@ ");
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                WalkingData data = dataSnapshot.getValue(WalkingData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    callback.onCompleted(true, null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+        databaseReference.child("walking").child(data.uid).setValue(data);
+    }
+
+    public void deleteWalkingData(final FireBaseNetworkCallback callback) {
+        JWLog.e("", "@@@ ");
+
+        String uid = PreferencePhoneShared.getUserUid(mContext);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                JWLog.e("", "@@@ onDataChange data");
+                if(callback != null) {
+                    callback.onCompleted(true, null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("walking").child(uid).removeValue();
+    }
+
+    public void updateWalkingCoin(String uid, int coin, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+        JWLog.e("uid :"+uid);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserData data = dataSnapshot.getValue(UserData.class);
+                JWLog.e("", "@@@ onDataChange data :"+data);
+                if(callback != null) {
+                    if (data != null) {
+                        callback.onCompleted(true, data);
+                    } else {
+                        callback.onCompleted(false, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("", "error : "+ databaseError.toException());
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
+        databaseReference.child("users").child(uid).child("walking_coin").setValue(coin);
     }
 }

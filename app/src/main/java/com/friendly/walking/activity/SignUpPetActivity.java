@@ -19,7 +19,9 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
+
+import com.friendly.walking.dataSet.WalkingData;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
@@ -81,7 +83,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     protected ImageButton                         mFemaleCheck;
     protected Button                              mSignUp;
 
-    protected static PetData[]                    mPetData;
+    protected static String[]                     mPetData;
     protected static PetRelationData[]            mRelationData;
     protected int                                 mPetGender = -1;
     protected Uri                                 mImageCaptureUri;
@@ -110,12 +112,12 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         mPetRelation.setOnFocusChangeListener(this);
         mAddProfile.setOnClickListener(this);
 
-        mPetData = new PetData[]{
-                new PetData(0, "웰시코기"),
-                new PetData(1, "말티즈"),
-                new PetData(2, "시츄"),
-                new PetData(3, "이탈리안 그레이하운드"),
-                new PetData(4, "사모예드")};
+//        mPetData = new PetData[]{
+//                new PetData(0, "웰시코기"),
+//                new PetData(1, "말티즈"),
+//                new PetData(2, "시츄"),
+//                new PetData(3, "이탈리안 그레이하운드"),
+//                new PetData(4, "사모예드")};
 
         mRelationData = new PetRelationData[]{
                 new PetRelationData(0, "엄마"),
@@ -162,12 +164,38 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         } else if(v == mPetBirthDate) {
             showDatePicker();
         } else if(v == mPetSpecies) {
-            showPetSpeciesDialog();
+            setProgressBar(View.VISIBLE);
+            FireBaseNetworkManager.getInstance(this).readPetSpeciesList(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                @Override
+                public void onCompleted(boolean result, Object object) {
+                    setProgressBar(View.GONE);
+                    ArrayList<String> list = (ArrayList<String>) object;
+                    mPetData = list.toArray(new String[list.size()]);
+
+                    showPetSpeciesDialog();
+
+//                    mPetData = new PetData[]{
+//                            new PetData(0, "웰시코기"),
+//                            new PetData(1, "말티즈"),
+//                            new PetData(2, "시츄"),
+//                            new PetData(3, "이탈리안 그레이하운드"),
+//                            new PetData(4, "사모예드")};
+
+                    //JWLog.e("result :"+result+", object :"+object);
+                    //mCurrentWalkingList = (ArrayList<WalkingData>) object;
+
+//                    if(result) {
+//                        updateWalkingList(mCurrentWalkingList.size());
+//                    }
+                }
+            });
+
+            //showPetSpeciesDialog();
         } else if(v == mPetRelation) {
             showPetRelationDialog();
         } else if(v == mSignUp) {
             if(checkEmptyFields()) {
-                Toast.makeText(SignUpPetActivity.this, "비어있는 항목을 입력해 주세요.", Toast.LENGTH_SHORT).show();
+                JWToast.showToast("비어있는 항목을 입력해 주세요.");
             } else {
                 setProgressBar(View.VISIBLE);
 
@@ -180,7 +208,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                             setProgressBar(View.INVISIBLE);
 
                             if(result) {
-                                Toast.makeText(getApplicationContext(), R.string.unavailable_id, Toast.LENGTH_SHORT).show();
+                                JWToast.showToast(getApplication().getText(R.string.unavailable_id).toString());
                             } else {
                                 //Toast.makeText(getApplicationContext(), R.string.available_id, Toast.LENGTH_SHORT).show();
                                 queryUserIndex(null);
@@ -197,13 +225,13 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                             final Task<AuthResult> task = (Task<AuthResult>) object;
 
                             if (result) {
-                                Toast.makeText(SignUpPetActivity.this, "계정 만들기 성공", Toast.LENGTH_SHORT).show();
+                                JWToast.showToast("계정 만들기 성공");
 
                                 mUserData.uid = task.getResult().getUser().getUid();
                                 queryUserIndex(mUserData.uid);
                             } else {
                                 setProgressBar(View.INVISIBLE);
-                                Toast.makeText(SignUpPetActivity.this, "계정 만들기 실패", Toast.LENGTH_SHORT).show();
+                                JWToast.showToast("계정 만들기 실패");
                             }
                         }
                     });
@@ -233,7 +261,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 setProgressBar(View.INVISIBLE);
 
                 if (result) {
-                    Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 성공", Toast.LENGTH_SHORT).show();
+                    JWToast.showToast("유저 데이터 만들기 성공");
 
                     try {
                         if(uid != null) {
@@ -246,7 +274,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Toast.makeText(SignUpPetActivity.this, "preference 저장 실패", Toast.LENGTH_SHORT).show();
+                        JWToast.showToast("preference 저장 실패");
                     }
                     if (mImageCaptureUri != null) {
                         try {
@@ -255,7 +283,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                                 public void onCompleted(boolean result, Object object) {
 
                                     if (result) {
-                                        Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 성공", Toast.LENGTH_SHORT).show();
+                                        JWToast.showToast("프로필 사진 업로드 성공");
 
                                         if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
                                             UpdateMainProfileUI(mEmail, JWBroadCast.BROAD_CAST_FACEBOOK_LOGIN);
@@ -265,7 +293,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                                             UpdateMainProfileUI(mEmail, JWBroadCast.BROAD_CAST_KAKAO_LOGIN);
                                         }
                                     } else {
-                                        Toast.makeText(SignUpPetActivity.this, "프로필 사진 업로드 실패", Toast.LENGTH_SHORT).show();
+                                        JWToast.showToast( "프로필 사진 업로드 실패");
                                     }
                                 }
                             });
@@ -274,7 +302,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                         }
                     }
                 } else {
-                    Toast.makeText(SignUpPetActivity.this, "유저 데이터 만들기 실패", Toast.LENGTH_SHORT).show();
+                    JWToast.showToast("유저 데이터 만들기 실패");
                 }
 
                 if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == LOGIN_TYPE_EMAIL) {
@@ -359,7 +387,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         mPetBirthDate.setText( year + getString(R.string.year) + (monthOfYear+1) + getString(R.string.month) + " " + dayOfMonth +getString(R.string.day));
-        Toast.makeText(getApplicationContext(), year + "년 " + (monthOfYear+1) + "월 " + dayOfMonth +"일", Toast.LENGTH_SHORT).show();
+        JWToast.showToast( year + "년 " + (monthOfYear+1) + "월 " + dayOfMonth +"일");
     }
 
     @Override
@@ -367,14 +395,15 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         JWLog.e("","selectedValues :"+selectedValues[0]+", key :"+key);
         String data = null;
 
+
         if(key == PICKER_DATA_TYPE_SPECIES) {
-            data = mPetData[selectedValues[0]].getSpecies();
+            data = mPetData[selectedValues[0]];
             mPetSpecies.setText(data);
         } else if(key == PICKER_DATA_TYPE_RELATION) {
             data = mRelationData[selectedValues[0]].getName();
             mPetRelation.setText(data);
         }
-        Toast.makeText(getApplicationContext(), data, Toast.LENGTH_SHORT).show();
+        JWToast.showToast(data);
     }
 
     private boolean checkEmptyFields() {

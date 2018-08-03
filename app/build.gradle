@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
+    flavorDimensions "default"
 
     defaultConfig {
         applicationId "com.friendly.walking"
@@ -16,9 +17,20 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
+    productFlavors {
+        dev {
+            buildConfigField "boolean","IS_DEBUG","true"
+        }
 
-
+        live {
+            buildConfigField "boolean","IS_DEBUG","false"
+        }
+    }
 }
 
 dependencies {
@@ -32,13 +44,24 @@ dependencies {
     compile 'com.google.firebase:firebase-storage:11.+'                   // firebase 스토리지
     compile 'com.google.firebase:firebase-messaging:11.+'
     compile 'com.google.android.gms:play-services-auth:11.+'
+    compile 'com.google.firebase:firebase-ads:11.+'
 
+    compile 'com.squareup.retrofit2:retrofit:2.+'                           // retroFit2
+    compile 'com.squareup.retrofit2:converter-gson:2.+'
+
+    compile 'com.github.bumptech.glide:glide:3.6.0'
+
+    compile 'com.felipecsl.asymmetricgridview:library:2.0.1'
     compile 'com.firebase:firebase-jobdispatcher:0.8.5'
 
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
+
+    compile 'com.android.support:design:26.1.0'
+
     compile 'de.hdodenhof:circleimageview:2.2.0'
+
 
     compile 'com.github.stfalcon:universalpickerdialog:0.1.0'           // string picker
     compile 'com.soundcloud.android:android-crop:1.0.1@aar'             // crop image
@@ -47,6 +70,7 @@ dependencies {
     compile group: 'com.kakao.sdk', name: 'usermgmt', version: project.KAKAO_SDK_VERSION
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
+
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.activity.DayAxisValueFormatter;
@@ -52,10 +53,11 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
     protected BarChart                          mChart;
     protected RectF                             mOnValueSelectedRectF = new RectF();
     private View                                mView;
+    private TextView                            mNoDataView;
     private Map<String, String>                 mWalkingTimeList;
     private static ArrayList<StrollTimeData>    mMonthDataList;
     private int                                 mPeekMin = 0;
-    private int                                 mCurrentChart = 0;
+    private int                                 mCurrentChart = 1;
 
     private View.OnClickListener                mClickListener = new View.OnClickListener() {
         @Override
@@ -71,7 +73,8 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
                     updateChartData();
                 }
             } else {
-                JWLog.e("미구현");
+                JWLog.e("미 구현입니다.");
+                JWToast.showToast("미 구현입니다.");
             }
         }
     };
@@ -102,6 +105,8 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         mView.findViewById(R.id.month).setOnClickListener(mClickListener);
         mView.findViewById(R.id.quarter).setOnClickListener(mClickListener);
         mView.findViewById(R.id.year).setOnClickListener(mClickListener);
+
+        mView.findViewById(R.id.no_data_text).setVisibility(View.VISIBLE);
 
         initChart();
         long cur = System.currentTimeMillis();
@@ -148,6 +153,11 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
                 public void onCompleted(boolean result, Object object) {
                     if(result) {
                         mWalkingTimeList = (Map<String, String>)object;
+                        if(mWalkingTimeList.size() > 0) {
+                            mView.findViewById(R.id.no_data_text).setVisibility(View.GONE);
+                        } else {
+                            mView.findViewById(R.id.no_data_text).setVisibility(View.VISIBLE);
+                        }
                         updateChartData();
                     }
                 }
@@ -243,6 +253,14 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
             if(mPeekMin < (int)(Float.parseFloat(data.min) - (int)Float.parseFloat(data.min))) {
                 mPeekMin = (int)(Float.parseFloat(data.min) - (int)Float.parseFloat(data.min));
             }
+        }
+
+        if(mCurrentChart == 1 && mMonthDataList.size() == 0) {
+            JWLog.e("no data");
+            mView.findViewById(R.id.no_data_text).setVisibility(View.VISIBLE);
+        } else {
+            JWLog.e("exist data");
+            mView.findViewById(R.id.no_data_text).setVisibility(View.GONE);
         }
         JWLog.e("mMonthDataList :"+mMonthDataList);
 

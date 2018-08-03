@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.adapter.baseInterface.BaseSettingViewHolderInterface;
@@ -35,15 +35,17 @@ public class LocationSettingViewHolder extends BaseViewHolder implements BaseSet
         locationYnButton = (ImageButton) itemView.findViewById(R.id.accept_location);
         //geofenceYnButton= (ImageButton) itemView.findViewById(R.id.accept_geofence);
 
-        locationYnButton.setSelected(PreferencePhoneShared.getLocationYn(mActivity));
-
+        if(PreferencePhoneShared.getLoginYn(mActivity)) {
+            locationYnButton.setSelected(PreferencePhoneShared.getLocationYn(mActivity));
+        } else {
+            locationYnButton.setSelected(false);
+        }
         mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 JWLog.e("","acceptButton");
 
-                boolean loginYn = PreferencePhoneShared.getLoginYn(mActivity);
-                if(loginYn) {
+                if(PreferencePhoneShared.getLoginYn(mActivity)) {
                     if(v == locationYnButton) {
                         v.setSelected(!v.isSelected());
                         Intent i = new Intent(JWBroadCast.BROAD_CAST_CHANGE_LOCATION_YN);
@@ -51,7 +53,7 @@ public class LocationSettingViewHolder extends BaseViewHolder implements BaseSet
                         JWBroadCast.sendBroadcast(mActivity, i);
                     }
                 } else {
-                    Toast.makeText(mActivity, "로그인 후 설정 가능합니다.", Toast.LENGTH_SHORT).show();
+                    JWToast.showToast("로그인 후 설정 가능합니다.");
                 }
             }
         };

@@ -11,6 +11,7 @@ public class JWBroadCast {
 
     public static final String BROAD_CAST_LOGIN                 = "com.friendly.walking.BROAD_CAST_LOGIN";
     public static final String BROAD_CAST_LOGOUT                = "com.friendly.walking.BROAD_CAST_LOGOUT";
+    public static final String BROAD_CAST_WITHDRAW              = "com.friendly.walking.BROAD_CAST_WITHDRAW";
     public static final String BROAD_CAST_UPDATE_SETTING_UI     = "com.friendly.walking.BROAD_CAST_UPDATE_SETTING_UI";
 
     public static final String BROAD_CAST_EMAIL_LOGIN           = "com.friendly.walking.BROAD_CAST_EMAIL_LOGIN";
@@ -30,6 +31,12 @@ public class JWBroadCast {
     public static final String BROAD_CAST_CHANGE_NOTIFICATION_YN        = "com.friendly.walking.BROAD_CAST_CHANGE_NOTIFICATION_YN";
     public static final String BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN    = "com.friendly.walking.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN";
     public static final String BROAD_CAST_CHANGE_LOCATION_YN            = "com.friendly.walking.BROAD_CAST_CHANGE_LOCATION_YN";
+
+    public static final String BROAD_CAST_CHANGE_WALKING_MY_LOCATION_YN         = "com.friendly.BROAD_CAST_CHANGE_WALKING_MY_LOCATION_YN.BROAD_CAST_CHANGE_NOTIFICATION_YN";
+    public static final String BROAD_CAST_CHANGE_WALKING_CHATTING_YN            = "com.friendly.walking.BROAD_CAST_CHANGE_WALKING_CHATTING_YN";
+
+    public static final String BROAD_CAST_REFRESH_USER_DATA             = "com.friendly.walking.BROAD_CAST_REFRESH_USER_DATA";
+    public static final String BROAD_CAST_UPDATE_PROFILE                = "com.friendly.walking.BROAD_CAST_UPDATE_PROFILE";
 
     public JWBroadCast() {}
 

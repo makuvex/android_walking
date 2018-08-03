@@ -3,13 +3,14 @@
     <string name="facebook_app_id">312550385892011</string>
     <string name="kakao_app_key">849c482c6f3508287bc073fd85e9ba82</string>
 
-    <string name="app_name" translatable="false">누구의 산책</string>
+    <string name="app_name" translatable="false">모두의 산책</string>
     <string name="action_settings" translatable="false">Settings</string>
     <string name="section_format" translatable="false">Hello World from section: %1$d</string>
 
     <string name="internet_connection_faild" translatable="false">인터넷이 연결되어 있지 않습니다.</string>
 
     <string name="login" translatable="false">로그인</string>
+    <string name="nickname_hint" translatable="false">닉네임 입력(10글자)</string>
     <string name="email_hint" translatable="false">이메일 입력</string>
     <string name="password_hint" translatable="false">비밀번호 입력(대소문자 8글자 이상, 숫자 및 특수문자 포함)</string>
     <string name="confirm_password_hint" translatable="false">비밀번호 확인</string>
@@ -40,6 +41,7 @@
     <string name="empty_email" translatable="false">이메일을 입력해 주세요.</string>
     <string name="available_id" translatable="false">사용 가능한 아이디 입니다.</string>
     <string name="unavailable_id" translatable="false">해당 이메일이 이미 있습니다.\n다른 이메일을 사용해 주세요.</string>
+    <string name="empty_nickname" translatable="false">닉네임을 입력해 주세요.</string>
 
     <string name="input_pet_info" translatable="false">반려동물 정보를 입력해주세요</string>
     <string name="name" translatable="false">이름</string>
@@ -54,6 +56,9 @@
     <string name="month" translatable="false">월</string>
     <string name="day" translatable="false">일</string>
 
+    <string name="walking_report" translatable="false">산책 리포트</string>
+    <string name="share_member" translatable="false">산책중인 회원</string>
+    <string name="people_who_walking" translatable="false">산책중인 사람들</string>
     <string name="setting" translatable="false">설정</string>
     <string name="loginInfo" translatable="false">로그인 정보</string>
     <string name="login_guide" translatable="false">로그인 해주세요</string>
@@ -61,6 +66,8 @@
     <string name="auto_stroll" translatable="false">자동 산책 모드</string>
     <string name="auto_stroll_time" translatable="false">자동 산책 설정</string>
     <string name="auto_stroll_distance" translatable="false">자동 산책 거리</string>
+    <string name="nick_name" translatable="false">닉네임</string>
+    <string name="walking_coin" translatable="false">산책 코인</string>
 
     <string name="logout" translatable="false">로그아웃</string>
     <string name="change_password" translatable="false">비밀번호 변경</string>
@@ -71,6 +78,10 @@
     <string name="notification_setting" translatable="false">알림 설정</string>
     <string name="notification_accept" translatable="false">알림 받기</string>
     <string name="suggest_geofence_notification" translatable="false">생활패턴 알림 제안</string>
+
+    <string name="walking_setting" translatable="false">산책 설정</string>
+    <string name="my_location_accept" translatable="false">산책 중 내 위치 보이기</string>
+    <string name="chatting_accept" translatable="false">산책 중 채팅 허용</string>
 
     <string name="permission_setting" translatable="false">권한 설정</string>
     <string name="permission_infos" translatable="false">위치, 사진등의 권한</string>

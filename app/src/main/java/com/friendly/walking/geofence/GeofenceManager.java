@@ -8,8 +8,9 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
+import com.friendly.walking.BuildConfig;
 import com.friendly.walking.R;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.location.Geofence;
@@ -75,7 +76,7 @@ public class GeofenceManager implements OnCompleteListener<Void> {
         for(Geofence geo : mGeofenceList) {
             if(geo.getRequestId().equalsIgnoreCase(address)) {
                 JWLog.e("동일한 주소로 지오펜스가 이미 등록되어 있습니다.");
-                Toast.makeText(mContext, "동일한 주소로 지오펜스가 이미 등록되어 있습니다.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(mContext, "동일한 주소로 지오펜스가 이미 등록되어 있습니다.", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -173,10 +174,11 @@ public class GeofenceManager implements OnCompleteListener<Void> {
         mPendingGeofenceTask = PendingGeofenceTask.NONE;
         if (task.isSuccessful()) {
             updateGeofencesAdded(!getGeofencesAdded());
-
-            int messageId = getGeofencesAdded() ? R.string.geofences_added : R.string.geofences_removed;
-            if(messageId == R.string.geofences_added) {
-                Toast.makeText(mContext, mContext.getString(messageId), Toast.LENGTH_SHORT).show();
+            if(BuildConfig.IS_DEBUG) {
+                int messageId = getGeofencesAdded() ? R.string.geofences_added : R.string.geofences_removed;
+                if (messageId == R.string.geofences_added) {
+                    JWToast.showToast(mContext.getString(messageId));
+                }
             }
         } else {
             // Get the status code for the error and log it using a user-friendly message.

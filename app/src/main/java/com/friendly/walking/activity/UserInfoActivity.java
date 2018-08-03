@@ -13,13 +13,15 @@ import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
+import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.main.MainActivity;
 import com.friendly.walking.permission.PermissionManager;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
 import com.kakao.usermgmt.response.model.UserProfile;
 
@@ -34,6 +36,7 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
     public static final int                        REQ_CODE_GOOGLE_MAP = 0;
     public static final String                     KEY_USER_DATA = "key_user_data";
 
+    private EditText                                mNickNameText;
     private EditText                                mInputAddressText;
     private EditText                                mInputStrollStartTimeText;
     private EditText                                mInputStrollEndTimeText;
@@ -61,6 +64,7 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         super.onCreate(bundle);
         setContentView(R.layout.activity_user_profile);
 
+        mNickNameText = (EditText)findViewById(R.id.nickname_text);
         mInputAddressText = (EditText)findViewById(R.id.address);
         mInputStrollStartTimeText = (EditText)findViewById(R.id.stroll_start_time);
         mInputStrollEndTimeText = (EditText)findViewById(R.id.stroll_end_time);
@@ -107,26 +111,30 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
                 if(result) {
                     mUserData = (UserData) object;
 
+                    mNickNameText.setText(mUserData.mem_nickname);
                     mAddress = mUserData.mem_address.get("address");
                     mLat = mUserData.mem_address.get("lat");
                     mLot = mUserData.mem_address.get("lot");
                     mInputAddressText.setText(TextUtils.isEmpty(mAddress) ? "" : mAddress);
 
                     String startTime = mUserData.mem_alarm_time.get("start");
-                    mInputStrollStartTimeText.setText(TextUtils.isEmpty(startTime) ? "" : "시작 "+startTime.substring(0, 2) +":"+startTime.substring(2, 4));
-                    mStartStrollHour = Integer.parseInt(startTime.substring(0, 2));
-                    mStartStrollMin = Integer.parseInt(startTime.substring(2, 4));
-
+                    JWLog.e("strtTime : "+startTime);
+                    if(startTime != null) {
+                        mInputStrollStartTimeText.setText(TextUtils.isEmpty(startTime) ? "" : "시작 "+startTime.substring(0, 2) +":"+startTime.substring(2, 4));
+                        mStartStrollHour = Integer.parseInt(startTime.substring(0, 2));
+                        mStartStrollMin = Integer.parseInt(startTime.substring(2, 4));
+                    }
                     String endTime = mUserData.mem_alarm_time.get("end");
-                    mInputStrollEndTimeText.setText(TextUtils.isEmpty(endTime) ? "" : "종료 " +endTime.substring(0, 2) +":"+endTime.substring(2, 4));
-                    mEndStrollHour = Integer.parseInt(endTime.substring(0, 2));
-                    mEndStrollMin = Integer.parseInt(endTime.substring(2, 4));
-
+                    if(endTime != null) {
+                        mInputStrollEndTimeText.setText(TextUtils.isEmpty(endTime) ? "" : "종료 " + endTime.substring(0, 2) + ":" + endTime.substring(2, 4));
+                        mEndStrollHour = Integer.parseInt(endTime.substring(0, 2));
+                        mEndStrollMin = Integer.parseInt(endTime.substring(2, 4));
+                    }
                     mAutoStroll.setChecked(mUserData.mem_auto_stroll_mode);
                     mDistanceBar.setProgress(mUserData.mem_auto_stroll_distance/100);
                     mDistanceText.setText(mUserData.mem_auto_stroll_distance + " m");
                 } else {
-                    Toast.makeText(UserInfoActivity.this, "유저 데이터 로드 실패", Toast.LENGTH_SHORT).show();
+                    JWToast.showToast("유저 데이터 로드 실패");
                 }
             }
         });
@@ -136,21 +144,33 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         JWLog.e("","next_button");
 
         if(v == mDoneButton) {
+            if(TextUtils.isEmpty(mNickNameText.getText().toString())) {
+                JWToast.showToast("닉네임을 입력해 주세요.");
+                return;
+            }
             if(mStartStrollHour != -1 && mStartStrollMin != -1) {
                 if((mStartStrollHour*100 + mStartStrollMin) > (mEndStrollHour*100 + mEndStrollMin)) {
-                    Toast.makeText(UserInfoActivity.this, "산책 종료 시간은 시작 시간 보다 커야 합니다.", Toast.LENGTH_LONG).show();
+                    JWToast.showToast("산책 종료 시간은 시작 시간 보다 커야 합니다.");
                     showTimePickerDialog(mInputStrollEndTimeText);
                     return;
                 }
             }
+
+            mUserData.mem_nickname = mNickNameText.getText().toString();
+            PreferencePhoneShared.setNickName(UserInfoActivity.this, mUserData.mem_nickname);
 
             setProgressBar(View.VISIBLE);
             FireBaseNetworkManager.getInstance(this).updateUserData(mUserData.mem_email, mUserData, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Object object) {
                     setProgressBar(View.INVISIBLE);
+
+                    Intent i = new Intent(JWBroadCast.BROAD_CAST_REFRESH_USER_DATA);
+                    i.putExtra("email", mEmail);
+                    JWBroadCast.sendBroadcast(UserInfoActivity.this, i);
+
                     JWLog.e(result ? "사용자 정보 변경 성공" : "사용자 정보 변경 실패");
-                    Toast.makeText(getApplicationContext(), result ? "사용자 정보 변경 성공" : "사용자 정보 변경 실패", Toast.LENGTH_SHORT).show();
+                    JWToast.showToast(result ? "사용자 정보 변경 성공" : "사용자 정보 변경 실패");
                     finish();
                 }
             });

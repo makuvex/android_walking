@@ -12,7 +12,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TimePicker;
-import android.widget.Toast;
+
+import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.GlobalConstantID;
@@ -49,6 +51,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
     public static final int                     REQ_CODE_GOOGLE_MAP = 0;
     public static final String                  KEY_USER_DATA = "key_user_data";
 
+    private EditText                            mNickNameText;
     private EditText                            mEmailText;
     private EditText                            mPasswordText;
     private EditText                            mConfirmPasswordText;
@@ -79,6 +82,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         super.onCreate(bundle);
         setContentView(R.layout.activity_signup);
 
+        mNickNameText = (EditText)findViewById(R.id.nickname);
         mEmailText = (EditText)findViewById(R.id.email_id);
         mPasswordText = (EditText)findViewById(R.id.password);
         mConfirmPasswordText = (EditText)findViewById(R.id.confirm_password);
@@ -102,8 +106,12 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         JWLog.e("","next_button");
 
         if(v == mNextButton) {
+            if(TextUtils.isEmpty(mNickNameText.getText())) {
+                JWToast.showToast(R.string.empty_nickname);
+                return ;
+            }
             if(mCheckCompletedEmail == null || TextUtils.isEmpty(mCheckCompletedEmail) || !mCheckCompletedEmail.equals(mEmailText.getText().toString())) {
-                Toast.makeText(this, R.string.require_check_email, Toast.LENGTH_SHORT).show();
+                JWToast.showToast(R.string.require_check_email);
                 return ;
             }
 
@@ -120,17 +128,17 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
 
                         startActivity(intent);
                     } else {
-                        Toast.makeText(this, R.string.password_error, Toast.LENGTH_SHORT).show();
+                        JWToast.showToast(R.string.password_error);
                     }
                 } else {
-                    Toast.makeText(this, R.string.password_compare_error, Toast.LENGTH_SHORT).show();
+                    JWToast.showToast(R.string.password_compare_error);
                 }
             } else {
-                Toast.makeText(this, R.string.email_error, Toast.LENGTH_SHORT).show();
+                JWToast.showToast(R.string.email_error);
             }
         } else if(v == mCheckDuplicationButton) {
             if(TextUtils.isEmpty(mEmailText.getText().toString())) {
-                Toast.makeText(getApplicationContext(), R.string.empty_email, Toast.LENGTH_SHORT).show();
+                JWToast.showToast(R.string.empty_email);
                 return;
             }
             setProgressBar(View.VISIBLE);
@@ -141,10 +149,10 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
                     setProgressBar(View.INVISIBLE);
 
                     if(result) {
-                        Toast.makeText(getApplicationContext(), R.string.unavailable_id, Toast.LENGTH_SHORT).show();
+                        JWToast.showToast(R.string.unavailable_id);
                         mNextButton.setEnabled(false);
                     } else {
-                        Toast.makeText(getApplicationContext(), R.string.available_id, Toast.LENGTH_SHORT).show();
+                        JWToast.showToast(R.string.available_id);
                         mNextButton.setEnabled(true);
                     }
                }
@@ -200,6 +208,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
     private UserData getUserData() {
         UserData data = new UserData();
 
+        data.mem_nickname = mNickNameText.getText().toString();
         data.mem_email = mEmailText.getText().toString();
         data.mem_auto_login = mAutoLogin.isChecked();
         data.mem_notification_yn = true;
@@ -234,6 +243,7 @@ public class SignUpActivity extends BaseActivity implements View.OnFocusChangeLi
         data.mem_auto_stroll_distance = 100;
 
         data.joinBy = "email";
+        data.walking_coin = 3;
         JWLog.e("","@@@ userData : "+data);
 
         return data;

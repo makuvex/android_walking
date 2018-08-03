@@ -52,14 +52,14 @@
                             android:layout_marginTop="20dp"
                             android:layout_gravity="center|bottom"
                             android:src="@drawable/default_profile"
-                            app:civ_border_width="0px"
-                            app:civ_border_color="@color/colorBG" />
+                            app:civ_border_width="1px"
+                            app:civ_border_color="@color/window_background" />
 
                         <ImageButton
                             android:layout_width="30dp"
                             android:layout_height="30dp"
                             android:layout_gravity="center_horizontal|bottom"
-                            android:layout_marginLeft="15dp"
+                            android:layout_marginLeft="35dp"
                             android:background="@drawable/photo"/>
 
                     </FrameLayout>
@@ -104,6 +104,34 @@
                     android:layout_height="0dp"
                     android:orientation="vertical"
                     android:layout_weight="1">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="@color/colorTransparent">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentLeft="true"
+                            android:gravity="center_vertical"
+                            android:textSize="16dp"
+                            android:paddingLeft="10dp"
+                            android:text="닉네임"/>
+
+                        <TextView
+                            android:id="@+id/nickname"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginEnd="20dp"
+                            android:textSize="16dp"
+                            android:ellipsize="marquee"
+                            android:textStyle="bold"
+                            android:text=""/>
+
+                    </RelativeLayout>
 
                     <RelativeLayout
                         android:layout_width="match_parent"

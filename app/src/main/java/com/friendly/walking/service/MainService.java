@@ -20,11 +20,12 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.LocationData;
+import com.friendly.walking.dataSet.WalkingData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.geofence.Constants;
 import com.friendly.walking.geofence.GeofenceManager;
@@ -37,6 +38,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -99,6 +101,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
             getLocation();
 
             JWLog.e("@@@@ lat :"+getLatitude()+", lot :"+getLongitude());
+            JWLog.e("@@@@2 lat :"+lat+", lot :"+lon);
             LocationData prevData = null;
 
             if(mLocationArray.size() > 0) {
@@ -155,10 +158,16 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                     if(email != null) {
                         long min = (System.currentTimeMillis() - startTime) / 60000;
 
+                        FireBaseNetworkManager.getInstance(context).deleteWalkingData(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                            @Override
+                            public void onCompleted(boolean result, Object object) {
+                                JWLog.e("result :"+result);
+                            }
+                        });
                         FireBaseNetworkManager.getInstance(context).updateWalkingTimeList(email, min, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                             @Override
                             public void onCompleted(boolean result, Object object) {
-                                Toast.makeText(context, "산책 시간 업데이트 "+(result ? "성공" :"실패"), Toast.LENGTH_SHORT).show();
+                                JWToast.showToast("산책 시간 업데이트 "+(result ? "성공" :"실패"));
                             }
                         });
 
@@ -187,10 +196,6 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
         protected void onPostExecute(Boolean result) {
             super.onPostExecute(result);
             JWLog.e("result :"+result);
-
-            if(result) {
-
-            }
         }
     }
 
@@ -272,7 +277,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
 
         mReceiver = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, Intent intent) {
+            public void onReceive(final Context context, Intent intent) {
                 JWLog.e("","action :"+intent.getAction());
 
                 if(JWBroadCast.BROAD_CAST_ADD_GEOFENCE.equals(intent.getAction())) {
@@ -340,6 +345,8 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                                             "자동으로 산책모드 실행 중 입니다.",
                                             "경로를 기록중 입니다.");
 
+                                    writeWalkingData();
+
                                     mLocationArray.clear();
                                     mThread = new ServiceThread(mHandler);
                                     mThread.start();
@@ -347,7 +354,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                             }, 5000);
                         } else {
                             JWLog.e("자동 산책 시간이 아닙니다.");
-                            Toast.makeText(getApplicationContext(), "자동 산책 시간이 아닙니다.", Toast.LENGTH_SHORT).show();
+                            JWToast.showToast("자동 산책 시간이 아닙니다.");
                         }
                     }
                 }
@@ -383,7 +390,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
 
             if (!isGPSEnabled && !isNetworkEnabled) {
                 // GPS 와 네트워크사용이 가능하지 않을때 소스 구현
-                Toast.makeText(this, "GPS와 네트워크 사용이 불가능 합니다.", Toast.LENGTH_SHORT).show();
+                JWToast.showToast("GPS와 네트워크 사용이 불가능 합니다.");
             } else {
                 this.isGetLocation = true;
 
@@ -399,21 +406,19 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                 }
 
                 // 네트워크 정보로 부터 위치값 가져오기
-//                if (isNetworkEnabled) {
-//                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
-//
-//                    if (locationManager != null) {
-//                        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-//                        if (location != null) {
-//                            // 위도 경도 저장
-//                            lat = location.getLatitude();
-//                            lon = location.getLongitude();
-//                        }
-//                    }
-//                }
+                if (isNetworkEnabled) {
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
 
+                    if (locationManager != null) {
+                        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        if (location != null) {
+                            // 위도 경도 저장
+                            lat = location.getLatitude();
+                            lon = location.getLongitude();
+                        }
+                    }
+                }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -498,5 +503,53 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    private void writeWalkingData() {
+        int autoLoginType = PreferencePhoneShared.getAutoLoginType(MainService.this);
+        String email = null;
+        //if(autoLoginType == GlobalConstantID.LOGIN_TYPE_EMAIL) {
+            String key = PreferencePhoneShared.getUserUid(MainService.this);
+            String paddedKey = key.substring(0, 16);
+
+            JWLog.e("", "uid :" + paddedKey);
+            try {
+                email = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(MainService.this), paddedKey));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        //}
+
+        JWLog.e("email :"+email);
+        if(email != null) {
+
+            /*
+            public String mem_email = "";
+            public String mem_nickname = "";
+            public boolean mem_walking_my_location_yn = true;
+            public boolean mem_walking_chatting_yn = true;
+            public String lat = "0";
+            public String lot = "0";
+            */
+
+            WalkingData data = new WalkingData();
+            data.uid = PreferencePhoneShared.getUserUid(MainService.this);
+            data.mem_email = email;
+            data.mem_nickname = PreferencePhoneShared.getNickName(MainService.this);
+            data.mem_walking_my_location_yn = PreferencePhoneShared.getMyLocationAcceptedYn(MainService.this);
+            data.mem_walking_chatting_yn = PreferencePhoneShared.getChattingAcceptYn(MainService.this);
+
+            data.lat = ""+getLatitude();
+            data.lot = ""+getLongitude();
+
+            JWLog.e("data :"+data);
+
+            FireBaseNetworkManager.getInstance(getApplicationContext()).updteWalkingData(data, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                @Override
+                public void onCompleted(boolean result, Object object) {
+                    JWLog.e("result :"+result+", object :"+object);
+                }
+            });
+        }
     }
 }

@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
 import com.friendly.walking.broadcast.JWBroadCast;
@@ -140,7 +140,7 @@ public class BaseActivity extends AppCompatActivity {
                                     if(result) {
                                         PermissionManager.goPermissionSettingMenu(BaseActivity.this);
                                     } else {
-                                        Toast.makeText(getApplicationContext(), "취소 되었습니다.", Toast.LENGTH_SHORT).show();
+                                        JWToast.showToast("취소 되었습니다.");
                                     }
                                 }
                             });

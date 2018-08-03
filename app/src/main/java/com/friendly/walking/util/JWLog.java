@@ -4,6 +4,8 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.friendly.walking.BuildConfig;
+
 public class JWLog
 {
     private static final String APP_NAME             = "makuvex";
@@ -22,6 +24,11 @@ public class JWLog
 
     private static void log(byte type,String tag, String message, int stackNumber) {
 
+        if(type != TYPE_ERROR) {
+            if(!BuildConfig.IS_DEBUG) {
+                return;
+            }
+        }
         if(TextUtils.isEmpty(tag)){
             tag = APP_NAME;
         }

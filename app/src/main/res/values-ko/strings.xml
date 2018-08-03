@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">누구의 산책</string>
+    <string name="app_name" translatable="false">모두의 산책</string>
     <string name="action_settings" translatable="false">Settings</string>
     <string name="section_format" translatable="false">Hello World from section: %1$d</string>
 

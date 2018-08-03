@@ -10,13 +10,17 @@ public class LoginSettingListData implements BaseSettingDataSetInterface {
 
     private String loginID;
     private boolean autoLogin;
+    private String nickName;
+    private int walkingCoin;
 
     public LoginSettingListData() {
     }
 
-    public LoginSettingListData(String loginID, boolean autoLogin) {
+    public LoginSettingListData(String loginID, String nickName, boolean autoLogin, int walkingCoin) {
         this.loginID = loginID;
         this.autoLogin = autoLogin;
+        this.nickName = nickName;
+        this.walkingCoin = walkingCoin;
     }
 
     public String getLoginID() {
@@ -27,12 +31,28 @@ public class LoginSettingListData implements BaseSettingDataSetInterface {
         this.loginID = loginID;
     }
 
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
     public boolean getAutoLogin() {
         return autoLogin;
     }
 
     public void setAutoLogin(boolean autoLogin) {
         this.autoLogin = autoLogin;
+    }
+
+    public int getWalkingCoin() {
+        return walkingCoin;
+    }
+
+    public void setWalkingCoin(int walkingCoin) {
+        this.walkingCoin = walkingCoin;
     }
 
     @Override
@@ -46,6 +66,8 @@ public class LoginSettingListData implements BaseSettingDataSetInterface {
             LoginSettingListData data = (LoginSettingListData)object;
             this.loginID = data.loginID;
             this.autoLogin = data.autoLogin;
+            this.nickName = data.nickName;
+            this.walkingCoin = data.walkingCoin;
         }
     }
 }
