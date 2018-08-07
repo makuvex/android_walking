@@ -11,6 +11,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -20,6 +21,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.friendly.walking.BuildConfig;
 import com.friendly.walking.dataSet.WalkingData;
 import com.friendly.walking.util.JWToast;
 
@@ -130,7 +132,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 new PetRelationData(7, "할머니"),
                 new PetRelationData(8, "할아버지"),
                 new PetRelationData(9, "친구")};
-
+//
         Intent intent = getIntent();
         //mEmail = intent.getStringExtra(GlobalConstantID.SIGN_UP_EMAIL);
 
@@ -194,11 +196,10 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         } else if(v == mPetRelation) {
             showPetRelationDialog();
         } else if(v == mSignUp) {
-            if(checkEmptyFields()) {
+            if(checkEmptyFields() && !BuildConfig.IS_DEBUG ) {
                 JWToast.showToast("비어있는 항목을 입력해 주세요.");
             } else {
                 setProgressBar(View.VISIBLE);
-
                 createPetData();
 
                 if(mSignUpType == GlobalConstantID.LOGIN_TYPE_KAKAO) {
@@ -223,6 +224,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                         @Override
                         public void onCompleted(boolean result, Object object) {
                             final Task<AuthResult> task = (Task<AuthResult>) object;
+                            JWLog.e("@@ result "+result+ ", object "+object);
 
                             if (result) {
                                 JWToast.showToast("계정 만들기 성공");
@@ -245,10 +247,13 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         FireBaseNetworkManager.getInstance(getApplicationContext()).queryUserIndex(new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
             public void onCompleted(boolean result, Object object) {
-                long userIndex = FireBaseNetworkManager.getInstance(getApplicationContext()).getUserIndex();
-                mUserData.member_index = ++userIndex;
+                JWLog.e("result "+result);
+                if(result) {
+                    long userIndex = FireBaseNetworkManager.getInstance(getApplicationContext()).getUserIndex();
+                    mUserData.member_index = ++userIndex;
 
-                createUserData(uid);
+                    createUserData(uid);
+                }
             }
         });
     }
@@ -306,12 +311,18 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 }
 
                 if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == LOGIN_TYPE_EMAIL) {
-                    Intent i = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
-                    i.putExtra("email", mEmail);
-                    i.putExtra("password", mPassword);
-                    i.putExtra("autoLogin", mUserData.mem_auto_login);
+                    // userData 생성 후 readUserData를 바로 읽을 수 없음
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent i = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
+                            i.putExtra("email", mEmail);
+                            i.putExtra("password", mPassword);
+                            i.putExtra("autoLogin", mUserData.mem_auto_login);
 
-                    JWBroadCast.sendBroadcast(getApplicationContext(), i);
+                            JWBroadCast.sendBroadcast(getApplicationContext(), i);
+                        }
+                    }, 0);
                 }
 
                 Intent intent = new Intent(SignUpPetActivity.this, MainActivity.class);
@@ -614,6 +625,13 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         petData.petSpecies = mPetSpecies.getText().toString();
         petData.petRelation = mPetRelation.getText().toString();
 
+        if(BuildConfig.IS_DEBUG) {
+            petData.petName = "은비";
+            petData.petGender = true;
+            petData.birthDay = "2017년 1월 29일";
+            petData.petSpecies = "웰시코기";
+            petData.petRelation = "아빠";
+        }
         mUserData.pet_list.add(petData);
     }
 }

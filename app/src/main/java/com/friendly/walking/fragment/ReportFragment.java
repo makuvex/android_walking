@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.friendly.walking.util.JWToast;
@@ -59,23 +60,31 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
     private int                                 mPeekMin = 0;
     private int                                 mCurrentChart = 1;
 
+    private Button                              mMonthButton;
+    private Button                              mQuarterButton;
+    private Button                              mYearButton;
+
     private View.OnClickListener                mClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            if(view.getId() == R.id.month) {
+            if(view.getId() == R.id.month_button) {
                 if(mCurrentChart != 1) {
                     mCurrentChart = 1;
                     updateChartData();
                 }
-            } else if(view.getId() == R.id.quarter) {
+            } else if(view.getId() == R.id.quarter_button) {
                 if(mCurrentChart != 3) {
                     mCurrentChart = 3;
                     updateChartData();
                 }
             } else {
+                mCurrentChart = 12;
+
                 JWLog.e("미 구현입니다.");
                 JWToast.showToast("미 구현입니다.");
             }
+
+            updateTabState(mCurrentChart);
         }
     };
 
@@ -101,10 +110,13 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         if(mMonthDataList == null) {
             mMonthDataList = new ArrayList<>();
         }
+        mMonthButton = (Button)mView.findViewById(R.id.month_button);
+        mQuarterButton = (Button)mView.findViewById(R.id.quarter_button);
+        mYearButton = (Button)mView.findViewById(R.id.year_button);
 
-        mView.findViewById(R.id.month).setOnClickListener(mClickListener);
-        mView.findViewById(R.id.quarter).setOnClickListener(mClickListener);
-        mView.findViewById(R.id.year).setOnClickListener(mClickListener);
+        mMonthButton.setOnClickListener(mClickListener);
+        mQuarterButton.setOnClickListener(mClickListener);
+        mYearButton.setOnClickListener(mClickListener);
 
         mView.findViewById(R.id.no_data_text).setVisibility(View.VISIBLE);
 
@@ -158,7 +170,9 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
                         } else {
                             mView.findViewById(R.id.no_data_text).setVisibility(View.VISIBLE);
                         }
+
                         updateChartData();
+                        updateTabState(mCurrentChart);
                     }
                 }
             });
@@ -255,7 +269,7 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
             }
         }
 
-        if(mCurrentChart == 1 && mMonthDataList.size() == 0) {
+        if(mMonthDataList.size() == 0) {
             JWLog.e("no data");
             mView.findViewById(R.id.no_data_text).setVisibility(View.VISIBLE);
         } else {
@@ -399,4 +413,17 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         return  month[mon-1];
     }
 
+    private void updateTabState(int tab) {
+        mMonthButton.setSelected(false);
+        mQuarterButton.setSelected(false);
+        mYearButton.setSelected(false);
+
+        if(tab == 1) {
+            mMonthButton.setSelected(true);
+        } else if(tab == 3) {
+            mQuarterButton.setSelected(true);
+        } else {
+            mYearButton.setSelected(true);
+        }
+    }
 }

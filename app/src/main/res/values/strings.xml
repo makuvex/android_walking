@@ -37,11 +37,14 @@
     <string name="password_error" translatable="false">잘못된 패스워드 형식 입니다.</string>
     <string name="password_compare_error" translatable="false">패스워드가 일치하지 않습니다.</string>
     <string name="require_check_email" translatable="false">이메일 중복확인을 먼저 해주세요.</string>
+    <string name="require_check_nickname" translatable="false">닉네임 중복확인을 먼저 해주세요.</string>
 
     <string name="empty_email" translatable="false">이메일을 입력해 주세요.</string>
     <string name="available_id" translatable="false">사용 가능한 아이디 입니다.</string>
     <string name="unavailable_id" translatable="false">해당 이메일이 이미 있습니다.\n다른 이메일을 사용해 주세요.</string>
     <string name="empty_nickname" translatable="false">닉네임을 입력해 주세요.</string>
+    <string name="unavailable_nicknme" translatable="false">해당 닉네임이 이미 있습니다.\n다른 닉네임을 사용해 주세요.</string>
+    <string name="available_nickname" translatable="false">사용 가능한 닉네임 입니다.</string>
 
     <string name="input_pet_info" translatable="false">반려동물 정보를 입력해주세요</string>
     <string name="name" translatable="false">이름</string>

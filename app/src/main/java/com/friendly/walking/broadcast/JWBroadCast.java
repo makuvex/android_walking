@@ -3,6 +3,8 @@ package com.friendly.walking.broadcast;
 import android.content.Context;
 import android.content.Intent;
 
+import com.friendly.walking.util.JWLog;
+
 /**
  * Created by jungjiwon on 2017. 11. 1..
  */
@@ -42,6 +44,7 @@ public class JWBroadCast {
 
     public static void sendBroadcast(Context context, Intent intent) {
         if(context != null) {
+            JWLog.e("intent "+intent);
             intent.setFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
             context.sendBroadcast(intent);
         }

@@ -330,8 +330,18 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                         SimpleDateFormat formatter = new SimpleDateFormat( "HHmm", Locale.KOREA );
                         String dateTime = formatter.format(date);
 
-                        int start = Integer.parseInt(PreferencePhoneShared.getStartStrollTime(context));
-                        int end = Integer.parseInt(PreferencePhoneShared.getEndStrollTime(context));
+                        String startTime = PreferencePhoneShared.getStartStrollTime(context);
+                        String endTime = PreferencePhoneShared.getEndStrollTime(context);
+
+                        int start = 0;//Integer.parseInt(startTime);
+                        int end = 0;//Integer.parseInt(endTime);
+
+                        try {
+                            start = Integer.parseInt(startTime);
+                            end = Integer.parseInt(endTime);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
                         if(Integer.parseInt(dateTime) >= start && Integer.parseInt(dateTime) <= end) {
                             mStartStrollTime = System.currentTimeMillis();
@@ -354,8 +364,22 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                             }, 5000);
                         } else {
                             JWLog.e("자동 산책 시간이 아닙니다.");
-                            JWToast.showToast("자동 산책 시간이 아닙니다.");
+                            //JWToast.showToast("자동 산책 시간이 아닙니다.");
                         }
+                    } else if(transition == Geofence.GEOFENCE_TRANSITION_DWELL) {
+                        mStartStrollTime = System.currentTimeMillis();
+
+                        NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE_MODE,
+                                "자동으로 산책모드 실행 중 입니다.",
+                                "자동으로 산책모드 실행 중 입니다.",
+                                "경로를 기록중 입니다.");
+
+                        writeWalkingData();
+
+                        mLocationArray.clear();
+                        mThread = new ServiceThread(mHandler);
+                        mThread.start();
+
                     }
                 }
             }

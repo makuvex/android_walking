@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
+
+import com.friendly.walking.main.DataExchangeInterface;
 import com.friendly.walking.util.JWToast;
 
 import com.felipecsl.asymmetricgridview.library.Utils;
@@ -38,8 +40,10 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.friendly.walking.main.DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST;
 
-public class WalkingShareFragment extends Fragment implements AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
+
+public class WalkingShareFragment extends Fragment implements AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, DataExchangeInterface {
 
     private Context                                 mContext;
 
@@ -225,6 +229,11 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
                 if(result) {
                     updateWalkingList(mCurrentWalkingList.size());
                 }
+                if(mCurrentWalkingList == null || mCurrentWalkingList.size() == 0) {
+                    mNoPersonView.setVisibility(View.VISIBLE);
+                } else {
+                    mNoPersonView.setVisibility(View.GONE);
+                }
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
@@ -260,6 +269,11 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
 
                 if(result) {
                     updateWalkingList(mCurrentWalkingList.size());
+                }
+                if(mCurrentWalkingList == null || mCurrentWalkingList.size() == 0) {
+                    mNoPersonView.setVisibility(View.VISIBLE);
+                } else {
+                    mNoPersonView.setVisibility(View.GONE);
                 }
             }
         });
@@ -318,6 +332,13 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
             startActivity(intent);
         } else {
             PermissionManager.requestLocationPermission(getActivity());
+        }
+    }
+
+    @Override
+    public void functionByCommand(String email, CommandType type) {
+        if(type == READ_WALKING_TIME_LIST) {
+            onRefresh();
         }
     }
 }

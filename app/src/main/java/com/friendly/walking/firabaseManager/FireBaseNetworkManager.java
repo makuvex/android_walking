@@ -158,11 +158,12 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
                         JWLog.e("", "onAuthStateChanged provider :"+provider);
 
+                        /*
                         if(!PreferencePhoneShared.getAutoLoginYn(mContext)) {
                             logoutAccount();
                             return;
                         }
-
+*/
                         String key = user.getUid().substring(0, 16);
                         String email = user.getEmail();
                         if(TextUtils.isEmpty(email)) {
@@ -566,6 +567,29 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
     public void findUserEmail(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
 
         final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_email").equalTo(email);
+
+        myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getChildrenCount() > 0) {
+                    callback.onCompleted(true, null);
+                } else {
+                    callback.onCompleted(false, null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                JWLog.e("","e :" + databaseError.getDetails());
+                callback.onCompleted(false, null);
+            }
+        });
+
+    }
+
+    public void findNickName(final String nickName, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+
+        final Query myTopPostsQuery = databaseReference.child("users").orderByChild("mem_nickname").equalTo(nickName);
 
         myTopPostsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

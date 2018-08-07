@@ -134,8 +134,6 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         } else if(view.getId() == R.id.sign_up) {
             startActivity(new Intent(this, SignUpActivity.class));
         } else if(view == mSignInGoogleButton) {
-            PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
-            PreferencePhoneShared.setAutoLoginType(getApplication(), GlobalConstantID.LOGIN_TYPE_GOOGLE);
             FireBaseNetworkManager.getInstance(this).googleSignIn(this);
         } else if(view == mSignInFacebookButton) {
             setProgressBar(View.VISIBLE);
@@ -268,6 +266,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
         JWLog.e("", "onActivityResult requestCode :"+requestCode+", resultCode :"+resultCode);
         if(resultCode != RESULT_OK) {
+            setProgressBar(View.INVISIBLE);
             return;
         }
         if ( requestCode == RC_GOOGLE_SIGN_IN ) {
@@ -275,6 +274,10 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
 
             if ( result.isSuccess() ) {
                 JWLog.e("", "Google Login succeed." + result.getStatus());
+
+                PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
+                PreferencePhoneShared.setAutoLoginType(getApplication(), GlobalConstantID.LOGIN_TYPE_GOOGLE);
+
                 GoogleSignInAccount account = result.getSignInAccount();
 
                 JWLog.e("",""+account.getId()+", "+account.getEmail()+", "+account.getDisplayName()+", "+account.getServerAuthCode());

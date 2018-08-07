@@ -70,6 +70,7 @@ public class SettingFragment extends Fragment {
 
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGIN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGOUT);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_WITHDRAW);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_NOTIFICATION_YN);
@@ -83,7 +84,8 @@ public class SettingFragment extends Fragment {
                 JWLog.e("","action :"+intent.getAction());
 
                 if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())
-                        || JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction())) {
+                        || JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_LOGIN.equals(intent.getAction())) {
 
                     String email = intent.getStringExtra("email");
                     boolean autoLogin = intent.getBooleanExtra("autoLogin", false);

@@ -53,7 +53,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/month"
+                android:id="@+id/month_button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -63,7 +63,7 @@
                 android:textSize="12dp"/>
 
             <Button
-                android:id="@+id/quarter"
+                android:id="@+id/quarter_button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -73,7 +73,7 @@
                 android:textSize="12dp"/>
 
             <Button
-                android:id="@+id/year"
+                android:id="@+id/year_button"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

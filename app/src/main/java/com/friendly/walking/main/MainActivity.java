@@ -238,7 +238,7 @@ public class MainActivity extends BaseActivity {
 
                 if(BuildConfig.IS_DEBUG) {
                     String msg = JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED;
-                    int transition = Geofence.GEOFENCE_TRANSITION_EXIT;
+                    int transition = Geofence.GEOFENCE_TRANSITION_DWELL;
                     if (mIsWalking) {
                         msg = JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED;
                         transition = Geofence.GEOFENCE_TRANSITION_ENTER;
@@ -256,7 +256,7 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-//        fab.setVisibility(View.GONE);
+        fab.setVisibility(View.VISIBLE);
 
 //        CircleImageView imageview = (CircleImageView)findViewById(R.id.profileImageView);
 //
@@ -474,7 +474,7 @@ public class MainActivity extends BaseActivity {
                         || JWBroadCast.BROAD_CAST_EMAIL_LOGIN.equals(intent.getAction())
                         || JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction())) {
 
-                    String email = intent.getStringExtra("email");
+                    final String email = intent.getStringExtra("email");
                     setProgressBar(View.VISIBLE);
 
                     FirebaseMessaging.getInstance().subscribeToTopic("news");
@@ -484,7 +484,10 @@ public class MainActivity extends BaseActivity {
                         @Override
                         public void onCompleted(boolean result, Object object) {
                             JWLog.e("", "result :"+result);
-
+                            if(!result) {
+                                JWLog.e("email "+email);
+                                return;
+                            }
                             setProgressBar(View.INVISIBLE);
                             UserData userData = (UserData) object;
                             mUserDta = userData;
@@ -534,7 +537,7 @@ public class MainActivity extends BaseActivity {
                                     }
                                 } else {
                                     JWLog.e("자동 산책 모드가 아닙니다.");
-                                    JWToast.showToast("자동 산책 모드가 아닙니다.");
+                                    //JWToast.showToast("자동 산책 모드가 아닙니다.");
                                     JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
                                 }
                             } else {
@@ -586,6 +589,7 @@ public class MainActivity extends BaseActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        JWLog.e("", "requestCode" + requestCode+", resultCode "+resultCode);
         if ( requestCode == RC_GOOGLE_SIGN_IN ) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
 
