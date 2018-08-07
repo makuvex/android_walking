@@ -19,4 +19,5 @@ public class GlobalConstantID {
     public static final int                 LOGIN_TYPE_FACEBOOK                             = 2;
     public static final int                 LOGIN_TYPE_KAKAO                                = 3;
 
+    //
 }
