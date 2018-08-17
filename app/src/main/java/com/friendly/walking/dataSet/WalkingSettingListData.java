@@ -43,6 +43,10 @@ public class WalkingSettingListData implements BaseSettingDataSetInterface {
 
     @Override
     public void setDataSet(Object object) {
-
+        if(object instanceof WalkingSettingListData) {
+            WalkingSettingListData data = (WalkingSettingListData)object;
+            this.isMyLocationAccepted = data.isMyLocationAccepted;
+            this.isChattingAcepted = data.isChattingAcepted;
+        }
     }
 }

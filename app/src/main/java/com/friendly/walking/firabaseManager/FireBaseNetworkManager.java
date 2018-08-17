@@ -492,9 +492,11 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                             if(callback != null) {
                                 JWLog.e("callback walking_location_list : "+mUserData.walking_location_list);
                                 callback.onCompleted(true, mUserData.walking_location_list);
+                                return;
                             }
                         }
                     }
+                    callback.onCompleted(false, null);
                 }
             });
         }

@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20,6 +21,11 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.friendly.walking.ApplicationPool;
+import com.friendly.walking.BuildConfig;
+import com.friendly.walking.main.MainActivity;
+import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.GlobalConstantID;
@@ -39,12 +45,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
+import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE;
 import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE_FINISHED;
 import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE_MODE;
@@ -56,6 +64,12 @@ import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID
  */
 
 public class MainService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+//    public static final int                         MSG_REGISTER_CLIENT = 1;
+//    public static final int                         MSG_SEND_TO_SERVICE = 2;
+//    public static final int                         MSG_SEND_TO_ACTIVITY = 3;
+
+    public static final String                      KEY_LOCATION_DATA = "key_location_data";
 
     private static final int                        UPDATE_INTERVAL_MS = 1000;  // 1초
     private static final int                        FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
@@ -82,6 +96,8 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
     // GPS 상태값
     boolean                                         isGetLocation = false;
 
+    boolean                                         requested = false;
+
     Location                                        location;
     double                                          lat; // 위도
     double                                          lon; // 경도
@@ -93,6 +109,13 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
     private ArrayList<LocationData>                 mLocationArray = null;
     private FireBaseAsyncTask                       mAsyncTask = null;
     private long                                    mStartStrollTime = 0;
+    private final IBinder                           mBinder = new LocalBinder();
+
+    public class LocalBinder extends Binder {
+        public MainService getService() {
+            return MainService.this;
+        }
+    }
 
     class ServiceHandler extends Handler {
         @Override
@@ -158,6 +181,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                     if(email != null) {
                         long min = (System.currentTimeMillis() - startTime) / 60000;
 
+                        JWLog.e("startTime "+startTime+", min "+min);
                         FireBaseNetworkManager.getInstance(context).deleteWalkingData(new FireBaseNetworkManager.FireBaseNetworkCallback() {
                             @Override
                             public void onCompleted(boolean result, Object object) {
@@ -201,8 +225,53 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        JWLog.e("onUnbind");
+        return super.onUnbind(intent);
+    }
+
+    /*
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        initReceiver();
+        registerReceiverMain();
+        mLocationArray = new ArrayList<>();
+
+
+        locationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(UPDATE_INTERVAL_MS)
+                .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
+
+        locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                JWLog.e("onLocationChanged lat :"+location.getLatitude()+ ", lot : "+location.getLongitude());
+                lat = location.getLatitude();
+                lon = location.getLongitude();
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+                JWLog.e("onStatusChanged s:"+s+", i:"+i);
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+                JWLog.e("onProviderEnabled s:"+s);
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+                JWLog.e("onProviderDisabled s :"+s);
+            }
+        };
+    }
+    */
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -234,6 +303,14 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                 JWLog.e("onLocationChanged lat :"+location.getLatitude()+ ", lot : "+location.getLongitude());
                 lat = location.getLatitude();
                 lon = location.getLongitude();
+                if(requested) {
+                    requested = false;
+                    Intent i = new Intent(JWBroadCast.BROAD_CAST_RESPONSE_LOCATION);
+                    ApplicationPool pool = (ApplicationPool)getApplicationContext();
+                    pool.putExtra(KEY_LOCATION_DATA, i, new LatLng(lat, lon));
+
+                    JWBroadCast.sendBroadcast(MainService.this, i);
+                }
             }
 
             @Override
@@ -274,6 +351,8 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REQUEST_LOCATION);
+
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -381,6 +460,9 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                         mThread.start();
 
                     }
+                } else if(JWBroadCast.BROAD_CAST_REQUEST_LOCATION.equals(intent.getAction())) {
+                    requested = true;
+                    getLocation();
                 }
             }
         };
@@ -409,36 +491,47 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
             isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
             // 현재 네트워크 상태 값 알아오기
-            //isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-            isNetworkEnabled = false;
+            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            //isNetworkEnabled = false;
 
+            if(BuildConfig.IS_DEBUG) {
+                String temp = "isGPSEnabled "+ isGPSEnabled +", isNetworkEnabled "+isNetworkEnabled;
+                JWToast.showToast(temp);
+            }
+            JWLog.e("isGPSEnabled "+isGPSEnabled+", isNetworkEnabled "+isNetworkEnabled);
             if (!isGPSEnabled && !isNetworkEnabled) {
                 // GPS 와 네트워크사용이 가능하지 않을때 소스 구현
-                JWToast.showToast("GPS와 네트워크 사용이 불가능 합니다.");
+                JWToast.showToastLong("GPS와 네트워크 사용이 불가능 합니다.");
             } else {
                 this.isGetLocation = true;
 
-                if (isGPSEnabled) {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
-                    if (locationManager != null) {
-                        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        if (location != null) {
-                            lat = location.getLatitude();
-                            lon = location.getLongitude();
+                if(PermissionManager.isAcceptedLocationPermission(MainService.this)) {
+
+                    // 네트워크 정보로 부터 위치값 가져오기
+                    if (isNetworkEnabled) {
+                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
+
+                        if (locationManager != null) {
+                            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                            if (location != null) {
+                                // 위도 경도 저장
+                                lat = location.getLatitude();
+                                lon = location.getLongitude();
+                            }
                         }
                     }
-                }
 
-                // 네트워크 정보로 부터 위치값 가져오기
-                if (isNetworkEnabled) {
-                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
+                    if (isGPSEnabled) {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListener);
+                        if (locationManager != null) {
+                            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                            if (location != null) {
+                                if (location.getLatitude() != 0 && location.getLongitude() != 0) {
+                                    lat = location.getLatitude();
+                                    lon = location.getLongitude();
+                                }
 
-                    if (locationManager != null) {
-                        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null) {
-                            // 위도 경도 저장
-                            lat = location.getLatitude();
-                            lon = location.getLongitude();
+                            }
                         }
                     }
                 }

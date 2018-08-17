@@ -51,6 +51,11 @@ public class SettingListData implements BaseSettingDataSetInterface {
 
     @Override
     public void setDataSet(Object object) {
-
+        if(object instanceof SettingListData) {
+            SettingListData data = (SettingListData)object;
+            this.title = data.title;
+            this.titleDesc = data.titleDesc;
+            this.imageButtonResource = data.imageButtonResource;
+        }
     }
 }

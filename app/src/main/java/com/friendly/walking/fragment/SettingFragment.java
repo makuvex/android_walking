@@ -69,7 +69,7 @@ public class SettingFragment extends Fragment {
         mContext = getActivity();
 
         mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_PROFILE);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGIN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGOUT);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_WITHDRAW);
@@ -77,13 +77,16 @@ public class SettingFragment extends Fragment {
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_LOCATION_YN);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REFRESH_USER_DATA);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_WALKING_MY_LOCATION_YN);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_WALKING_CHATTING_YN);
+
 
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 JWLog.e("","action :"+intent.getAction());
 
-                if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())
+                if(JWBroadCast.BROAD_CAST_UPDATE_PROFILE.equals(intent.getAction())
                         || JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction())
                         || JWBroadCast.BROAD_CAST_LOGIN.equals(intent.getAction())) {
 
@@ -94,10 +97,14 @@ public class SettingFragment extends Fragment {
                         email = getString(R.string.login_guide);
                         autoLogin = false;
                     }
+                    JWLog.e("autoLogin "+autoLogin+", getWalkingCoin "+PreferencePhoneShared.getWalkingCoin(mContext));
+                    JWLog.e("getNotificationYn "+PreferencePhoneShared.getNotificationYn(mContext)+", getGeoNotificationYn "+PreferencePhoneShared.getGeoNotificationYn(mContext));
+                    JWLog.e("getLocationYn "+PreferencePhoneShared.getLocationYn(mContext));
+
                     mAdapter.setDataWithIndex(SettingRecyclerAdapter.INDEX_DATA_LOGIN, new LoginSettingListData(email, PreferencePhoneShared.getNickName(mContext), autoLogin, PreferencePhoneShared.getWalkingCoin(mContext)));
                     mAdapter.setDataWithIndex(SettingRecyclerAdapter.INDEX_DATA_NOTIFICATION, new NotificationSettingListData(PreferencePhoneShared.getNotificationYn(mContext), PreferencePhoneShared.getGeoNotificationYn(mContext)));
                     mAdapter.setDataWithIndex(SettingRecyclerAdapter.INDEX_DATA_LOCATION, new LocationSettingListData(PreferencePhoneShared.getLocationYn(mContext), false));
-                    mAdapter.setDataWithIndex(SettingRecyclerAdapter.INDEX_DATA_WALKING, new WalkingSettingListData(false, false));
+                    mAdapter.setDataWithIndex(SettingRecyclerAdapter.INDEX_DATA_WALKING, new WalkingSettingListData(PreferencePhoneShared.getMyLocationAcceptedYn(mContext), PreferencePhoneShared.getChattingAcceptYn(mContext)));
 
                     mAdapter.notifyDataSetChanged();
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction()) || JWBroadCast.BROAD_CAST_WITHDRAW.equals(intent.getAction())) {

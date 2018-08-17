@@ -139,6 +139,7 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
         if (e == null)
             return;
 
+        /*
         RectF bounds = mOnValueSelectedRectF;
         mChart.getBarBounds((BarEntry) e, bounds);
         MPPointF position = mChart.getPosition(e, YAxis.AxisDependency.LEFT);
@@ -151,16 +152,17 @@ public class ReportFragment extends Fragment implements OnChartValueSelectedList
                         + mChart.getHighestVisibleX());
 
         MPPointF.recycleInstance(position);
+        */
     }
 
     @Override
     public void onNothingSelected() { }
 
     @Override
-    public void functionByCommand(String email, CommandType type) {
+    public void functionByCommand(Object email, CommandType type) {
 
         if(type == READ_WALKING_TIME_LIST) {
-            FireBaseNetworkManager.getInstance(getActivity()).readWalkingTimeList(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+            FireBaseNetworkManager.getInstance(getActivity()).readWalkingTimeList((String)email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Object object) {
                     if(result) {

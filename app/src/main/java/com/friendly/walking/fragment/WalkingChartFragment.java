@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.SpannableString;
@@ -23,13 +24,18 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.R;
+import com.friendly.walking.activity.GoogleMapActivity;
+import com.friendly.walking.activity.WalkingMapsActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
+import com.friendly.walking.dataSet.LocationData;
 import com.friendly.walking.dataSet.PetData;
 import com.friendly.walking.dataSet.StrollTimeData;
 import com.friendly.walking.dataSet.WalkingData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
 import com.friendly.walking.main.DataExchangeInterface;
+import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
@@ -59,6 +65,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
+import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 import static com.friendly.walking.main.DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST;
 import static com.github.mikephil.charting.utils.ColorTemplate.rgb;
 
@@ -70,6 +77,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     private View                                mRootView;
     private PieChart                            mChart;
     //private TextView                            mNoDataView;
+    private Map<String, ArrayList<LocationData>>  mWalkingLocationList;
     private Map<String, String>                 mWalkingTimeList;
     private static ArrayList<StrollTimeData>    mWeekTimeList;
     private SwipeRefreshLayout                  mSwipeRefreshLayout;
@@ -109,8 +117,8 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_stroll, container, false);
         JWLog.e("@@@@@@");
+        View rootView = inflater.inflate(R.layout.fragment_stroll, container, false);
         JWLog.e("","getArguments().getInt(ARG_SECTION_NUMBER) :"+getArguments().getInt(ARG_SECTION_NUMBER) );
         rootView.setBackgroundColor(Color.WHITE);
 
@@ -120,6 +128,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
         }
         initView();
         initChart();
+
         initReceiver();
         registerReceiverMain();
 
@@ -130,6 +139,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     public void onStart() {
         super.onStart();
         JWLog.e("@@@@@@");
+        //initChart();
     }
 
     @Override
@@ -149,15 +159,18 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
         mProfileView = (LinearLayout)mRootView.findViewById(R.id.profileBackgroundImageView);
         if(mProfileBackground != null) {
             mProfileView.setBackground(new BitmapDrawable(mProfileBackground));
-            //mProfileView.setAlpha(0.5f);
         } else {
             mProfileView.setBackgroundResource(R.drawable.profile_bg);
-            //mProfileView.setAlpha(0.5f);
         }
         mProfileImageView = (CircleImageView)mRootView.findViewById(R.id.profileImageView);
         if(mProfileImage != null) {
             mProfileImageView.setImageBitmap(mProfileImage);
+        } else {
+            mProfileImageView.setImageResource(R.drawable.default_profile);
+            mProfileView.setBackgroundResource(R.drawable.profile_bg);
         }
+
+
         mProfileTextView = (TextView)mRootView.findViewById(R.id.profileText);
         if(mProfileText == null) {
             mProfileTextView.setText("사랑하는 반려동물과 함께 산책 나가볼까요.");
@@ -171,11 +184,12 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     }
 
     private void initChart() {
+
         mChart = (PieChart) mRootView.findViewById(R.id.pie_chart);
         mChart.setUsePercentValues(true);
         mChart.getDescription().setEnabled(false);
         mChart.setExtraOffsets(0, 0, 0, 0);
-        mChart.setTouchEnabled(false);
+        //mChart.setTouchEnabled(false);
         mChart.setDragDecelerationFrictionCoef(0.95f);
 
         mChart.setDrawHoleEnabled(true);
@@ -209,6 +223,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
 
         mChart.setEntryLabelColor(Color.DKGRAY);
         mChart.setEntryLabelTextSize(10f);
+
     }
 
     private void setData(int count, float range) {
@@ -314,12 +329,35 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mChart.highlightValues(null);
+            }
+        }, 1000);
 
         if (e == null)
             return;
-        JWLog.e("VAL SELECTED",
-                "Value: " + e.getY() + ", index: " + h.getX()
-                        + ", DataSet index: " + h.getDataSetIndex());
+
+        //JWLog.e("mWeekTimeList "+mWeekTimeList);
+//        JWLog.e("VAL SELECTED","Value: " + e.getY() + ", index: " + h.getX() + ", DataSet index: " + h.getDataSetIndex());
+//        JWLog.e("mWeekTimeList data "+mWeekTimeList.get((int)h.getX()));
+
+        StrollTimeData data = mWeekTimeList.get((int)h.getX());
+
+        if(data.locationList != null) {
+            if(PermissionManager.isAcceptedLocationPermission(getActivity())) {
+                JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+
+                Intent intent = new Intent(getActivity(), WalkingMapsActivity.class);
+                ApplicationPool pool = (ApplicationPool)getActivity().getApplicationContext();
+                pool.putExtra(WalkingMapsActivity.KEY_USER_DATA, intent, data);
+
+                startActivity(intent);
+            } else {
+                PermissionManager.requestLocationPermission(getActivity());
+            }
+        }
     }
 
     @Override
@@ -328,20 +366,35 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     }
 
     @Override
-    public void functionByCommand(String email, CommandType type) {
+    public void functionByCommand(final Object email, CommandType type) {
 
         if(type == READ_WALKING_TIME_LIST) {
-            mEmail = email;
-            FireBaseNetworkManager.getInstance(getActivity()).readWalkingTimeList(email, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+            mEmail = (String)email;
+            FireBaseNetworkManager.getInstance(getActivity()).readWalkingTimeList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                 @Override
                 public void onCompleted(boolean result, Object object) {
                     if(result) {
                         mWalkingTimeList = (Map<String, String>)object;
-                        updateChartData();
+
+                        FireBaseNetworkManager.getInstance(getActivity()).readWalkingLocationList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                            @Override
+                            public void onCompleted(boolean result, Object object) {
+                                if(result) {
+                                    mWalkingLocationList = (Map<String, ArrayList<LocationData>> )object;
+                                    updateChartData();
+                                }
+                            }
+                        });
                     }
                 }
             });
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
     }
 
     private void updateChartData() {
@@ -349,49 +402,55 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
             JWLog.e("mWalkingTimeList is empty");
             return;
         }
-        mWeekTimeList.clear();
-        Calendar cal = Calendar.getInstance();
-        int nWeek = cal.get(Calendar.DAY_OF_WEEK);
+        try {
+            mWeekTimeList.clear();
+            Calendar cal = Calendar.getInstance();
+            int nWeek = cal.get(Calendar.DAY_OF_WEEK);
 
-        Date date = new Date(System.currentTimeMillis());
-        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd", Locale.KOREA );
-        String today = formatter.format(date);
+            Date date = new Date(System.currentTimeMillis());
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.KOREA);
+            String today = formatter.format(date);
 
-        JWLog.e("nWeek :"+nWeek);
+            JWLog.e("nWeek :" + nWeek);
 
-        // 2, 3, 4, 5, 6, 7, 1      -> 월, 화, ..., 일
-        if(nWeek == 1) {
-            nWeek = 8;
-        }
+            // 2, 3, 4, 5, 6, 7, 1      -> 월, 화, ..., 일
+            if (nWeek == 1) {
+                nWeek = 8;
+            }
 
-        for (int i=2; i<=nWeek; i++) {
-            Calendar tempCal = new GregorianCalendar();
-            tempCal.add(Calendar.DATE, nWeek - i > 0 ? -(nWeek - i) : (nWeek - i));
-            String month = String.format("%02d", (tempCal.get(Calendar.MONTH) + 1));
-            String day = String.format("%02d", tempCal.get(Calendar.DAY_OF_MONTH));
+            for (int i = 2; i <= nWeek; i++) {
+                Calendar tempCal = new GregorianCalendar();
+                tempCal.add(Calendar.DATE, nWeek - i > 0 ? -(nWeek - i) : (nWeek - i));
+                String month = String.format("%02d", (tempCal.get(Calendar.MONTH) + 1));
+                String day = String.format("%02d", tempCal.get(Calendar.DAY_OF_MONTH));
 
-            String key = tempCal.get(Calendar.YEAR) + "-" + month + "-" + day;
-            JWLog.e("key :"+key);
-            String min = mWalkingTimeList.get(key);
-            JWLog.e("min :"+min);
+                String key = tempCal.get(Calendar.YEAR) + "-" + month + "-" + day;
+                JWLog.e("key :" + key);
+                String min = mWalkingTimeList.get(key);
+                ArrayList<LocationData> list = mWalkingLocationList.get(key);
 
-            if(min != null) {
-                //min = min.substring(min.indexOf(".")+1, min.length());
-                if(!min.equals("0")) {
-                    mWeekTimeList.add( new StrollTimeData(getDayOfWeek(i), min));
+                JWLog.e("min :" + min + ", list " + list);
+
+                if (min != null) {
+                    //min = min.substring(min.indexOf(".")+1, min.length());
+                    if (!min.equals("0")) {
+                        mWeekTimeList.add(new StrollTimeData(getDayOfWeek(i), min, list));
+                    }
                 }
             }
-        }
 
 
-        JWLog.e("mWeekTimeList :"+mWeekTimeList);
-        float sum = 0;
-        for(StrollTimeData data : mWeekTimeList) {
-            sum += Float.parseFloat(data.min);
-        }
+            JWLog.e("mWeekTimeList :" + mWeekTimeList);
+            float sum = 0;
+            for (StrollTimeData data : mWeekTimeList) {
+                sum += Float.parseFloat(data.min);
+            }
 
-        if(sum > 0) {
-            initChart();
+            if (sum > 0) {
+                initChart();
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 

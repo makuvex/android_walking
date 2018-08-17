@@ -63,6 +63,7 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         layoutMap.put(5, R.layout.walking_option_row);
     }
 
+
     /**
      * 레이아웃을 만들어서 Holer에 저장
      * @param viewGroup
@@ -126,7 +127,7 @@ public class SettingRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
      */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        //JWLog.e("","");
+        JWLog.e("position "+position+", viewHolder "+viewHolder);
 
         if(viewHolder instanceof BaseSettingViewHolderInterface) {
             BaseSettingViewHolderInterface holder = (BaseSettingViewHolderInterface)viewHolder;

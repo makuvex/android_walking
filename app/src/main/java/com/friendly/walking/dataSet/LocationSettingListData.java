@@ -42,6 +42,10 @@ public class LocationSettingListData implements BaseSettingDataSetInterface {
 
     @Override
     public void setDataSet(Object object) {
-
+        if(object instanceof LocationSettingListData) {
+            LocationSettingListData data = (LocationSettingListData)object;
+            this.locationYn = data.locationYn;
+            this.geofenceYn = data.geofenceYn;
+        }
     }
 }

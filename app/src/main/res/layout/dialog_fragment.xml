@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/top_layout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="18dp"
+            android:textColor="#ffffff"
+            android:text="앱 접근권한 동의"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/body_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/top_layout"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/body_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:textSize="14dp"
+            android:text="모두의 산책 앱을 사용하기 위해 다음 항목에서 접근 권한이 필요합니다.
+            \n접근 권한을 허용하지 않으면 서비스 이용을 정상적으로 할 수 없습니다.
+            \n\n* [저장] 프로필 이미지 및 설정 정보를 저장하기 위한 필수 항목
+            \n* [위치] 산책 정보를 저장하기 위한 선택 항목
+            \n* [카메라] 프로필 이미지 편집을 위한 선택 항목"/>
+        
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#ececec"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/button_layout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/body_layout"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/button_text1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="종료"
+            android:gravity="center"
+            android:textSize="18dp"
+            android:layout_weight="1" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#ececec"/>
+
+        <TextView
+            android:id="@+id/button_text2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="동의"
+            android:gravity="center"
+            android:textSize="18dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>

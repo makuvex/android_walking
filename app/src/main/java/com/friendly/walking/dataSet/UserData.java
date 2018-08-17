@@ -66,6 +66,8 @@ public class UserData extends Object {
                 ", mem_alarm_time :"+mem_alarm_time+
                 ", walking_location_list :"+walking_location_list +
                 ", mem_auto_stroll_distance :"+mem_auto_stroll_distance +
-                ", walking_coin :"+walking_coin;
+                ", walking_coin :"+walking_coin +
+                ", mem_walking_my_location_yn :"+mem_walking_my_location_yn +
+                ", mem_walking_chatting_yn :"+mem_walking_chatting_yn;
     }
 }

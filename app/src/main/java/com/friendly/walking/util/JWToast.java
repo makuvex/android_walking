@@ -26,6 +26,13 @@ public class JWToast extends View {
         }
     }
 
+    public static void showToastLong(String msg) {
+        if (!TextUtils.isEmpty(msg)) {
+            JWToast toast = new JWToast(ApplicationPool.getGlobalApplicationContext());
+            toast.setToastLong(msg);
+        }
+    }
+
     public static void showToast(int res) {
         if(res != 0) {
             JWToast toast = new JWToast(ApplicationPool.getGlobalApplicationContext());
@@ -55,6 +62,22 @@ public class JWToast extends View {
             mToast = new Toast(mContext);
             mToast.setGravity(Gravity.BOTTOM, 0, 0);
             mToast.setDuration(Toast.LENGTH_SHORT);
+        }
+
+        text.setText(toastMsg);
+        mToast.setView(layout);
+        mToast.show();
+    }
+
+    public void setToastLong(String toastMsg) {
+        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.toast_view, (ViewGroup) findViewById(R.id.custom_toast_layout_id));
+        text = (TextView) layout.findViewById(R.id.toast_text);
+
+        if (mToast == null) {
+            mToast = new Toast(mContext);
+            mToast.setGravity(Gravity.BOTTOM, 0, 0);
+            mToast.setDuration(Toast.LENGTH_LONG);
         }
 
         text.setText(toastMsg);

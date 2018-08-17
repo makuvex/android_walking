@@ -8,8 +8,8 @@ public interface DataExchangeInterface {
 
     enum CommandType {
         READ_WALKING_TIME_LIST,
-
+        READ_LOCATION_INFO,
     };
 
-    public void functionByCommand(String email, CommandType type);
+    public void functionByCommand(Object obj, CommandType type);
 }

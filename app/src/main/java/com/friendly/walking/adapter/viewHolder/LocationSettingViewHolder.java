@@ -35,6 +35,7 @@ public class LocationSettingViewHolder extends BaseViewHolder implements BaseSet
         locationYnButton = (ImageButton) itemView.findViewById(R.id.accept_location);
         //geofenceYnButton= (ImageButton) itemView.findViewById(R.id.accept_geofence);
 
+        JWLog.e("getLocationYn "+PreferencePhoneShared.getLocationYn(mActivity));
         if(PreferencePhoneShared.getLoginYn(mActivity)) {
             locationYnButton.setSelected(PreferencePhoneShared.getLocationYn(mActivity));
         } else {
@@ -74,6 +75,8 @@ public class LocationSettingViewHolder extends BaseViewHolder implements BaseSet
 
             this.locationYn = data.getLocationYn();
             this.geofenceYn = data.getGeofenceYn();
+
+            locationYnButton.setSelected(this.locationYn);
 
             this.itemView.setTag(data);
         }

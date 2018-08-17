@@ -43,6 +43,10 @@ public class NotificationSettingListData implements BaseSettingDataSetInterface 
 
     @Override
     public void setDataSet(Object object) {
-
+        if(object instanceof NotificationSettingListData) {
+            NotificationSettingListData data = (NotificationSettingListData)object;
+            this.isAccepted = data.isAccepted;
+            this.isGeofenceAccepted = data.isGeofenceAccepted;
+        }
     }
 }

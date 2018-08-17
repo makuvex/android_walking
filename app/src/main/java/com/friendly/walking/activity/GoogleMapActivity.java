@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -77,15 +78,16 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
     private GoogleMap                           mGoogleMap;
     private String                              mGoogleMapAddressLine;
     private String                              mNickName;
+    private FloatingActionButton                mFloatingButton;
 
-    private boolean mMoveMapByUser = true;
-    private boolean mMoveMapByAPI = true;
-    private boolean mRequestingLocationUpdates = false;
-    private Marker currentMarker = null;
-    private GoogleApiClient mGoogleApiClient = null;
-    LocationRequest locationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(UPDATE_INTERVAL_MS)
-            .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
+    private boolean                             mMoveMapByUser = true;
+    private boolean                             mMoveMapByAPI = true;
+    private boolean                             mRequestingLocationUpdates = false;
+    private Marker                              currentMarker = null;
+    private GoogleApiClient                     mGoogleApiClient = null;
+    LocationRequest                             locationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                                                                    .setInterval(UPDATE_INTERVAL_MS)
+                                                                    .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -102,6 +104,13 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         mAddressText = (EditText)findViewById(R.id.address);
         mFindButton = (ImageButton)findViewById(R.id.find);
         mDoneButton = (ImageButton)findViewById(R.id.confirm);
+        mFloatingButton = (FloatingActionButton)findViewById(R.id.fab);
+        mFloatingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                JWLog.e("@@@");
+            }
+        });
 
         mGoogleMapAddressLine = getIntent().getStringExtra("address");
         mNickName = getIntent().getStringExtra("user");
@@ -112,6 +121,9 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
             textView.setText(title);
 
             findViewById(R.id.address_layout).setVisibility(View.GONE);
+
+            // 추후 구현 예정
+            //mFloatingButton.setVisibility(View.VISIBLE);
         }
         try {
             mLat = Double.parseDouble(getIntent().getStringExtra("lat"));
@@ -128,7 +140,6 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         mAddressText.setText(mGoogleMapAddressLine);
         mAddressText.setOnEditorActionListener(new TextView.OnEditorActionListener() {

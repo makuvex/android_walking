@@ -46,6 +46,7 @@ public class PermissionSettingViewHolder extends BaseViewHolder implements BaseS
             }
         };
 
+        itemView.findViewById(R.id.permission_text).setOnClickListener(mOnClickListener);
         moreButton.setOnClickListener(mOnClickListener);
     }
 

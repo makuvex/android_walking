@@ -54,7 +54,7 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
         mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(v.getId() == R.id.login_out_action)
+                if(v.getId() == R.id.login_out_action || v.getId() == R.id.loginID)
                     if (PreferencePhoneShared.getLoginYn(mActivity)) {
                         Intent intent = new Intent(mActivity, ProfileActivity.class);
                         intent.putExtra("email", loginID.getText());
@@ -71,6 +71,7 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
             }
         };
 
+        loginID.setOnClickListener(mOnClickListener);
         logoutButton.setOnClickListener(mOnClickListener);
         autoLoginButton.setOnClickListener(mOnClickListener);
     }

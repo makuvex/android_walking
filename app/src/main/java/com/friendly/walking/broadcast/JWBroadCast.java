@@ -40,6 +40,10 @@ public class JWBroadCast {
     public static final String BROAD_CAST_REFRESH_USER_DATA             = "com.friendly.walking.BROAD_CAST_REFRESH_USER_DATA";
     public static final String BROAD_CAST_UPDATE_PROFILE                = "com.friendly.walking.BROAD_CAST_UPDATE_PROFILE";
 
+    public static final String BROAD_CAST_REQUEST_LOCATION             = "com.friendly.walking.BROAD_CAST_REQUEST_LOCATION";
+    public static final String BROAD_CAST_RESPONSE_LOCATION            = "com.friendly.walking.BROAD_CAST_RESPONSE_LOCATION";
+
+
     public JWBroadCast() {}
 
     public static void sendBroadcast(Context context, Intent intent) {

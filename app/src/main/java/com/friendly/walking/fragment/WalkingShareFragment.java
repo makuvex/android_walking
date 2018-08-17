@@ -4,18 +4,27 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import com.friendly.walking.ApplicationPool;
+import com.friendly.walking.dataSet.StrollTimeData;
+import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.main.DataExchangeInterface;
+import com.friendly.walking.main.MainActivity;
+import com.friendly.walking.service.MainService;
+import com.friendly.walking.util.CommonUtil;
+import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWToast;
 
 import com.felipecsl.asymmetricgridview.library.Utils;
@@ -34,19 +43,21 @@ import com.friendly.walking.util.DemoItem;
 import com.friendly.walking.util.DemoUtils;
 import com.friendly.walking.util.JWLog;
 import com.friendly.walking.util.WalkingShareItem;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.friendly.walking.main.DataExchangeInterface.CommandType.READ_LOCATION_INFO;
 import static com.friendly.walking.main.DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST;
 
 
 public class WalkingShareFragment extends Fragment implements AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, DataExchangeInterface {
 
     private Context                                 mContext;
-
 
     private BroadcastReceiver                       mReceiver = null;
     private IntentFilter                            mIntentFilter = null;
@@ -57,8 +68,10 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
     private DefaultListAdapter                      mAdapter;
     private TextView                                mNoPersonView;
     private SwipeRefreshLayout                      mSwipeRefreshLayout;
+    private LatLng                                  mLocation;
 
-    private DemoUtils demoUtils = new DemoUtils();
+
+    //private DemoUtils demoUtils = new DemoUtils();
 
 
     public WalkingShareFragment() {
@@ -75,122 +88,28 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
         mContext = getActivity();
         mCurrentWalkingList = new ArrayList<>();
 
-        /*
         mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI);
-        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_LOGOUT);
-        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_NOTIFICATION_YN);
-        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN);
-        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_CHANGE_LOCATION_YN);
-        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REFRESH_USER_DATA);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_RESPONSE_LOCATION);
 
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 JWLog.e("","action :"+intent.getAction());
 
-                if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())
-                        || JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction())) {
+                if(JWBroadCast.BROAD_CAST_RESPONSE_LOCATION.equals(intent.getAction())) {
+                    ApplicationPool pool = (ApplicationPool) mContext.getApplicationContext();
+                    mLocation = (LatLng) pool.getExtra(MainService.KEY_LOCATION_DATA, intent);
+                    JWLog.e("mLocation "+mLocation);
+                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
 
-                    String email = intent.getStringExtra("email");
-                    boolean autoLogin = intent.getBooleanExtra("autoLogin", false);
-
-                    if(TextUtils.isEmpty(email)) {
-                        email = getString(R.string.login_guide);
-                        autoLogin = false;
+                    if(mAdapter != null) {
+                        mAdapter.updateLocation(mLocation);
+                        mAdapter.notifyDataSetChanged();
                     }
-                    mAdapter.setDataWithIndex(0, new LoginSettingListData(email, PreferencePhoneShared.getNickName(mContext), autoLogin, PreferencePhoneShared.getWalkingCoin(mContext)));
-                    mAdapter.notifyDataSetChanged();
-                } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
-                    mAdapter.setDataWithIndex(0, new LoginSettingListData(getString(R.string.login_guide), "", false, 0));
-                    mAdapter.notifyDataSetChanged();
-                } else if(JWBroadCast.BROAD_CAST_CHANGE_NOTIFICATION_YN.equals(intent.getAction())) {
-                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-
-                    String uid = PreferencePhoneShared.getUserUid(mContext);
-                    final boolean result = intent.getBooleanExtra("value", false);
-                    FireBaseNetworkManager.getInstance(getActivity()).updateNotificationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                        @Override
-                        public void onCompleted(boolean result, Object object) {
-                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
-                            if(result) {
-                                PreferencePhoneShared.setNotificationYn(mContext, result);
-                            }
-                        }
-                    });
-                    if(result) {
-                        FirebaseMessaging.getInstance().subscribeToTopic("news");
-                    } else {
-                        FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
-                    }
-
-                } else if(JWBroadCast.BROAD_CAST_CHANGE_GEO_NOTIFICATION_YN.equals(intent.getAction())) {
-                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-
-                    String uid = PreferencePhoneShared.getUserUid(mContext);
-                    final boolean result = intent.getBooleanExtra("value", false);
-                    FireBaseNetworkManager.getInstance(getActivity()).updateGeoNotificationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                        @Override
-                        public void onCompleted(boolean result, Object object) {
-                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
-                            if(result) {
-                                PreferencePhoneShared.setGeoNotificationYn(mContext, result);
-                            }
-                        }
-                    });
-
-                } else if(JWBroadCast.BROAD_CAST_CHANGE_LOCATION_YN.equals(intent.getAction())) {
-                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-
-                    String uid = PreferencePhoneShared.getUserUid(mContext);
-                    final boolean result = intent.getBooleanExtra("value", false);
-                    FireBaseNetworkManager.getInstance(getActivity()).updateLocationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                        @Override
-                        public void onCompleted(boolean result, Object object) {
-                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
-                            if(result) {
-                                PreferencePhoneShared.setLocationYn(mContext, result);
-                            }
-                        }
-                    });
-
-                } else if(JWBroadCast.BROAD_CAST_CHANGE_WALKING_MY_LOCATION_YN.equals(intent.getAction())) {
-                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-
-                    String uid = PreferencePhoneShared.getUserUid(mContext);
-                    final boolean result = intent.getBooleanExtra("value", false);
-                    FireBaseNetworkManager.getInstance(getActivity()).updateLocationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                        @Override
-                        public void onCompleted(boolean result, Object object) {
-                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
-                            if(result) {
-                                PreferencePhoneShared.setLocationYn(mContext, result);
-                            }
-                        }
-                    });
-
-                } else if(JWBroadCast.BROAD_CAST_CHANGE_WALKING_CHATTING_YN.equals(intent.getAction())) {
-                    JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-
-                    String uid = PreferencePhoneShared.getUserUid(mContext);
-                    final boolean result = intent.getBooleanExtra("value", false);
-                    FireBaseNetworkManager.getInstance(getActivity()).updateLocationYn(uid, result, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                        @Override
-                        public void onCompleted(boolean result, Object object) {
-                            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
-                            if(result) {
-                                PreferencePhoneShared.setLocationYn(mContext, result);
-                            }
-                        }
-                    });
-
                 }
             }
         };
-
-        mContext.registerReceiver(mReceiver, mIntentFilter);
-        mIsRegisterdReceiver = true;
-        */
+        registerReceiverMain();
     }
 
     @Override
@@ -204,10 +123,7 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(mIsRegisterdReceiver == true) {
-            mContext.unregisterReceiver(mReceiver);
-            mIsRegisterdReceiver = false;
-        }
+        unregisterReceiverMain();
     }
 
     @Override
@@ -218,25 +134,45 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
     @Override
     public void onRefresh() {
         JWLog.e("@@@@@@@@@@@@@@@ onRefresh @@@@@@@@@@@@@@@");
+        JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+        JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_REQUEST_LOCATION));
 
+        requestCurrentWalkingList();
+    }
+
+    private void requestCurrentWalkingList() {
         FireBaseNetworkManager.getInstance(getActivity()).readCurrentWalkingList(new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
             public void onCompleted(boolean result, Object object) {
                 JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
                 JWLog.e("result :"+result+", object :"+object);
                 mCurrentWalkingList = (ArrayList<WalkingData>) object;
-
-                if(result) {
-                    updateWalkingList(mCurrentWalkingList.size());
-                }
                 if(mCurrentWalkingList == null || mCurrentWalkingList.size() == 0) {
                     mNoPersonView.setVisibility(View.VISIBLE);
                 } else {
                     mNoPersonView.setVisibility(View.GONE);
                 }
+                if(result) {
+                    updateWalkingList(mCurrentWalkingList.size());
+                }
+
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
+    }
+
+    private void registerReceiverMain() {
+        if(mIsRegisterdReceiver != true) {
+            mContext.registerReceiver(mReceiver, mIntentFilter);
+            mIsRegisterdReceiver = true;
+        }
+    }
+
+    private void unregisterReceiverMain() {
+        if(mIsRegisterdReceiver == true) {
+            mContext.unregisterReceiver(mReceiver);
+            mIsRegisterdReceiver = false;
+        }
     }
 
     private void initLayout(View view) {
@@ -257,9 +193,8 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
         //mGridView.setDebugging(true);
 
         mGridView.setOnItemClickListener(this);
-
+/*
         JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-
         FireBaseNetworkManager.getInstance(getActivity()).readCurrentWalkingList(new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
             public void onCompleted(boolean result, Object object) {
@@ -277,13 +212,21 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
                 }
             }
         });
+*/
     }
 
     private void updateWalkingList(int count) {
-        demoUtils.currentOffset = 0;
+        //demoUtils.currentOffset = 0;
 
         List<WalkingShareItem> items = new ArrayList<>();
-
+        String key = PreferencePhoneShared.getUserUid(mContext);
+        String paddedKey = key.substring(0, 16);
+        String decEmail = null;
+        try {
+            decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(mContext), paddedKey));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         for (int i = 0; i < count; i++) {
             int colSpan = Math.random() < 0.2f ? 2 : 1;
             // Swap the next 2 lines to have items with variable
@@ -293,11 +236,21 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
             WalkingShareItem item = new WalkingShareItem(colSpan, rowSpan, i, mCurrentWalkingList.get(i).mem_nickname, mCurrentWalkingList.get(i).mem_email);
             item.setLocation(mCurrentWalkingList.get(i).lat, mCurrentWalkingList.get(i).lot);
 
-            items.add(item);
+
+            if(decEmail != null && !item.getEmail().equals(decEmail)) {
+                items.add(item);
+            }
         }
 
-
-        mAdapter.setItems(items);
+        if(items.size() == 0) {
+            mNoPersonView.setVisibility(View.VISIBLE);
+        } else {
+            mNoPersonView.setVisibility(View.GONE);
+            mAdapter.setItems(items);
+            if (mLocation != null) {
+                mAdapter.updateLocation(mLocation);
+            }
+        }
     }
 
     private AsymmetricGridViewAdapter getNewAdapter() {
@@ -320,8 +273,9 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
     public void onItemClick(@NonNull AdapterView<?> parent, @NonNull View view, int position, long id) {
         JWToast.showToast("Item " + position + " clicked");
 
-
         WalkingShareItem item = mAdapter.getItem(position);
+        JWLog.e("item "+item);
+
         if(PermissionManager.isAcceptedLocationPermission(mContext)) {
             Intent intent = new Intent(mContext, GoogleMapActivity.class);
             intent.putExtra("lat", String.format("%s",item.getLocation().getLatitude()));
@@ -336,9 +290,17 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
     }
 
     @Override
-    public void functionByCommand(String email, CommandType type) {
+    public void functionByCommand(Object obj, CommandType type) {
         if(type == READ_WALKING_TIME_LIST) {
-            onRefresh();
+            requestCurrentWalkingList();
+        }
+        if(type == READ_LOCATION_INFO) {
+            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_REQUEST_LOCATION));
+
+//            if(obj instanceof Location) {
+//                mLocation = (Location)obj;
+//            }
         }
     }
 }
