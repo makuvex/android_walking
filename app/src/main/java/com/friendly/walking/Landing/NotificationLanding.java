@@ -56,6 +56,7 @@ public class NotificationLanding extends AppCompatActivity {
 
                     }
                     finish();
+                    overridePendingTransition(0,0);
                 }
             });
         } else {

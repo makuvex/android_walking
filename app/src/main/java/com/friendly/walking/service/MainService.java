@@ -389,10 +389,12 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                         mAsyncTask = new FireBaseAsyncTask(MainService.this, mLocationArray, mStartStrollTime);
                         mAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     } else {
+                        /*
                         NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE,
-                                "IN NOTI",
-                                "IN NOTI",
-                                "IN NOTI");
+                                "ticker",
+                                "title",
+                                "subTitle");
+                                */
                     }
                 } else if(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED.equals(intent.getAction())) {
                     //setProgressBar(View.INVISIBLE);
@@ -430,8 +432,8 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                                 public void run() {
 
                                     NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE_MODE,
-                                            "자동으로 산책모드 실행 중 입니다.",
-                                            "자동으로 산책모드 실행 중 입니다.",
+                                            "자동 산책모드 실행 중",
+                                            "자동 산책모드 실행 중",
                                             "경로를 기록중 입니다.");
 
                                     writeWalkingData();
@@ -449,8 +451,8 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                         mStartStrollTime = System.currentTimeMillis();
 
                         NotificationUtil.getInstance(getApplicationContext()).makeNotification(NOTIFICATION_ID_GEOFENCE_MODE,
-                                "자동으로 산책모드 실행 중 입니다.",
-                                "자동으로 산책모드 실행 중 입니다.",
+                                "자동 산책모드 실행 중",
+                                "자동 산책모드 실행 중",
                                 "경로를 기록중 입니다.");
 
                         writeWalkingData();

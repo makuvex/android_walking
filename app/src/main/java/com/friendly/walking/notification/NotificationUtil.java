@@ -56,6 +56,7 @@ public class NotificationUtil extends Object {
         Intent notificationIntent = new Intent(mContext, NotificationLanding.class);
         notificationIntent.putExtra("notificationId", notificationId);
         notificationIntent.putExtra("data", mData);
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
@@ -65,7 +66,6 @@ public class NotificationUtil extends Object {
                 .setTicker(ticker)
                 .setSmallIcon(R.drawable.ic_stat_tag_faces)
                 .setLargeIcon(BitmapFactory.decodeResource(res, R.mipmap.ic_launcher))
-                .setContentIntent(contentIntent)
                 .setAutoCancel(true)
                 .setWhen(System.currentTimeMillis())
                 .setDefaults(Notification.DEFAULT_ALL)
@@ -79,6 +79,8 @@ public class NotificationUtil extends Object {
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
             builder.addAction(R.drawable.stop, "산책 중지", cancelPending).build();
+            builder.setAutoCancel(false);
+            builder.setContentIntent(contentIntent);
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
