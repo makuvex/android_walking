@@ -65,6 +65,7 @@
     <string name="setting" translatable="false">설정</string>
     <string name="loginInfo" translatable="false">로그인 정보</string>
     <string name="login_guide" translatable="false">로그인 해주세요</string>
+    <string name="need_login" translatable="false">로그인이 필요합니다.</string>
     <string name="auto_login" translatable="false">자동 로그인</string>
     <string name="auto_stroll" translatable="false">자동 산책 모드</string>
     <string name="auto_stroll_time" translatable="false">자동 산책 설정</string>

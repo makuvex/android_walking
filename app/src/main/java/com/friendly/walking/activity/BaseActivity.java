@@ -1,5 +1,6 @@
 package com.friendly.walking.activity;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -10,6 +11,11 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+
+import com.friendly.walking.fragment.SettingFragment;
+import com.friendly.walking.fragment.WalkingChartFragment;
+import com.friendly.walking.main.MainActivity;
+import com.friendly.walking.receiver.LoginOutReceiver;
 import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
@@ -162,6 +168,11 @@ public class BaseActivity extends AppCompatActivity {
 
     public void updateUIForLogout() {
         Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGOUT);
+        intent.setPackage(getPackageName());
+        //intent.setComponent(new ComponentName(getApplicationContext(), LoginOutReceiver.class));
+        //intent.setComponent(new ComponentName(getApplicationContext(), SettingFragment.class));
+        //intent.setComponent(new ComponentName(getApplicationContext(), MainActivity.class));
+        //intent.setComponent(new ComponentName(getApplicationContext(), WalkingChartFragment.class));
 
         JWBroadCast.sendBroadcast(getApplicationContext(), intent);
     }

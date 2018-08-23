@@ -52,11 +52,11 @@ public class ProfileActivity extends BaseActivity {
     private ImageView                           mGenderImage;
     private TextView                            mEmailText;
     private TextView                            mNickNameText;
-    private ImageButton                         mLogoutButton;
-    private ImageButton                         mChangePasswordButton;
-    private ImageButton                         mChangeUserInfoButton;
-    private ImageButton                         mChangePetInfoButton;
-    private ImageButton                         mQuitServiceButton;
+    private View                         mLogoutButton;
+    //private View                         mChangePasswordButton;
+    private View                         mChangeUserInfoButton;
+    private View                         mChangePetInfoButton;
+    private View                         mQuitServiceButton;
     private View                                mChangePassworLayout;
     private ImageView                           mLoginTypeImage;
 
@@ -78,11 +78,11 @@ public class ProfileActivity extends BaseActivity {
         mGenderImage = (ImageView)findViewById(R.id.gender);
         mEmailText = (TextView)findViewById(R.id.email);
         mNickNameText = (TextView)findViewById(R.id.nickname);
-        mLogoutButton = (ImageButton)findViewById(R.id.logout);
-        mChangePasswordButton = (ImageButton)findViewById(R.id.change_password);
-        mChangeUserInfoButton = (ImageButton)findViewById(R.id.change_user_info);
-        mChangePetInfoButton = (ImageButton)findViewById(R.id.change_pet_info);
-        mQuitServiceButton = (ImageButton)findViewById(R.id.quit_service);
+        mLogoutButton = (View)findViewById(R.id.logout);
+        //mChangePasswordButton = (View)findViewById(R.id.change_password);
+        mChangeUserInfoButton = (View)findViewById(R.id.change_user_info);
+        mChangePetInfoButton = (View)findViewById(R.id.change_pet_info);
+        mQuitServiceButton = (View)findViewById(R.id.quit_service);
         mChangePassworLayout = findViewById(R.id.change_password_layout);
         mLoginTypeImage = (ImageView)findViewById(R.id.loginImage);
 
@@ -92,10 +92,10 @@ public class ProfileActivity extends BaseActivity {
                 if(v == mLogoutButton) {
                     JWLog.e("", "로그아웃");
                     requestLogout();
-                } else if(v == mChangePasswordButton) {
+                } else if(v == mChangePassworLayout) {
                     startActivity(new Intent(ProfileActivity.this, ChangePasswordActivity.class));
 
-                } else if(v == mChangePetInfoButton) {
+                } else if(v == mProfileImage || v == mChangePetInfoButton) {
                     Intent i = new Intent(ProfileActivity.this, PetInfoActivity.class);
                     i.putExtra("email", mEmailText.getText());
                     ApplicationPool pool = (ApplicationPool)getApplicationContext();
@@ -114,12 +114,13 @@ public class ProfileActivity extends BaseActivity {
         };
 
         mLogoutButton.setOnClickListener(mClickListener);
-        mChangePasswordButton.setOnClickListener(mClickListener);
+        mChangePassworLayout.setOnClickListener(mClickListener);
         mChangePetInfoButton.setOnClickListener(mClickListener);
         mQuitServiceButton.setOnClickListener(mClickListener);
         mChangeUserInfoButton.setOnClickListener(mClickListener);
+        mProfileImage.setOnClickListener(mClickListener);
 
-        if(PreferencePhoneShared.getAutoLoginType(this) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
+        if(PreferencePhoneShared.getAutoLoginType(this) != GlobalConstantID.LOGIN_TYPE_EMAIL) {
             mChangePassworLayout.setVisibility(View.GONE);
         }
         String email = getIntent().getStringExtra("email");
@@ -160,7 +161,8 @@ public class ProfileActivity extends BaseActivity {
 
                     Bitmap blurred = CommonUtil.blurRenderScript(getApplicationContext(), bitmap, 25);//second parametre is radius
                     //imageview.setImageBitmap(blurred);
-                    mProfileImage.setImageBitmap(blurred);
+                    mProfileImage.setImageBitmap(bitmap);
+                    //mProfileBackgroundImage.setBackground(blurred);
                 }
             }
         });

@@ -284,6 +284,7 @@ public class SettingFragment extends Fragment {
                     JWLog.e("currentVersion :"+currentVersion+", latestVersion :"+latestVersion);
 
                     mAdapter.setDataWithIndex(INDEX_DATA_VERSION, new VersionInfoSettingListData(currentVersion, latestVersion));
+                    mAdapter.notifyDataSetChanged();
                 }
             }
         });

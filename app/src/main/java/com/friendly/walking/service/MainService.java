@@ -51,6 +51,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import static com.friendly.walking.activity.SignUpActivity.KEY_USER_DATA;
 import static com.friendly.walking.notification.NotificationUtil.NOTIFICATION_ID_GEOFENCE;
@@ -479,8 +480,13 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
 
     private void unregisterReceiverMain() {
         if(mIsRegisterdReceiver == true) {
-            unregisterReceiver(mReceiver);
-            mIsRegisterdReceiver = false;
+            try {
+                unregisterReceiver(mReceiver);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                mIsRegisterdReceiver = false;
+            }
         }
     }
 

@@ -33,6 +33,7 @@ import com.friendly.walking.fragment.WalkingShareFragment;
 import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
+import com.friendly.walking.receiver.LoginOutReceiver;
 import com.friendly.walking.service.MainService;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
@@ -324,7 +325,7 @@ public class MainActivity extends BaseActivity {
 //        }
     }
 
-    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
         private int currentPosition = 0;
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -416,9 +417,14 @@ public class MainActivity extends BaseActivity {
                 }
 
                 setProgressBar(View.VISIBLE);
-                Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGIN);
+                Intent intent = new Intent();
                 intent.putExtra("email", decEmail);
                 intent.putExtra("password", decPassword);
+                intent.setAction(JWBroadCast.BROAD_CAST_LOGIN);
+                intent.setPackage(getPackageName());
+                //intent.setComponent(new ComponentName(getApplicationContext(), LoginOutReceiver.class));
+                //intent.setComponent(new ComponentName(getApplicationContext(), SettingFragment.class));
+
                 //intent.putExtra("autoLogin", autoLogin);
 
                 JWBroadCast.sendBroadcast(getApplicationContext(), intent);

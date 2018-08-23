@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.friendly.walking.main.MainActivity">
+    tools:context="com.friendly.walking.activity.ProfileActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -19,76 +19,77 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/profileBackgroundImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:background="@drawable/profile_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageButton
+                    android:id="@+id/setting"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_gravity="right|top"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/setting"
+                    android:visibility="gone"/>
+
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:orientation="vertical" >
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|bottom">
 
-                    <ImageView
-                        android:id="@+id/profileBackgroundImageView"
-                        android:layout_width="match_parent"
-                        android:background="@drawable/profile_bg"
-                        android:layout_height="180dp" />
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/profileImageView"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center|bottom"
+                        android:layout_marginTop="20dp"
+                        android:src="@drawable/default_profile"
+                        app:civ_border_color="@color/window_background"
+                        app:civ_border_width="1px" />
 
                     <ImageButton
-                        android:id="@+id/setting"
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
-                        android:layout_gravity="right|top"
-                        android:layout_marginRight="10dp"
-                        android:layout_marginTop="10dp"
-                        android:background="@drawable/setting"
-                        android:visibility="gone"/>
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center|bottom">
-
-                        <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/profileImageView"
-                            android:layout_width="100dp"
-                            android:layout_height="100dp"
-                            android:layout_marginTop="20dp"
-                            android:layout_gravity="center|bottom"
-                            android:src="@drawable/default_profile"
-                            app:civ_border_width="1px"
-                            app:civ_border_color="@color/window_background" />
-
-                        <ImageButton
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_gravity="center_horizontal|bottom"
-                            android:layout_marginLeft="35dp"
-                            android:background="@drawable/photo"/>
-
-                    </FrameLayout>
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal|bottom"
+                        android:layout_marginLeft="35dp"
+                        android:background="@drawable/photo"/>
 
                 </FrameLayout>
+
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:orientation="horizontal"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/pet_name"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:gravity="center"
-                    android:textStyle="bold"
-                    android:textSize="20dp"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
                     />
 
                 <ImageView
                     android:id="@+id/gender"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_marginLeft="5dp"
                     android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="5dp"
                     />
 
             </LinearLayout>
@@ -99,231 +100,238 @@
                 android:layout_marginTop="15dp"
                 android:background="@color/colorBG2"/>
 
-                <LinearLayout
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:orientation="vertical"
-                    android:layout_weight="1">
+                    android:layout_height="50dp"
+                    android:background="@color/colorTransparent">
 
-                    <RelativeLayout
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentLeft="true"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="10dp"
+                        android:text="닉네임"
+                        android:textSize="16dp"/>
+
+                    <TextView
+                        android:id="@+id/nickname"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginEnd="20dp"
+                        android:ellipsize="marquee"
+                        android:gravity="center_vertical"
+                        android:text=""
+                        android:textSize="16dp"
+                        android:textStyle="bold"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@color/colorTransparent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentLeft="true"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="10dp"
+                        android:text="아이디"
+                        android:textSize="16dp"/>
+
+                    <TextView
+                        android:id="@+id/email"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="5dp"
+                        android:layout_toLeftOf="@+id/loginImage"
+                        android:ellipsize="marquee"
+                        android:gravity="center_vertical"
+                        android:text="makuvex7@gmail.com"
+                        android:textSize="16dp"
+                        android:textStyle="bold"/>
+
+                    <ImageView
+                        android:id="@+id/loginImage"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="10dp"
+                        android:scaleType="fitCenter"
+                        android:visibility="visible"/>
+
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/colorBG"/>
+
+                <FrameLayout
+                    android:id="@+id/logout"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@color/colorTransparent"
+                    android:descendantFocusability="blocksDescendants">
+
+                    <ImageButton
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right|center_vertical"
+                        android:layout_marginRight="10dp"
+                        android:background="@color/colorTransparent"
+                        android:src="@drawable/common_bt_go"
+                        android:clickable="false"/>
+
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@color/colorTransparent">
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="10dp"
+                        android:text="@string/logout"
+                        android:textSize="16dp"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:gravity="center_vertical"
-                            android:textSize="16dp"
-                            android:paddingLeft="10dp"
-                            android:text="닉네임"/>
+                </FrameLayout>
 
-                        <TextView
-                            android:id="@+id/nickname"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical"
-                            android:layout_alignParentRight="true"
-                            android:layout_marginEnd="20dp"
-                            android:textSize="16dp"
-                            android:ellipsize="marquee"
-                            android:textStyle="bold"
-                            android:text=""/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/colorBG"/>
 
-                    </RelativeLayout>
+                <FrameLayout
+                    android:id="@+id/change_password_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@color/colorTransparent"
+                    android:descendantFocusability="blocksDescendants">
 
-                    <RelativeLayout
+                    <ImageButton
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right|center_vertical"
+                        android:layout_marginRight="10dp"
+                        android:background="@color/colorTransparent"
+                        android:src="@drawable/common_bt_go"
+                        android:clickable="false"/>
+
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@color/colorTransparent">
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="10dp"
+                        android:text="@string/change_password"
+                        android:textSize="16dp"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:gravity="center_vertical"
-                            android:textSize="16dp"
-                            android:paddingLeft="10dp"
-                            android:text="아이디"/>
+                </FrameLayout>
 
-                        <TextView
-                            android:id="@+id/email"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical"
-                            android:layout_toLeftOf="@+id/loginImage"
-                            android:layout_marginRight="5dp"
-                            android:textSize="16dp"
-                            android:ellipsize="marquee"
-                            android:textStyle="bold"
-                            android:text="makuvex7@gmail.com"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/colorBG"/>
 
-                        <ImageView
-                            android:id="@+id/loginImage"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_centerVertical="true"
-                            android:layout_alignParentEnd="true"
-                            android:layout_marginRight="10dp"
-                            android:scaleType="fitCenter"
-                            android:visibility="visible"/>
+                <FrameLayout
+                    android:id="@+id/change_user_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@color/colorTransparent"
+                    android:descendantFocusability="blocksDescendants">
 
-                    </RelativeLayout>
+                    <ImageButton
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right|center_vertical"
+                        android:layout_marginRight="10dp"
+                        android:background="@color/colorTransparent"
+                        android:src="@drawable/common_bt_go"
+                        android:clickable="false"/>
 
-                    <View
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="1px"
-                        android:background="@color/colorBG"/>
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="10dp"
+                        android:text="@string/change_user_info"
+                        android:textSize="16dp"/>
 
-                    <FrameLayout
+                </FrameLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/colorBG"/>
+
+                <FrameLayout
+                    android:id="@+id/change_pet_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@color/colorTransparent"
+                    android:descendantFocusability="blocksDescendants">
+
+                    <ImageButton
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right|center_vertical"
+                        android:layout_marginRight="10dp"
+                        android:background="@color/colorTransparent"
+                        android:src="@drawable/common_bt_go"
+                        android:clickable="false"/>
+
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@color/colorTransparent" >
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="10dp"
+                        android:text="@string/change_pet_info"
+                        android:textSize="16dp"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:paddingLeft="10dp"
-                            android:gravity="center_vertical"
-                            android:textSize="16dp"
+                </FrameLayout>
 
-                            android:text="@string/logout"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/colorBG"/>
 
-                        <ImageButton
-                            android:id="@+id/logout"
-                            android:layout_width="30dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/common_bt_go"
-                            android:layout_marginRight="10dp"
-                            android:layout_gravity="right|center_vertical"
-                            android:background="@color/colorTransparent"/>
+                <FrameLayout
+                    android:id="@+id/quit_service"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@color/colorTransparent">
 
-                    </FrameLayout>
+                    <ImageButton
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right|center_vertical"
+                        android:layout_marginRight="10dp"
+                        android:background="@color/colorTransparent"
+                        android:src="@drawable/common_bt_go"
+                        android:clickable="false"/>
 
-                    <View
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="1px"
-                        android:background="@color/colorBG"/>
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="10dp"
+                        android:text="@string/quit_service"
+                        android:textSize="16dp"/>
 
-                    <FrameLayout
-                        android:id="@+id/change_password_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@color/colorTransparent">
+                </FrameLayout>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:paddingLeft="10dp"
-                            android:gravity="center_vertical"
-                            android:textSize="16dp"
-                            android:text="@string/change_password"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/colorBG"/>
 
-                        <ImageButton
-                            android:id="@+id/change_password"
-                            android:layout_width="30dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/common_bt_go"
-                            android:layout_marginRight="10dp"
-                            android:layout_gravity="right|center_vertical"
-                            android:background="@color/colorTransparent"/>
-
-                    </FrameLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1px"
-                        android:background="@color/colorBG"/>
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@color/colorTransparent">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:paddingLeft="10dp"
-                            android:gravity="center_vertical"
-                            android:textSize="16dp"
-                            android:text="@string/change_user_info"/>
-
-                        <ImageButton
-                            android:id="@+id/change_user_info"
-                            android:layout_width="30dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/common_bt_go"
-                            android:layout_marginRight="10dp"
-                            android:layout_gravity="right|center_vertical"
-                            android:background="@color/colorTransparent"/>
-
-                    </FrameLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1px"
-                        android:background="@color/colorBG"/>
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@color/colorTransparent">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:paddingLeft="10dp"
-                            android:gravity="center_vertical"
-                            android:textSize="16dp"
-                            android:text="@string/change_pet_info"/>
-
-                        <ImageButton
-                            android:id="@+id/change_pet_info"
-                            android:layout_width="30dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/common_bt_go"
-                            android:layout_marginRight="10dp"
-                            android:layout_gravity="right|center_vertical"
-                            android:background="@color/colorTransparent"/>
-
-                    </FrameLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1px"
-                        android:background="@color/colorBG"/>
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@color/colorTransparent">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:paddingLeft="10dp"
-                            android:gravity="center_vertical"
-                            android:textSize="16dp"
-                            android:text="@string/quit_service"/>
-
-                        <ImageButton
-                            android:id="@+id/quit_service"
-                            android:layout_width="30dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/common_bt_go"
-                            android:layout_marginRight="10dp"
-                            android:layout_gravity="right|center_vertical"
-                            android:background="@color/colorTransparent"/>
-
-                    </FrameLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1px"
-                        android:background="@color/colorBG"/>
-
-                </LinearLayout>
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

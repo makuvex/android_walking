@@ -134,6 +134,11 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
     @Override
     public void onRefresh() {
         JWLog.e("@@@@@@@@@@@@@@@ onRefresh @@@@@@@@@@@@@@@");
+        if(!PreferencePhoneShared.getLoginYn(getActivity())) {
+            JWToast.showToast(R.string.need_login);
+            mSwipeRefreshLayout.setRefreshing(false);
+            return;
+        }
         JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
         JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_REQUEST_LOCATION));
 

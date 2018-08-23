@@ -18,6 +18,7 @@ import static com.friendly.walking.permission.PermissionManager.STORAGE_PERMISSI
 
 public class IntroActivity extends BaseActivity implements PopupDialogFragment.DialogButtonClickListener {
 
+    private PopupDialogFragment     mDialogFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,9 +30,9 @@ public class IntroActivity extends BaseActivity implements PopupDialogFragment.D
 //        ad.start();
 
         if(!PreferencePhoneShared.getPermissionCheckOnce(this)) {
-            PopupDialogFragment fragment = PopupDialogFragment.newInstance(false);
-            fragment.setClickListener(this);
-            fragment.show(getSupportFragmentManager(), "blur_sample");
+            mDialogFragment = PopupDialogFragment.newInstance(false);
+            mDialogFragment.setClickListener(this);
+            mDialogFragment.show(getSupportFragmentManager(), "blur_sample");
         } else {
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -45,6 +46,7 @@ public class IntroActivity extends BaseActivity implements PopupDialogFragment.D
 
     @Override
     public void onClicked(PopupButtonType buttonType) {
+        mDialogFragment.dismiss();
         if(buttonType == PopupButtonType.TYPE_BUTTON_CANCEL) {
 
         } else if(buttonType == PopupButtonType.TYPE_BUTTON_CONFIRM) {

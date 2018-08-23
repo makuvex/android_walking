@@ -44,6 +44,16 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
         <activity
             android:name="com.friendly.walking.main.IntroActivity"
             >
@@ -131,7 +141,7 @@
 
 
         //////////////////// receiver ////////////////////
-        <receiver android:name=".receiver.LoginOutReceiver" >
+        <receiver android:name="com.friendly.walking.receiver.LoginOutReceiver" >
 
             <intent-filter>
                 <action android:name="com.friendly.walking.BROAD_CAST_LOGIN"/>

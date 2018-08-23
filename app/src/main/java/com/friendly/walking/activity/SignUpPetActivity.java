@@ -1,18 +1,22 @@
 package com.friendly.walking.activity;
 
 import android.app.DatePickerDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
@@ -23,6 +27,8 @@ import android.widget.ImageButton;
 
 import com.friendly.walking.BuildConfig;
 import com.friendly.walking.dataSet.WalkingData;
+import com.friendly.walking.fragment.SettingFragment;
+import com.friendly.walking.receiver.LoginOutReceiver;
 import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.ApplicationPool;
@@ -47,6 +53,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,8 +77,8 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     public static final int                     PICKER_DATA_TYPE_RELATION = 1;
 
     public static final int                     REQ_CODE_CAPTURE_IMAGE = 100;
-    public static final int                     REQ_CODE_SELECT_IMAGE = 101;
-    public static final int                     REQ_CODE_CROP_IMAGE = 102;
+    public static final int                     REQ_CODE_PICK_FROM_ALBUM = 101;
+    public static final int                     REQ_CODE_CROP_FROM_ALBUM = 102;
 
     protected String                              mEmail;
     protected String                              mPassword;
@@ -319,6 +326,9 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                             i.putExtra("email", mEmail);
                             i.putExtra("password", mPassword);
                             i.putExtra("autoLogin", mUserData.mem_auto_login);
+                            i.setPackage(getPackageName());
+                            //i.setComponent(new ComponentName(getApplicationContext(), LoginOutReceiver.class));
+                            //i.setComponent(new ComponentName(getApplicationContext(), SettingFragment.class));
 
                             JWBroadCast.sendBroadcast(getApplicationContext(), i);
                         }
@@ -487,14 +497,17 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         }
 
         switch(requestCode) {
-            case Crop.REQUEST_CROP :
-
+            case REQ_CODE_CROP_FROM_ALBUM :
+/*
                 File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 JWLog.e("","email :"+mEmail+", path :"+path.getAbsolutePath());
                 mImageCaptureUri = Uri.parse(path.getAbsolutePath() + "/" + mEmail +"_pet_profile.jpg");
+*/
 
                 try {
-                    Bitmap image = new BitmapDrawable(Crop.getOutput(data).getPath()).getBitmap();
+                                      /*
+                    Bitmap image = new BitmapDrawable(mImageCaptureUri.getPath()).getBitmap();
+
                     ExifInterface exif = new ExifInterface(mImageCaptureUri.getPath());
                     int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
@@ -502,19 +515,48 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                     image = rotateCropImage(image, exifDegree);
 
                     saveBitmaptoJpeg(image, Environment.DIRECTORY_DOWNLOADS, mEmail + "_pet_profile");
-                    mImageCaptureUri = Uri.fromFile(new File(mImageCaptureUri.getPath()));
+                    //mImageCaptureUri = Uri.fromFile(new File(mImageCaptureUri.getPath()));
+                    mImageCaptureUri = FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID+".fileprovider", new File(mImageCaptureUri.getPath()));
 
                     mAddProfile.setBackground(new BitmapDrawable(mImageCaptureUri.getPath()));
+*/
+
+                    try {
+                        InputStream inputStream = getContentResolver().openInputStream(mImageCaptureUri);
+                        Drawable drawable = Drawable.createFromStream(inputStream, mImageCaptureUri.toString() );
+                        mAddProfile.setBackground(drawable);
+                        findViewById(R.id.add_image).setVisibility(View.GONE);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
                 break;
-            case REQ_CODE_SELECT_IMAGE:
+            case REQ_CODE_PICK_FROM_ALBUM:
                 mImageCaptureUri = data.getData();
             case REQ_CODE_CAPTURE_IMAGE:
                 beginCrop(mImageCaptureUri);
                 break;
         }
+    }
+
+    private File createFile() throws IOException {
+        // 임시파일명 생성
+        String tempFilename = mEmail +"_pet_profile";
+        // 임시파일 저장용 디렉토리 생성
+        File tempDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/walking/");
+        if(!tempDir.exists()){
+            tempDir.mkdirs();
+        }
+        // 실제 임시파일을 생성
+        File tempFile = new File(tempDir + "/" + tempFilename + ".jpg");
+        //File tempFile = File.createTempFile(tempFilename, ".jpg", tempDir);
+        if(tempFile.exists()) {
+            tempFile.delete();
+        }
+        return tempFile;
     }
 
     public int exifOrientationToDegrees(int exifOrientation) {
@@ -557,15 +599,19 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
      * http://www.firstclown.us/tag/android/
      */
 
+
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         // 임시로 사용할 파일의 경로를 생성
         String url = "tmp_" + String.valueOf(System.currentTimeMillis()) + ".jpg";
-        mImageCaptureUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), url));
+        //mImageCaptureUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), url));
+        File file = new File(Environment.getExternalStorageDirectory(), url);
+        mImageCaptureUri = FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID+".fileprovider", file);
 
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, mImageCaptureUri);
         // 특정기기에서 사진을 저장못하는 문제가 있어 다음을 주석처리 합니다.
         //intent.putExtra("return-data", true);
+
         startActivityForResult(intent, REQ_CODE_CAPTURE_IMAGE);
     }
 
@@ -575,9 +621,8 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     private void doTakeAlbumAction()  {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
-        intent.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, REQ_CODE_SELECT_IMAGE);
 
+        startActivityForResult(intent, REQ_CODE_PICK_FROM_ALBUM);
     }
 
     public static void saveBitmaptoJpeg(Bitmap bitmap,String folder, String name){
@@ -611,8 +656,43 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
     }
 
     private void beginCrop(Uri source) {
-        Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+        //Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+        /*
+        Uri destination = FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID+".fileprovider", new File(getCacheDir(), "cropped"));
         Crop.of(source, destination).asSquare().start(this);
+        */
+
+        File file = null;
+        try {
+            file = createFile();
+            refreshMedia(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mImageCaptureUri = Uri.fromFile(file);
+//        afterCrop = FileProvider.getUriForFile(getBaseContext(), BuildConfig.APPLICATION_ID+".provider", file);
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(source, "image/*");  // 뭐를 자를 것인지
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+        intent.putExtra("outputX", 200);
+        intent.putExtra("outputY", 200);
+        intent.putExtra("scale", true);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, mImageCaptureUri);  // 어디에 저장할 것인지
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+
+        startActivityForResult(intent, REQ_CODE_CROP_FROM_ALBUM);
+    }
+
+    private void refreshMedia(File photoFile) {
+        MediaScannerConnection.scanFile(this,
+                new String[] {photoFile.getAbsolutePath()},
+                null,
+                new MediaScannerConnection.OnScanCompletedListener(){
+                    public void onScanCompleted(String path, Uri uri){
+
+                    }
+                });
     }
 
     private void createPetData() {

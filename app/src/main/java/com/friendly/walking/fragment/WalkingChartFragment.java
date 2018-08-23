@@ -39,6 +39,7 @@ import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWLog;
+import com.friendly.walking.util.JWToast;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
@@ -73,6 +74,7 @@ import static com.github.mikephil.charting.utils.ColorTemplate.rgb;
 public class WalkingChartFragment extends Fragment implements OnChartValueSelectedListener, DataExchangeInterface, SwipeRefreshLayout.OnRefreshListener {
     private static final int                    MAX_PAGE_COUNT = 3;
     private static final String                 ARG_SECTION_NUMBER = "section_number";
+    private static final int                    CHART_ANIMATION_DURATION = 1000;
 
     private View                                mRootView;
     private PieChart                            mChart;
@@ -125,9 +127,16 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
         mRootView = rootView;
         if(mWeekTimeList == null) {
             mWeekTimeList = new ArrayList<>();
+        } else {
+            mWeekTimeList.clear();
         }
+        mProfileImage = null;
+        mProfileBackground = null;
+        mProfileText = null;
+        mEmail = null;
+
         initView();
-        initChart();
+        initChart(false);
 
         initReceiver();
         registerReceiverMain();
@@ -170,7 +179,6 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
             mProfileView.setBackgroundResource(R.drawable.profile_bg);
         }
 
-
         mProfileTextView = (TextView)mRootView.findViewById(R.id.profileText);
         if(mProfileText == null) {
             mProfileTextView.setText("사랑하는 반려동물과 함께 산책 나가볼까요.");
@@ -183,7 +191,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
         mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright);
     }
 
-    private void initChart() {
+    private void initChart(boolean animation) {
 
         mChart = (PieChart) mRootView.findViewById(R.id.pie_chart);
         mChart.setUsePercentValues(true);
@@ -209,7 +217,8 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
 
         setData(mWeekTimeList.size(), 100);
 
-        mChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
+        mChart.animateY(animation ? CHART_ANIMATION_DURATION : 0, Easing.EasingOption.EaseInOutQuad);
+        //mChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
         // mChart.spin(2000, 0, 360);
 
         Legend l = mChart.getLegend();
@@ -336,9 +345,13 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
             }
         }, 1000);
 
-        if (e == null)
+        if (e == null || mWeekTimeList == null || mWeekTimeList.size() == 0)
             return;
 
+        if(!PreferencePhoneShared.getLoginYn(getActivity())) {
+            JWToast.showToast(R.string.need_login);
+            return;
+        }
         //JWLog.e("mWeekTimeList "+mWeekTimeList);
 //        JWLog.e("VAL SELECTED","Value: " + e.getY() + ", index: " + h.getX() + ", DataSet index: " + h.getDataSetIndex());
 //        JWLog.e("mWeekTimeList data "+mWeekTimeList.get((int)h.getX()));
@@ -369,25 +382,30 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     public void functionByCommand(final Object email, CommandType type) {
 
         if(type == READ_WALKING_TIME_LIST) {
-            mEmail = (String)email;
-            FireBaseNetworkManager.getInstance(getActivity()).readWalkingTimeList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                @Override
-                public void onCompleted(boolean result, Object object) {
-                    if(result) {
-                        mWalkingTimeList = (Map<String, String>)object;
+            if(PreferencePhoneShared.getLoginYn(getContext())) {
+                mEmail = (String)email;
+                JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+                FireBaseNetworkManager.getInstance(getActivity()).readWalkingTimeList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                    @Override
+                    public void onCompleted(boolean result, Object object) {
+                        if(result) {
+                            mWalkingTimeList = (Map<String, String>)object;
 
-                        FireBaseNetworkManager.getInstance(getActivity()).readWalkingLocationList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
-                            @Override
-                            public void onCompleted(boolean result, Object object) {
-                                if(result) {
-                                    mWalkingLocationList = (Map<String, ArrayList<LocationData>> )object;
-                                    updateChartData();
+                            FireBaseNetworkManager.getInstance(getActivity()).readWalkingLocationList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                                @Override
+                                public void onCompleted(boolean result, Object object) {
+                                    if(result) {
+                                        mWalkingLocationList = (Map<String, ArrayList<LocationData>> )object;
+                                        updateChartData();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
+                        JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
                     }
-                }
-            });
+                });
+                refreshProfile();
+            }
         }
     }
 
@@ -447,7 +465,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
             }
 
             if (sum > 0) {
-                initChart();
+                initChart(true);
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -519,10 +537,12 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
             public void onCompleted(boolean result, Object object) {
                 if(result) {
                     mProfileImage = (Bitmap)object;
-                    mProfileBackground = CommonUtil.blurRenderScript(getApplicationContext(), mProfileImage, 25);//second parametre is radius
+                    mProfileBackground = CommonUtil.blurRenderScript(getApplicationContext(), mProfileImage, 8);//second parametre is radius
+                    //mProfileBackground = CommonUtil.blurRenderScript(getApplicationContext(), mProfileImage, 25);//second parametre is radius
 
                     mProfileImageView.setImageBitmap(mProfileImage);
                     mProfileView.setBackground(new BitmapDrawable(mProfileBackground));
+                    mProfileView.setAlpha(0.8f);
                 }
             }
         });
@@ -542,9 +562,25 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
         }
     }
 
+    public void refreshProfile() {
+        readPetProfileImage(mEmail);
+        String userNickName = PreferencePhoneShared.getNickName(getApplicationContext());
+        String petName = PreferencePhoneShared.getPetName(getApplicationContext());
+        if(!petName.isEmpty()) {
+            mProfileText = userNickName+"님 "+"우리 " + petName + "와 함께 산책을 해볼까요!";
+        } else {
+            mProfileText = userNickName+"님 "+" 사랑하는 반려동물과 함께 산책 나가볼까요.";
+        }
+    }
+
     @Override
     public void onRefresh() {
         JWLog.e("@@@@@@@@@@@@@@@ onRefresh @@@@@@@@@@@@@@@");
+        if(!PreferencePhoneShared.getLoginYn(getActivity())) {
+            JWToast.showToast(R.string.need_login);
+            mSwipeRefreshLayout.setRefreshing(false);
+            return;
+        }
         FireBaseNetworkManager.getInstance(getActivity()).refreshWalkingTimeList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
             public void onCompleted(boolean result, Object object) {
@@ -555,5 +591,8 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
+        refreshProfile();
     }
+
+
 }
