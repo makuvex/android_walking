@@ -13,7 +13,7 @@
 
     <application
         android:name=".ApplicationPool"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:hardwareAccelerated="false"
         android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"

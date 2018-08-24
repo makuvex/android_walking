@@ -1,6 +1,7 @@
 package com.friendly.walking.main;
 
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -24,16 +25,17 @@ public class IntroActivity extends BaseActivity implements PopupDialogFragment.D
         super.onCreate(savedInstanceState);
         setContentView(R.layout.intro_main);
 
-        JWLog.e("");
-//        View introMotionAnim = findViewById(R.id.intro_motion);
-//        AnimationDrawable ad = (AnimationDrawable) introMotionAnim.getBackground();
-//        ad.start();
+        setProgressBar(View.VISIBLE);
 
         if(!PreferencePhoneShared.getPermissionCheckOnce(this)) {
             mDialogFragment = PopupDialogFragment.newInstance(false);
             mDialogFragment.setClickListener(this);
             mDialogFragment.show(getSupportFragmentManager(), "blur_sample");
         } else {
+            if(!PermissionManager.isAcceptedStoragePermission(this)) {
+                PermissionManager.requestStoragePermission(this);
+                return;
+            }
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {

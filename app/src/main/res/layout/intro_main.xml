@@ -9,12 +9,5 @@
         android:layout_height="match_parent"
         android:src="@drawable/splash"
         android:scaleType="fitXY" />
-<!--
-    <ImageView
-        android:id="@+id/intro_motion"
-        android:layout_width="92dp"
-        android:layout_height="50dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="20dp"/>
--->
+
 </FrameLayout>

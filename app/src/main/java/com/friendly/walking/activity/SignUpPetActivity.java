@@ -704,7 +704,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         petData.birthDay = mPetBirthDate.getText().toString();
         petData.petSpecies = mPetSpecies.getText().toString();
         petData.petRelation = mPetRelation.getText().toString();
-
+/*
         if(BuildConfig.IS_DEBUG) {
             petData.petName = "은비";
             petData.petGender = true;
@@ -712,6 +712,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
             petData.petSpecies = "웰시코기";
             petData.petRelation = "아빠";
         }
+        */
         mUserData.pet_list.add(petData);
     }
 }

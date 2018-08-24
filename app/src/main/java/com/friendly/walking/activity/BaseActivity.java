@@ -14,8 +14,10 @@ import android.widget.RelativeLayout;
 
 import com.friendly.walking.fragment.SettingFragment;
 import com.friendly.walking.fragment.WalkingChartFragment;
+import com.friendly.walking.main.IntroActivity;
 import com.friendly.walking.main.MainActivity;
 import com.friendly.walking.receiver.LoginOutReceiver;
+import com.friendly.walking.util.JWLog;
 import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
@@ -57,6 +59,12 @@ public class BaseActivity extends AppCompatActivity {
         rl.addView(mProgressBar);
 
         mRootView.addView(rl, params);
+
+        if(!(this instanceof IntroActivity)) {
+            if(!PermissionManager.isAcceptedStoragePermission(this)) {
+                PermissionManager.requestStoragePermission(this);
+            }
+        }
     }
 
     @Override
@@ -118,10 +126,11 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(final int requestCode, String permissions[], int[] grantResults) {
         boolean isAcceptedPermission = true;
         String permissionName = null;
 
+        JWLog.e("requestCode "+requestCode+", grantResults "+grantResults);
         switch (requestCode) {
             case PermissionManager.CAMERA_PERMISSION_REQUEST_CODE :
                 permissionName = "카메라";
@@ -139,6 +148,8 @@ public class BaseActivity extends AppCompatActivity {
                         boolean showRationale = shouldShowRequestPermissionRationale(permissions[i]);
                         isAcceptedPermission = false;
 
+                        JWLog.e("showRationale "+showRationale);
+
                         if (!showRationale) {
                             CommonUtil.alertDialogShow(this, permissionName, "권한이 허용되지 않았습니다.\n사용을 위해 설정 메뉴로 이동 하시겠습니까?", new CommonUtil.CompleteCallback() {
                                 @Override
@@ -146,16 +157,30 @@ public class BaseActivity extends AppCompatActivity {
                                     if(result) {
                                         PermissionManager.goPermissionSettingMenu(BaseActivity.this);
                                     } else {
-                                        JWToast.showToast("취소 되었습니다.");
+                                        if(requestCode == PermissionManager.STORAGE_PERMISSION_REQUEST_CODE) {
+                                            JWToast.showToastLong("저장공간(필수 권한)이 허용 되지 않아 앱을 종료 합니다.");
+                                        } else {
+                                            JWToast.showToast("취소 되었습니다.");
+                                        }
+                                    }
+                                    if(requestCode == PermissionManager.STORAGE_PERMISSION_REQUEST_CODE) {
+                                        finish();
                                     }
                                 }
                             });
                             break;
+                        } else {
+                            if(requestCode == PermissionManager.STORAGE_PERMISSION_REQUEST_CODE) {
+                                JWToast.showToastLong("저장공간(필수 권한)이 허용 되지 않아 앱을 종료 합니다.");
+                                finish();
+                            }
                         }
                     }
                 }
                 break;
         }
+
+        JWLog.e("isAcceptedPermission "+isAcceptedPermission);
     }
 
     public void updateUI(String email) {

@@ -13,6 +13,8 @@ import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWToast;
 
 import com.friendly.walking.R;
@@ -175,6 +177,7 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
                 }
             });
         } else if(v.getId() == R.id.address) {
+
             showGoogleMap();
         } else if(v == mInputStrollStartTimeText || v == mInputStrollEndTimeText) {
             showTimePickerDialog(v);
@@ -247,6 +250,10 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
     }
 
     private void showGoogleMap() {
+        if(!CommonUtil.isLocationEnabled(this)) {
+            JWToast.showToastLong("위치 정보를 사용할 수 없습니다. GPS를 확인해 주세요.");
+            return;
+        }
         if(PermissionManager.isAcceptedLocationPermission(this)) {
             Intent intent = new Intent(this, GoogleMapActivity.class);
             intent.putExtra("address", mInputAddressText.getText().toString());

@@ -70,6 +70,7 @@ public class MainActivity extends BaseActivity {
 
     private long                                    mDoublePressInterval = 2000;
     private long                                    mPreviousTouchTime = 0;
+    private int                                     mCurrentTapPosition = 0;
 
     private MainActivity                            thisActivity;
 
@@ -143,6 +144,7 @@ public class MainActivity extends BaseActivity {
                 if(mPreviousSelectedView != null) {
                     mPreviousSelectedView.setBackgroundResource(R.color.colorTapUnselected);
                 }
+                mCurrentTapPosition = position;
 
                 int selectedTapColor = R.color.colorPrimaryLighten;
                 switch(position) {
@@ -264,7 +266,7 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        fab.setVisibility(View.GONE);
+        fab.setVisibility(View.VISIBLE);
 
 //        CircleImageView imageview = (CircleImageView)findViewById(R.id.profileImageView);
 //
@@ -295,6 +297,11 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
+        if(mCurrentTapPosition != 0) {
+            mViewPager.setCurrentItem(0, true);
+            return;
+        }
+
         long currentTime = System.currentTimeMillis();
         if (0 >= mPreviousTouchTime || mDoublePressInterval < (currentTime - mPreviousTouchTime)) {
             JWToast.showToast("'뒤로' 버튼을 한번 더 누르시면 종료 됩니다.");

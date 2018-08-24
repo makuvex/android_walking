@@ -51,6 +51,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import static com.friendly.walking.activity.GoogleMapActivity.ViewMapType.TYPE_SETTING_LOCATION;
+import static com.friendly.walking.activity.GoogleMapActivity.ViewMapType.TYPE_VIEW_LOCATION;
+
 /**
  * Created by jungjiwon on 2017. 10. 25..
  */
@@ -60,6 +63,12 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
                                                                 LocationListener,
                                                                 GoogleApiClient.ConnectionCallbacks,
                                                                 GoogleApiClient.OnConnectionFailedListener {
+
+    public enum ViewMapType {
+        TYPE_SETTING_LOCATION,
+        TYPE_VIEW_LOCATION,
+    };
+
 
     private static final int                    GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
@@ -79,6 +88,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
     private String                              mGoogleMapAddressLine;
     private String                              mNickName;
     private FloatingActionButton                mFloatingButton;
+    private ViewMapType                         mViewMapType;
 
     private boolean                             mMoveMapByUser = true;
     private boolean                             mMoveMapByAPI = true;
@@ -100,7 +110,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 //        if(intent != null) {
 //            mAddress = intent.getStringExtra(GlobalConstantID.HOME_ADDRESS);
 //        }
-
+        mViewMapType = TYPE_SETTING_LOCATION;
         mAddressText = (EditText)findViewById(R.id.address);
         mFindButton = (ImageButton)findViewById(R.id.find);
         mDoneButton = (ImageButton)findViewById(R.id.confirm);
@@ -121,6 +131,7 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
             textView.setText(title);
 
             findViewById(R.id.address_layout).setVisibility(View.GONE);
+            mViewMapType = TYPE_VIEW_LOCATION;
 
             // 추후 구현 예정
             //mFloatingButton.setVisibility(View.VISIBLE);
@@ -279,20 +290,27 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
                 return true;
             }
         });
-        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                JWLog.e( "", "onMapClick :");
-                stopLocationUpdates();
 
-                String markerTitle = getCurrentAddress(latLng);
-                String markerSnippet = "위도:" + String.valueOf(latLng.latitude) + " 경도:" + String.valueOf(latLng.longitude);
+        if(mViewMapType == TYPE_SETTING_LOCATION) {
+            mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                @Override
+                public void onMapClick(LatLng latLng) {
+                    JWLog.e("", "onMapClick :");
+                    stopLocationUpdates();
 
-                mAddressText.setText(markerTitle);
-                mGoogleMapAddressLine = markerTitle;
-                setCurrentLocation(latLng, markerTitle, markerSnippet);
-            }
-        });
+                    String markerTitle = getCurrentAddress(latLng);
+                    String markerSnippet = "위도:" + String.valueOf(latLng.latitude) + " 경도:" + String.valueOf(latLng.longitude);
+
+                    mCurrentLocation = new Location(getPackageName());
+                    mCurrentLocation.setLatitude(latLng.latitude);
+                    mCurrentLocation.setLongitude(latLng.longitude);
+
+                    mAddressText.setText(markerTitle);
+                    mGoogleMapAddressLine = markerTitle;
+                    setCurrentLocation(latLng, markerTitle, markerSnippet);
+                }
+            });
+        }
 
         mGoogleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
             @Override

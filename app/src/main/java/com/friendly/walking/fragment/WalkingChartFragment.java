@@ -542,7 +542,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
 
                     mProfileImageView.setImageBitmap(mProfileImage);
                     mProfileView.setBackground(new BitmapDrawable(mProfileBackground));
-                    mProfileView.setAlpha(0.8f);
+                    //mProfileView.setAlpha(0.8f);
                 }
             }
         });
