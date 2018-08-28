@@ -49,6 +49,9 @@ public class JWBroadCast {
     public static void sendBroadcast(Context context, Intent intent) {
         if(context != null) {
             JWLog.e("intent "+intent);
+            if(intent.getAction().equals("com.friendly.walking.BROAD_CAST_HIDE_PROGRESS_BAR")) {
+                JWLog.e("");
+            }
             intent.setFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
             context.sendBroadcast(intent);
         }

@@ -177,16 +177,7 @@ public class MainActivity extends BaseActivity {
                         break;
                 }
 
-                if(mUserDta != null) {
-                    if (mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
-                        mCurrentFragmentInterface.functionByCommand(mUserDta.mem_email, DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST);
-
-                        if(position == 1) {
-                            mCurrentFragmentInterface.functionByCommand(null, DataExchangeInterface.CommandType.READ_LOCATION_INFO);
-
-                        }
-                    }
-                }
+                functionByCommand(position);
             }
 
             @Override
@@ -487,7 +478,7 @@ public class MainActivity extends BaseActivity {
 
         mReceiver = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, Intent intent) {
+            public void onReceive(Context context, final Intent intent) {
                 JWLog.e("","action :"+intent.getAction());
 
                 if(JWBroadCast.BROAD_CAST_UPDATE_SETTING_UI.equals(intent.getAction())) {
@@ -498,6 +489,13 @@ public class MainActivity extends BaseActivity {
                         || JWBroadCast.BROAD_CAST_EMAIL_LOGIN.equals(intent.getAction())
                         || JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction())) {
 
+                    JWLog.e("@@@ intent.getAction() :"+intent.getAction());
+                    /*
+                    if(!JWBroadCast.BROAD_CAST_REFRESH_USER_DATA.equals(intent.getAction()) && mVisibleState == View.VISIBLE) {
+                        JWLog.e("이미 처리됨");
+                        return;
+                    }
+                    */
                     final String email = intent.getStringExtra("email");
                     setProgressBar(View.VISIBLE);
 
@@ -516,7 +514,7 @@ public class MainActivity extends BaseActivity {
                             UserData userData = (UserData) object;
                             mUserDta = userData;
 
-                            JWLog.e("userData :"+userData);
+                            //JWLog.e("userData :"+userData);
 
                             if(!TextUtils.isEmpty(userData.mem_email)) {
                                 FireBaseNetworkManager.getInstance(MainActivity.this).updateLastLoginTime(userData.uid, null);
@@ -565,7 +563,17 @@ public class MainActivity extends BaseActivity {
                                     JWBroadCast.sendBroadcast(MainActivity.this, new Intent(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE));
                                 }
                             } else {
-                                PermissionManager.requestLocationPermission(MainActivity.this);
+                                /*
+                                JWLog.e("### intent.getAction() :"+intent.getAction());
+                                CommonUtil.alertDialogShow(MainActivity.this, "위치", "권한이 허용되지 않았습니다.\n자동 산책모드 사용을 위해 권한을 허용 하시겠습니까?", new CommonUtil.CompleteCallback() {
+                                    @Override
+                                    public void onCompleted(boolean result, Object object) {
+                                        if(result) {
+                                            PermissionManager.requestLocationPermission(MainActivity.this);
+                                        }
+                                    }
+                                });
+                                */
                             }
 
                             if(userData != null) {
@@ -581,9 +589,7 @@ public class MainActivity extends BaseActivity {
 //                                mProfileText.setText(userData.mem_nickname+"님 "+"우리" + petData.petName + "와 함께 산책을 해볼까요!");
                             }
 
-                            if(mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
-                                mCurrentFragmentInterface.functionByCommand(userData.mem_email, DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST);
-                            }
+                            functionByCommand(mCurrentTapPosition);
                         }
                     });
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
@@ -639,7 +645,17 @@ public class MainActivity extends BaseActivity {
                                 FirebaseUser user = (FirebaseUser) object;
 
                                 PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
-                                updateUI(user.getEmail());
+
+                                Intent intent = new Intent(JWBroadCast.BROAD_CAST_GOOGLE_LOGIN);
+                                intent.putExtra("email", user.getEmail());
+                                intent.putExtra("autoLogin", PreferencePhoneShared.getAutoLoginYn(getApplicationContext()));
+                                JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+
+                                //updateUI(user.getEmail());
+
+
+
+
                                 //readPetProfileImage(user.getEmail());
 
 //                                FireBaseNetworkManager.getInstance(MainActivity.this).readUserData(user.getEmail(), new FireBaseNetworkManager.FireBaseNetworkCallback() {
@@ -662,6 +678,33 @@ public class MainActivity extends BaseActivity {
                 });
             } else {
                 JWLog.e("", "Google Login Failed." + result.getStatus());
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        JWLog.e("onRequestPermissionsResult ");
+        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+
+        if(requestCode == PermissionManager.LOCATION_PERMISSION_REQUEST_CODE && PermissionManager.isAcceptedLocationPermission(this)) {
+            if(mCurrentTapPosition == 1) {
+                functionByCommand(mCurrentTapPosition);
+            }
+        }
+    }
+
+    private void functionByCommand(int index) {
+        if(!PreferencePhoneShared.getLoginYn(thisActivity)) {
+            JWToast.showToast(R.string.need_login);
+            return;
+        }
+        if(mUserDta != null) {
+            if (mCurrentFragmentInterface != null && mCurrentFragmentInterface instanceof DataExchangeInterface) {
+                mCurrentFragmentInterface.functionByCommand(mUserDta.mem_email, DataExchangeInterface.CommandType.READ_WALKING_TIME_LIST);
+                if(index == 1) {
+                    mCurrentFragmentInterface.functionByCommand(null, DataExchangeInterface.CommandType.READ_LOCATION_INFO);
+                }
             }
         }
     }

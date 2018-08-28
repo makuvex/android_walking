@@ -24,6 +24,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CommonUtil {
+    public static AlertDialog.Builder          mBuilder;
+
 
     public interface CompleteCallback {
         public void onCompleted(boolean result, Object object);
@@ -68,10 +70,14 @@ public class CommonUtil {
     }
 
     public static void alertDialogShow(final Context context, String title, String content, final CompleteCallback callback) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(title);
-        builder.setMessage(content);
-        builder.setPositiveButton("예",
+        if(CommonUtil.mBuilder != null) {
+            CommonUtil.mBuilder.create().dismiss();
+            CommonUtil.mBuilder = null;
+        }
+        CommonUtil.mBuilder = new AlertDialog.Builder(context);
+        CommonUtil.mBuilder.setTitle(title);
+        CommonUtil.mBuilder.setMessage(content);
+        CommonUtil.mBuilder.setPositiveButton("예",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         if(callback != null) {
@@ -79,7 +85,7 @@ public class CommonUtil {
                         }
                     }
                 });
-        builder.setNegativeButton("아니오",
+        CommonUtil.mBuilder.setNegativeButton("아니오",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         if(callback != null) {
@@ -87,7 +93,7 @@ public class CommonUtil {
                         }
                     }
                 });
-        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+        CommonUtil.mBuilder.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialogInterface) {
                 if(callback != null) {
@@ -95,7 +101,7 @@ public class CommonUtil {
                 }
             }
         });
-        builder.show();
+        CommonUtil.mBuilder.show();
     }
 
     @SuppressLint("NewApi")

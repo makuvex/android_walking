@@ -1,6 +1,8 @@
 package com.friendly.walking.activity;
 
+import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -451,19 +453,19 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         mGoogleMap.moveCamera(cameraUpdate);
     }
 
-    private void showDialogForLocationServiceSetting() {
+    public  static void showDialogForLocationServiceSetting(final Activity activity, String msg) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("위치 서비스 비활성화");
-        builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n"
-                + "위치 설정을 수정하실래요?");
+        //builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n" + "위치 설정을 수정하실래요?");
+        builder.setMessage(msg);
         builder.setCancelable(true);
         builder.setPositiveButton("설정", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 Intent callGPSSettingIntent
                         = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivityForResult(callGPSSettingIntent, GPS_ENABLE_REQUEST_CODE);
+                activity.startActivityForResult(callGPSSettingIntent, GPS_ENABLE_REQUEST_CODE);
             }
         });
         builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -475,8 +477,8 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
         builder.create().show();
     }
 
-    public boolean checkLocationServicesStatus() {
-        LocationManager locationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+    public static boolean checkLocationServicesStatus(Context context) {
+        LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
 
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -484,9 +486,9 @@ public class GoogleMapActivity extends BaseActivity implements View.OnClickListe
 
     private void startLocationUpdates() {
         JWLog.e("","");
-        if (!checkLocationServicesStatus()) {
+        if (!checkLocationServicesStatus(getApplicationContext())) {
             JWLog.e("", "startLocationUpdates : call showDialogForLocationServiceSetting");
-            showDialogForLocationServiceSetting();
+            showDialogForLocationServiceSetting(this, "앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n" + "위치 설정을 수정하실래요?");
         }else {
             JWLog.e("", "startLocationUpdates : call FusedLocationApi.requestLocationUpdates");
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);

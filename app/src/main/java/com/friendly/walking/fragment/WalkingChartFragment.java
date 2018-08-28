@@ -167,7 +167,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     private void initView() {
         mProfileView = (LinearLayout)mRootView.findViewById(R.id.profileBackgroundImageView);
         if(mProfileBackground != null) {
-            mProfileView.setBackground(new BitmapDrawable(mProfileBackground));
+            //mProfileView.setBackground(new BitmapDrawable(mProfileBackground));
         } else {
             mProfileView.setBackgroundResource(R.drawable.profile_bg);
         }
@@ -381,10 +381,17 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     @Override
     public void functionByCommand(final Object email, CommandType type) {
 
+        //JWLog.e("@@@ mWalkingLocationList "+mWalkingLocationList);
         if(type == READ_WALKING_TIME_LIST) {
             if(PreferencePhoneShared.getLoginYn(getContext())) {
-                mEmail = (String)email;
                 JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+                mEmail = (String)email;
+                if(mWalkingLocationList != null) {
+                    updateChartData();
+                    refreshProfile();
+                    return;
+                }
+
                 FireBaseNetworkManager.getInstance(getActivity()).readWalkingTimeList(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
                     @Override
                     public void onCompleted(boolean result, Object object) {
@@ -401,7 +408,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
                                 }
                             });
                         }
-                        JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
+                        //JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
                     }
                 });
                 refreshProfile();
@@ -467,6 +474,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
             if (sum > 0) {
                 initChart(true);
             }
+
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -530,19 +538,21 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     private void readPetProfileImage(String email) {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         Uri uri = Uri.parse(path.getAbsolutePath() + "/" + email +"_pet_profile.jpg");
-        JWLog.e("","uri :"+uri.toString());
+        JWLog.e("","uri :"+uri.toString()+", mProfileImage "+mProfileImage);
 
         FireBaseNetworkManager.getInstance(getApplicationContext()).downloadProfileImage(uri, new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
             public void onCompleted(boolean result, Object object) {
-                if(result) {
-                    mProfileImage = (Bitmap)object;
+                if (result) {
+                    mProfileImage = (Bitmap) object;
                     mProfileBackground = CommonUtil.blurRenderScript(getApplicationContext(), mProfileImage, 8);//second parametre is radius
                     //mProfileBackground = CommonUtil.blurRenderScript(getApplicationContext(), mProfileImage, 25);//second parametre is radius
 
                     mProfileImageView.setImageBitmap(mProfileImage);
-                    mProfileView.setBackground(new BitmapDrawable(mProfileBackground));
+                    //mProfileView.setBackground(new BitmapDrawable(mProfileBackground));
                     //mProfileView.setAlpha(0.8f);
+                    JWBroadCast.sendBroadcast(getActivity(), new Intent(JWBroadCast.BROAD_CAST_HIDE_PROGRESS_BAR));
+
                 }
             }
         });
@@ -571,6 +581,7 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
         } else {
             mProfileText = userNickName+"님 "+" 사랑하는 반려동물과 함께 산책 나가볼까요.";
         }
+        mProfileTextView.setText(mProfileText);
     }
 
     @Override

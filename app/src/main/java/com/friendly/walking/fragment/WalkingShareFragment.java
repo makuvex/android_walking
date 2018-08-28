@@ -146,6 +146,10 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
     }
 
     private void requestCurrentWalkingList() {
+        if (!GoogleMapActivity.checkLocationServicesStatus(getActivity())) {
+            JWLog.e("startLocationUpdates : call showDialogForLocationServiceSetting");
+            GoogleMapActivity.showDialogForLocationServiceSetting(getActivity(), "위치 정보를 활성화 시키면 나와의 거리가 표시됩니다. 위치 설정을 수정 하실래요?");
+        }
         FireBaseNetworkManager.getInstance(getActivity()).readCurrentWalkingList(new FireBaseNetworkManager.FireBaseNetworkCallback() {
             @Override
             public void onCompleted(boolean result, Object object) {
@@ -283,8 +287,15 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
 
         if(PermissionManager.isAcceptedLocationPermission(mContext)) {
             Intent intent = new Intent(mContext, GoogleMapActivity.class);
-            intent.putExtra("lat", String.format("%s",item.getLocation().getLatitude()));
-            intent.putExtra("lot", String.format("%s",item.getLocation().getLongitude()));
+            double lat = item.getLocation().getLatitude();
+            double lot = item.getLocation().getLongitude();
+
+            if(lat == 0 || lot == 0) {
+                JWToast.showToastLong("위치 정보가 없어 맵에 표시 할 수 없습니다.");
+                return;
+            }
+            intent.putExtra("lat", String.format("%s",lat));
+            intent.putExtra("lot", String.format("%s",lot));
             intent.putExtra("title", "산책 위치");
             intent.putExtra("user", item.getNickName());
 
@@ -296,16 +307,27 @@ public class WalkingShareFragment extends Fragment implements AdapterView.OnItem
 
     @Override
     public void functionByCommand(Object obj, CommandType type) {
-        if(type == READ_WALKING_TIME_LIST) {
-            requestCurrentWalkingList();
-        }
-        if(type == READ_LOCATION_INFO) {
-            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
-            JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_REQUEST_LOCATION));
 
-//            if(obj instanceof Location) {
-//                mLocation = (Location)obj;
-//            }
+        if(PermissionManager.isAcceptedLocationPermission(getActivity())) {
+            if(type == READ_WALKING_TIME_LIST) {
+                requestCurrentWalkingList();
+            }
+            if(type == READ_LOCATION_INFO) {
+                JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR));
+                JWBroadCast.sendBroadcast(mContext, new Intent(JWBroadCast.BROAD_CAST_REQUEST_LOCATION));
+            }
+        } else {
+            if(type == READ_LOCATION_INFO) {
+                CommonUtil.alertDialogShow(getActivity(), "위치", "권한이 허용되지 않았습니다.\n주위에 산책 중인 사람들을 보려면 권한이 필요합니다. 허용 하시겠습니까?", new CommonUtil.CompleteCallback() {
+                    @Override
+                    public void onCompleted(boolean result, Object object) {
+                        if (result) {
+                            PermissionManager.requestLocationPermission(getActivity());
+                        }
+                    }
+                });
+            }
         }
+
     }
 }

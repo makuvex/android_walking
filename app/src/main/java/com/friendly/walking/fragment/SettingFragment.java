@@ -224,6 +224,13 @@ public class SettingFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        JWLog.e("");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        JWLog.e("");
     }
 
     private void initLayout(View view) {

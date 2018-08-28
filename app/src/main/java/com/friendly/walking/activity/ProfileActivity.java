@@ -206,12 +206,20 @@ public class ProfileActivity extends BaseActivity {
                                         @Override
                                         public void onCompleted(boolean result, Object object) {
                                             if (result) {
+                                                FireBaseNetworkManager.getInstance(ProfileActivity.this).reset();
                                                 JWToast.showToast("카카오 계정 삭제 성공");
+
+                                                PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
+                                                PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);
+                                                PreferencePhoneShared.setUserUID(ProfileActivity.this, "");
+                                                PreferencePhoneShared.setLoginPassword(ProfileActivity.this, "");
+                                                PreferencePhoneShared.setAutoLoginType(ProfileActivity.this, GlobalConstantID.LOGIN_TYPE_NONE);
+
+                                                updateUIForLogout();
+                                                finish();
                                             } else {
                                                 JWToast.showToast("계정 삭제 실패");
                                             }
-                                            updateUI("");
-                                            finish();
                                         }
                                     });
                                 } else {
@@ -220,11 +228,13 @@ public class ProfileActivity extends BaseActivity {
                                         public void onCompleted(boolean result, Object object) {
                                             if (result) {
                                                 JWToast.showToast("계정 삭제 성공");
+                                                FireBaseNetworkManager.getInstance(ProfileActivity.this).logoutAccount();
+                                                updateUIForLogout();
+                                                finish();
+
                                             } else {
                                                 JWToast.showToast("계정 삭제 실패");
                                             }
-                                            updateUI("");
-                                            finish();
                                         }
                                     });
                                 }

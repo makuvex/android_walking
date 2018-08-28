@@ -191,6 +191,15 @@ public class BaseActivity extends AppCompatActivity {
         JWBroadCast.sendBroadcast(getApplicationContext(), intent);
     }
 
+    public void refreshUserDta(String email) {
+        Intent intent = new Intent(JWBroadCast.BROAD_CAST_REFRESH_USER_DATA);
+        intent.putExtra("email", email);
+        intent.putExtra("autoLogin", PreferencePhoneShared.getAutoLoginYn(this));
+
+        JWBroadCast.sendBroadcast(getApplicationContext(), intent);
+    }
+
+
     public void updateUIForLogout() {
         Intent intent = new Intent(JWBroadCast.BROAD_CAST_LOGOUT);
         intent.setPackage(getPackageName());

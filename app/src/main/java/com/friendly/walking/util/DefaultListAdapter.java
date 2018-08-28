@@ -66,8 +66,9 @@ public class DefaultListAdapter extends ArrayAdapter<WalkingShareItem> implement
         nickName.setText(String.valueOf(item.getNickName()));
 
         JWLog.e("location "+location);
-        if(location != null) {
-            Location people = item.getLocation();
+        Location people = item.getLocation();
+        JWLog.e("people lat"+people.getLatitude()+", lot "+people.getLongitude());
+        if(location != null && (people.getLatitude() != 0 && people.getLongitude() != 0)) {
             float diff = location.distanceTo(people);
             JWLog.e("distance :" + diff);
 

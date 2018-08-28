@@ -170,12 +170,19 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                 } else {
                     int autoLoginType = PreferencePhoneShared.getAutoLoginType(context);
                     String email = null;
-                    if(autoLoginType == GlobalConstantID.LOGIN_TYPE_EMAIL) {
+                    if(autoLoginType == GlobalConstantID.LOGIN_TYPE_EMAIL
+                            || autoLoginType == GlobalConstantID.LOGIN_TYPE_GOOGLE
+                            || autoLoginType == GlobalConstantID.LOGIN_TYPE_FACEBOOK
+                            || autoLoginType == GlobalConstantID.LOGIN_TYPE_KAKAO ) {
+
                         String key = PreferencePhoneShared.getUserUid(context);
                         String paddedKey = key.substring(0, 16);
 
                         JWLog.e("", "uid :" + paddedKey);
                         email = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(context), paddedKey));
+                    } else {
+                        //JWToast.showToastLong("카톡 로그인과 페북은 어떻게 할 것인가 userId");
+                        JWLog.e("타입 설정 되지 않음");
                     }
 
                     JWLog.e("email :"+email);
