@@ -37,6 +37,7 @@ public class PreferencePhoneShared extends BasePreference {
 
     private static final String KEY_PERMISSION_CHECK_ONCE                   = "KEY_PERMISSION_CHECK_ONCE";
 
+
     public static void setAutoLoginYn(Context cxt, boolean autoLoginYn){
         putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_YN, autoLoginYn);
     }

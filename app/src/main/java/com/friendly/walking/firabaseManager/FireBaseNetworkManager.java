@@ -145,6 +145,8 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
     }
 
     private FireBaseNetworkManager(Context context) {
+        JWLog.e("FireBaseNetworkManager context "+context);
+
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -206,6 +208,7 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                         PreferencePhoneShared.setUserUID(mContext, "");
                         PreferencePhoneShared.setNickName(mContext, "");
                         PreferencePhoneShared.setWalkingCoin(mContext, 0);
+                        PreferencePhoneShared.setPetName(mContext, "");
 
                         PreferencePhoneShared.setNotificationYn(mContext, false);
                         PreferencePhoneShared.setGeoNotificationYn(mContext, false);
@@ -449,8 +452,13 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                             if(callback != null) {
                                 JWLog.e("callback walking_list : "+mUserData.walking_time_list);
                                 callback.onCompleted(true, mUserData.walking_time_list);
+                                return;
                             }
                         }
+                    }
+
+                    if (callback != null) {
+                        callback.onCompleted(false, null);
                     }
                 }
             });
@@ -467,14 +475,15 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                         if(callback != null) {
                             JWLog.e("callback walking_list : "+mUserData.walking_time_list);
                             callback.onCompleted(true, mUserData.walking_time_list);
-                        } else {
-                            callback.onCompleted(false, null);
+                            return;
                         }
                     }
                 }
+                if (callback != null) {
+                    callback.onCompleted(false, null);
+                }
             }
         });
-
     }
 
     public void readWalkingLocationList(final String email, final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
@@ -496,7 +505,9 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
                             }
                         }
                     }
-                    callback.onCompleted(false, null);
+                    if (callback != null) {
+                        callback.onCompleted(false, null);
+                    }
                 }
             });
         }
@@ -528,7 +539,11 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 JWLog.e("","e :" + databaseError.getDetails());
-                callback.onCompleted(false, null);
+
+                if (callback != null) {
+                    callback.onCompleted(false, null);
+                }
+
             }
         });
 
@@ -560,7 +575,9 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 JWLog.e("","e :" + databaseError.getDetails());
-                callback.onCompleted(false, null);
+                if (callback != null) {
+                    callback.onCompleted(false, null);
+                }
             }
         });
 
@@ -583,7 +600,9 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 JWLog.e("","e :" + databaseError.getDetails());
-                callback.onCompleted(false, null);
+                if (callback != null) {
+                    callback.onCompleted(false, null);
+                }
             }
         });
 
@@ -606,7 +625,9 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 JWLog.e("","e :" + databaseError.getDetails());
-                callback.onCompleted(false, null);
+                if (callback != null) {
+                    callback.onCompleted(false, null);
+                }
             }
         });
 
@@ -1145,13 +1166,13 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
         loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                JWLog.d("", "facebook:onSuccess:" + loginResult);
+                JWLog.e("", "facebook:onSuccess:" + loginResult+", loginResult.getAccessToken() "+loginResult.getAccessToken());
                 handleFacebookAccessToken(loginResult.getAccessToken(), callback);
             }
 
             @Override
             public void onCancel() {
-                JWLog.d("", "facebook:onCancel");
+                JWLog.e("", "facebook:onCancel");
                 JWToast.showToast("취소 되었습니다");
                 if(callback != null) {
                     callback.onCompleted(false, null);
@@ -1160,13 +1181,44 @@ public class FireBaseNetworkManager implements GoogleApiClient.OnConnectionFaile
 
             @Override
             public void onError(FacebookException error) {
-                JWLog.d("", "facebook:onError" + error);
+                JWLog.e("", "facebook:onError" + error);
                 JWToast.showToast("에러가 발생 했습니다.");
                 if(callback != null) {
                     callback.onCompleted(false, null);
                 }
             }
         });
+    }
+
+    public void initFaceBookCallbackManager(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {
+
+        mCallbackManager = CallbackManager.Factory.create();
+        LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                JWLog.e("", "facebook:onSuccess:" + loginResult+", loginResult.getAccessToken() "+loginResult.getAccessToken());
+                handleFacebookAccessToken(loginResult.getAccessToken(), callback);
+            }
+
+            @Override
+            public void onCancel() {
+                JWLog.e("", "facebook:onCancel");
+                JWToast.showToast("Facebook 로그인 취소 되었습니다");
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                JWLog.e("", "facebook:onError" + error);
+                JWToast.showToast("Facebook 로그인 에러가 발생 했습니다.");
+                if(callback != null) {
+                    callback.onCompleted(false, null);
+                }
+            }
+        });
+
     }
 
     public void readVersionInfo(final FireBaseNetworkManager.FireBaseNetworkCallback callback) {

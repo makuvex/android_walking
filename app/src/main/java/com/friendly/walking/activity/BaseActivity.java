@@ -71,13 +71,12 @@ public class BaseActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         if(mBackButton == null) {
-
             mBackButton = (ImageButton) findViewById(R.id.back);
             if(mBackButton != null) {
                 mBackButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        finish();
+                        backIconPressed();
                     }
                 });
             }
@@ -109,8 +108,14 @@ public class BaseActivity extends AppCompatActivity {
             mProgressBar.setVisibility(visible);
             mVisibleState = visible;
 
+            JWLog.e("visible "+visible);
+
             enableDisableView(mRootView, visible == View.VISIBLE ? false : true);
         }
+    }
+
+    protected void backIconPressed() {
+        finish();
     }
 
     protected void enableDisableView(View view, boolean enabled) {

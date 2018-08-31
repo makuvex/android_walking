@@ -14,6 +14,8 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.friendly.walking.GlobalConstantID;
+import com.friendly.walking.network.KakaoLoginManager;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.JWToast;
 
@@ -25,6 +27,7 @@ import com.friendly.walking.main.MainActivity;
 import com.friendly.walking.permission.PermissionManager;
 import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.kakao.usermgmt.response.model.UserProfile;
 
 import java.util.Calendar;
@@ -48,6 +51,7 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
 
     private SeekBar                                 mDistanceBar;
     private TextView                                mDistanceText;
+    private TextView                                mTitleText;
 
     private String                                  mAddress = "";
     private String                                  mLat = "";
@@ -60,6 +64,8 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
 
     private int                                     mEndStrollHour = -1;
     private int                                     mEndStrollMin = -1;
+
+    private int                                     mLoginType = -1;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -76,6 +82,7 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         //mDoneButton.setEnabled(false);
         mDistanceBar = (SeekBar) findViewById(R.id.seek_bar);
         mDistanceText = (TextView)findViewById(R.id.distance_text);
+        mTitleText = (TextView)findViewById(R.id.title_text);
 
         mInputAddressText.setOnFocusChangeListener(this);
         mInputStrollStartTimeText.setOnFocusChangeListener(this);
@@ -103,6 +110,9 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         });
 
         mEmail = getIntent().getStringExtra("email");
+        mLoginType = getIntent().getIntExtra(GlobalConstantID.SIGN_UP_TYPE, -1);
+
+        JWLog.e("mLoginType "+mLoginType+", mEmail "+mEmail);
 
         setProgressBar(View.VISIBLE);
         FireBaseNetworkManager.getInstance(this).readUserData(mEmail, new FireBaseNetworkManager.FireBaseNetworkCallback() {
@@ -263,5 +273,45 @@ public class UserInfoActivity extends BaseActivity implements View.OnFocusChange
         } else {
             PermissionManager.requestLocationPermission(this);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(isGoogleJoinState()) {
+            CommonUtil.alertDialogShow(this, "회원가입", "회원 가입을 취소 하시겠습니까?", new CommonUtil.CompleteCallback() {
+                @Override
+                public void onCompleted(boolean result, Object object) {
+                    if(result) {
+                        FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
+                        FireBaseNetworkManager.getInstance(getApplicationContext()).deleteFireBaseUser(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+                            @Override
+                            public void onCompleted(boolean result, Object object) {
+                                FireBaseNetworkManager.getInstance(UserInfoActivity.this).logoutAccount();
+                                updateUIForLogout();
+                                finish();
+                            }
+                        });
+                    }
+                }
+            });
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void backIconPressed() {
+        if(isGoogleJoinState()) {
+            onBackPressed();
+            return;
+        }
+        super.backIconPressed();
+    }
+
+    private boolean isGoogleJoinState() {
+        if(mLoginType == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
+            return true;
+        }
+        return false;
     }
 }

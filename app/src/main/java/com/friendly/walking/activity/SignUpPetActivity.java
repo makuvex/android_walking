@@ -155,6 +155,12 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         JWLog.e("","mUserData : "+mUserData+", mEmail :"+mEmail);
     }
 
+    @Override
+    public void onBackPressed() {
+
+        super.onBackPressed();
+    }
+
     public void onClickCallback(View v) {
         JWLog.e("","v : "+v.getId());
 
@@ -467,7 +473,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
         }
 
         final List<String> ListItems = new ArrayList<>();
-        ListItems.add("사진 촬영");
+        //ListItems.add("사진 촬영");
         ListItems.add("앨범 선택");
         ListItems.add("취소");
 
@@ -475,6 +481,17 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("업로드할 이미지 선택");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int pos) {
+                if(pos == 0) {
+                    doTakeAlbumAction();
+                } else {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        /*
         builder.setItems(items, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int pos) {
                 if(pos == 0) {
@@ -486,6 +503,7 @@ public class SignUpPetActivity extends BaseActivity implements View.OnFocusChang
                 }
             }
         });
+        */
         builder.show();
 
     }

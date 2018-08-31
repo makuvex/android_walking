@@ -29,6 +29,7 @@ import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.File;
@@ -286,6 +287,9 @@ public class ProfileActivity extends BaseActivity {
                             }
                         });
                     } else {
+                        if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
+                            FirebaseAuth.getInstance().signOut();
+                        }
                         FireBaseNetworkManager.getInstance(ProfileActivity.this).logoutAccount();
                         JWToast.showToast("정상적으로 로그아웃 되었습니다.");
                     }
@@ -300,6 +304,8 @@ public class ProfileActivity extends BaseActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        JWLog.e("requestCode "+requestCode+", resultCode "+resultCode+", data "+data);
+
         if(resultCode != RESULT_OK) {
             return;
         }

@@ -292,6 +292,7 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
         //thread.start();
 
         initReceiver();
+        unregisterReceiverMain();
         registerReceiverMain();
         mLocationArray = new ArrayList<>();
 

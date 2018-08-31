@@ -75,8 +75,8 @@
 
     <string name="logout" translatable="false">로그아웃</string>
     <string name="change_password" translatable="false">비밀번호 변경</string>
-    <string name="change_user_info" translatable="false">사용자 정보 변경</string>
-    <string name="change_pet_info" translatable="false">반려동물 정보 변경</string>
+    <string name="change_user_info" translatable="false">사용자 정보</string>
+    <string name="change_pet_info" translatable="false">반려동물 정보</string>
     <string name="quit_service" translatable="false">서비스 탈퇴</string>
 
     <string name="notification_setting" translatable="false">알림 설정</string>

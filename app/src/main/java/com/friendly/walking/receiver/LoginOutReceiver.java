@@ -58,6 +58,7 @@ public class LoginOutReceiver extends BroadcastReceiver {
             PreferencePhoneShared.setWalkingCoin(context, 0);
             PreferencePhoneShared.setMyLocationAcceptedYn(context, false);
             PreferencePhoneShared.setChattingAcceptYn(context, false);
+            PreferencePhoneShared.setPetName(context, "");
 
             PreferencePhoneShared.setNotificationYn(context, false);
             PreferencePhoneShared.setGeoNotificationYn(context, false);

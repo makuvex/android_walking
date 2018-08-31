@@ -18,11 +18,15 @@ import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.facebook.FacebookSdk;
+import com.friendly.walking.ApplicationPool;
 import com.friendly.walking.BuildConfig;
 import com.friendly.walking.GlobalConstantID;
 import com.friendly.walking.R;
 import com.friendly.walking.activity.BaseActivity;
 import com.friendly.walking.activity.KakaoSignupActivity;
+import com.friendly.walking.activity.LoginActivity;
+import com.friendly.walking.activity.SignUpPetActivity;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.dataSet.UserData;
 import com.friendly.walking.firabaseManager.FireBaseNetworkManager;
@@ -47,6 +51,9 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.location.Geofence;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.kakao.usermgmt.response.model.UserProfile;
@@ -107,6 +114,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         JWLog.e("");
 
@@ -429,7 +437,50 @@ public class MainActivity extends BaseActivity {
             } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_GOOGLE) {
                 FireBaseNetworkManager.getInstance(this).googleSignIn(this);
             } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
+                JWLog.e("FirebaseAuth current User "+FirebaseAuth.getInstance().getCurrentUser());
 
+                if(FirebaseAuth.getInstance().getCurrentUser() != null) {
+                    //String loginId = PreferencePhoneShared.getLoginID(thisActivity);
+                    String key = PreferencePhoneShared.getUserUid(thisActivity);
+                    String paddedKey = key.substring(0, 16);
+                    JWLog.e("","uid :" + key);
+                    String decEmail = CommonUtil.urlDecoding(Crypto.decryptAES(PreferencePhoneShared.getLoginID(thisActivity), paddedKey));
+
+                    PreferencePhoneShared.setLoginYn(getApplicationContext(), true);
+                    FireBaseNetworkManager.getInstance(thisActivity).facebookUpdateUI(decEmail);
+                }
+                /*
+                FireBaseNetworkManager.getInstance(thisActivity).initFaceBookCallbackManager(new FireBaseNetworkManager.FireBaseNetworkCallback() {
+
+                    @Override
+                    public void onCompleted(boolean result, Object object) {
+                        setProgressBar(View.INVISIBLE);
+                        JWLog.e("result "+result);
+                        if (result) {
+                            if (object instanceof Task<?>) {
+                                try {
+                                    final Task<AuthResult> task = (Task<AuthResult>) object;
+
+                                    JWLog.e("", "email :" + task.getResult().getUser().getEmail() + ", uid :" + task.getResult().getUser().getUid());
+                                    JWLog.e("", "" + task.getResult().getUser().getDisplayName() + ", " + task.getResult().getUser().getPhoneNumber() + ", " + task.getResult().getUser().getDisplayName());
+
+                                    String id = task.getResult().getUser().getEmail();
+                                    if(TextUtils.isEmpty(id)) {
+                                        id = task.getResult().getUser().getDisplayName();
+                                    }
+                                    final String displayName = id;
+
+                                    JWLog.e("displayName :"+displayName+", email :"+task.getResult().getUser().getEmail());
+
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                });
+*/
             } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_KAKAO) {
                 if(KakaoLoginManager.getInstance(this).hasKakaoLoginSession()) {
                     KakaoLoginManager.getInstance(this).requestMe(new KakaoLoginManager.KakaoLoginManagerCallback() {
@@ -506,11 +557,12 @@ public class MainActivity extends BaseActivity {
                         @Override
                         public void onCompleted(boolean result, Object object) {
                             JWLog.e("", "result :"+result);
+                            setProgressBar(View.INVISIBLE);
                             if(!result) {
                                 JWLog.e("email "+email);
                                 return;
                             }
-                            setProgressBar(View.INVISIBLE);
+
                             UserData userData = (UserData) object;
                             mUserDta = userData;
 
@@ -536,6 +588,8 @@ public class MainActivity extends BaseActivity {
 
                             if(userData.pet_list.size() > 0) {
                                 PreferencePhoneShared.setPetName(getApplicationContext(), userData.pet_list.get(0).petName);
+                            } else {
+                                PreferencePhoneShared.setPetName(getApplicationContext(), "");
                             }
 
                             if(PermissionManager.isAcceptedLocationPermission(MainActivity.this)) {
@@ -624,6 +678,7 @@ public class MainActivity extends BaseActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        int autoLoginType = PreferencePhoneShared.getAutoLoginType(this);
 
         JWLog.e("", "requestCode" + requestCode+", resultCode "+resultCode);
         if ( requestCode == RC_GOOGLE_SIGN_IN ) {
@@ -679,6 +734,8 @@ public class MainActivity extends BaseActivity {
             } else {
                 JWLog.e("", "Google Login Failed." + result.getStatus());
             }
+        } else if(autoLoginType == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {
+            FireBaseNetworkManager.getInstance(this).getFacebookCallback().onActivityResult(requestCode, resultCode, data);
         }
     }
 

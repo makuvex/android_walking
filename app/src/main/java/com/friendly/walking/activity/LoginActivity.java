@@ -34,6 +34,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.kakao.auth.ErrorCode;
 import com.kakao.auth.ISessionCallback;
@@ -178,10 +179,9 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                                 JWBroadCast.sendBroadcast(LoginActivity.this, intent);
                                             } else {
                                                 JWToast.showToast("아이디가 디비에 없음");
-
-                                                Intent intent = new Intent(LoginActivity.this, SignUpPetActivity.class);
+                                                Intent intent = new Intent(LoginActivity.this, UserInfoActivity.class);
+                                                intent.putExtra("email", displayName);
                                                 intent.putExtra(GlobalConstantID.SIGN_UP_TYPE, GlobalConstantID.LOGIN_TYPE_FACEBOOK);
-                                                //intent.putExtra(GlobalConstantID.SIGN_UP_PASSWORD, mPasswordText.getText().toString());
 
                                                 ApplicationPool pool = (ApplicationPool)getApplicationContext();
                                                 pool.putExtra(KEY_USER_DATA, intent, getUserData(displayName, task.getResult().getUser().getDisplayName(), task.getResult().getUser().getUid(), "facebook"));
@@ -190,7 +190,6 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                             }
                                         }
                                     });
-
                                     updateUI(id);
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -200,7 +199,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     }
                 });
             } else {
-                JWToast.showToast("로그인 안됨" );
+                //JWToast.showToast("로그인 안됨" );
+                FirebaseAuth.getInstance().signOut();
             }
         } else if(view == mSignInKakaoButton) {
             //kakaoRequestMe();
@@ -275,8 +275,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             if ( result.isSuccess() ) {
                 JWLog.e("", "Google Login succeed." + result.getStatus());
 
-                PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
-                PreferencePhoneShared.setAutoLoginType(getApplication(), GlobalConstantID.LOGIN_TYPE_GOOGLE);
+//                PreferencePhoneShared.setAutoLoginYn(getApplicationContext(), true);
+//                PreferencePhoneShared.setAutoLoginType(getApplication(), GlobalConstantID.LOGIN_TYPE_GOOGLE);
 
                 GoogleSignInAccount account = result.getSignInAccount();
 
@@ -306,7 +306,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                         } else {
                                             JWToast.showToast( "아이디가 디비에 없음");
 
-                                            Intent intent = new Intent(LoginActivity.this, SignUpPetActivity.class);
+                                            Intent intent = new Intent(LoginActivity.this, UserInfoActivity.class);
+                                            //Intent intent = new Intent(LoginActivity.this, SignUpPetActivity.class);
                                             intent.putExtra(GlobalConstantID.SIGN_UP_TYPE, GlobalConstantID.LOGIN_TYPE_GOOGLE);
                                             //intent.putExtra(GlobalConstantID.SIGN_UP_PASSWORD, mPasswordText.getText().toString());
 

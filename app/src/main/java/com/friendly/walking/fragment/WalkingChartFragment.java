@@ -559,6 +559,9 @@ public class WalkingChartFragment extends Fragment implements OnChartValueSelect
     }
 
     private void registerReceiverMain() {
+        if(mIsRegisterdReceiver) {
+            unregisterReceiverMain();
+        }
         if(mIsRegisterdReceiver != true) {
             getActivity().registerReceiver(mReceiver, mIntentFilter);
             mIsRegisterdReceiver = true;
