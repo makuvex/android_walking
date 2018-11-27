@@ -84,6 +84,8 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
     @Override
     public void setDataSet(Object object) {
         if(object instanceof LoginSettingListData) {
+
+
             LoginSettingListData data = (LoginSettingListData)object;
 
             this.loginID.setText(data.getLoginID());
@@ -91,8 +93,12 @@ public class LoginSettingViewHolder extends BaseViewHolder implements BaseSettin
             this.isAutoLogin = data.getAutoLogin();
             this.walking_coin.setText(""+data.getWalkingCoin()+"개");
             this.itemView.setTag(data);
-
             loginTypeImage.setVisibility(View.VISIBLE);
+
+            if(!PreferencePhoneShared.getLoginYn(mActivity)) {
+                loginTypeImage.setVisibility(View.GONE);
+                return;
+            }
             if(PreferencePhoneShared.getAutoLoginType(mActivity) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
                 loginTypeImage.setImageResource(R.drawable.k);
             } else if(PreferencePhoneShared.getAutoLoginType(mActivity) == GlobalConstantID.LOGIN_TYPE_FACEBOOK) {

@@ -74,6 +74,8 @@ public class MainActivity extends BaseActivity {
     private View                                    mReportSelected = null;
     private View                                    mSettingSelected = null;
     private View                                    mPreviousSelectedView = null;
+    private View                                    mLayoutFab = null;
+
 
     private long                                    mDoublePressInterval = 2000;
     private long                                    mPreviousTouchTime = 0;
@@ -94,7 +96,6 @@ public class MainActivity extends BaseActivity {
     private DataExchangeInterface                   mCurrentFragmentInterface;
 
     private AdView                                  mAdView;
-    private boolean                                 mIsWalking = false;
     private MainService                             mMainService;
 
     private ServiceConnection                       mServiceConnection = new ServiceConnection() {
@@ -128,6 +129,7 @@ public class MainActivity extends BaseActivity {
         mShareSelected = findViewById(R.id.share_page);
         mReportSelected = findViewById(R.id.report_page);
         mSettingSelected = findViewById(R.id.setting_page);
+        mLayoutFab = findViewById(R.id.layout_fab);
 
         mPreviousSelectedView = mChartSelected;
 
@@ -243,29 +245,34 @@ public class MainActivity extends BaseActivity {
 
 //                startActivity(new Intent(MainActivity.this, BarChartActivity.class));
 
-                if(BuildConfig.IS_DEBUG) {
+                if(!PermissionManager.isAcceptedLocationPermission(getApplicationContext())) {
+                    PermissionManager.requestLocationPermission(MainActivity.this);
+                    return;
+                }
+                //if(BuildConfig.IS_DEBUG) {
 
-
-                    String msg = JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED;
-                    int transition = Geofence.GEOFENCE_TRANSITION_DWELL;
-                    if (mIsWalking) {
-                        msg = JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED;
+                    boolean isWalking = PreferencePhoneShared.getIsWalking(getApplicationContext());
+                    String msg = JWBroadCast.BROAD_CAST_START_MANUAL_WALKING;
+                    int transition = Geofence.GEOFENCE_TRANSITION_EXIT;
+                    if (isWalking) {
+                        msg = JWBroadCast.BROAD_CAST_STOP_MANUAL_WALKING;
                         transition = Geofence.GEOFENCE_TRANSITION_ENTER;
-                        mIsWalking = false;
-                    } else {
-                        mIsWalking = true;
                     }
 
+                    PreferencePhoneShared.setIsWalking(getApplicationContext(), !isWalking);
                     Intent i = new Intent(msg);
                     i.putExtra("transition", transition);
                     JWBroadCast.sendBroadcast(getApplicationContext(), i);
 
-                    JWToast.showToast("산책 모드 "+(mIsWalking ? "시작" : "중지"));
-                }
+                    JWToast.showToast("산책 모드 "+(!isWalking ? "시작" : "중지"));
+                //}
             }
         });
 
-        fab.setVisibility(View.VISIBLE);
+        if(PreferencePhoneShared.getLoginYn(thisActivity)) {
+            mLayoutFab.setVisibility(View.VISIBLE);
+        }
+
 
 //        CircleImageView imageview = (CircleImageView)findViewById(R.id.profileImageView);
 //
@@ -550,6 +557,7 @@ public class MainActivity extends BaseActivity {
                     final String email = intent.getStringExtra("email");
                     setProgressBar(View.VISIBLE);
 
+                    mLayoutFab.setVisibility(View.VISIBLE);
                     FirebaseMessaging.getInstance().subscribeToTopic("news");
                     //readPetProfileImage(email);
 
@@ -649,7 +657,7 @@ public class MainActivity extends BaseActivity {
                 } else if(JWBroadCast.BROAD_CAST_LOGOUT.equals(intent.getAction())) {
                     FirebaseMessaging.getInstance().unsubscribeFromTopic("news");
                     mUserDta = null;
-
+                    mLayoutFab.setVisibility(View.GONE);
                 } else if(JWBroadCast.BROAD_CAST_SHOW_PROGRESS_BAR.equals(intent.getAction())) {
                     JWLog.e("");
                     setProgressBar(View.VISIBLE);

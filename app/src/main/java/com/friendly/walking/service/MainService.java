@@ -165,7 +165,8 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
         @Override
         protected Boolean doInBackground(String... params) {
             try {
-                if(list != null && list.size() == 0) {
+                JWLog.e("list "+list);
+                if(list == null || list.size() == 0) {
                     return false;
                 } else {
                     int autoLoginType = PreferencePhoneShared.getAutoLoginType(context);
@@ -358,6 +359,9 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_START_MANUAL_WALKING);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_STOP_MANUAL_WALKING);
+        mIntentFilter.addAction(JWBroadCast.BROAD_CAST_GEOFENCE_STOP);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_ADD_GEOFENCE);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE);
         mIntentFilter.addAction(JWBroadCast.BROAD_CAST_REQUEST_LOCATION);
@@ -377,7 +381,10 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                     GeofenceManager.getInstance(MainService.this).addGeofences();
                 } else if(JWBroadCast.BROAD_CAST_REMOVE_GEOFENCE.equals(intent.getAction())) {
                     GeofenceManager.getInstance(MainService.this).removeGeofences();
-                } else if(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED.equals(intent.getAction())) {
+                } else if(JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_GEOFENCE_STOP.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_STOP_MANUAL_WALKING.equals(intent.getAction())) {
+
                     JWLog.e("thread :"+(mThread != null ? mThread: "null"));
 
                     if(mThread != null) {
@@ -405,7 +412,9 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                                 "subTitle");
                                 */
                     }
-                } else if(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED.equals(intent.getAction())) {
+                } else if(JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED.equals(intent.getAction())
+                        || JWBroadCast.BROAD_CAST_START_MANUAL_WALKING.equals(intent.getAction())) {
+
                     //setProgressBar(View.INVISIBLE);
                     int transition = intent.getIntExtra("transition", -1);
                     JWLog.e("","@@@@ transition :"+(transition == Geofence.GEOFENCE_TRANSITION_ENTER ? "enter" : "exit"));
@@ -433,7 +442,9 @@ public class MainService extends Service implements GoogleApiClient.ConnectionCa
                             e.printStackTrace();
                         }
 
-                        if(Integer.parseInt(dateTime) >= start && Integer.parseInt(dateTime) <= end) {
+                        if((Integer.parseInt(dateTime) >= start && Integer.parseInt(dateTime) <= end)
+                                ||JWBroadCast.BROAD_CAST_START_MANUAL_WALKING.equals(intent.getAction())) {
+
                             mStartStrollTime = System.currentTimeMillis();
 
                             new Handler().postDelayed(new Runnable() {

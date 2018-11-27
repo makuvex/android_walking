@@ -27,6 +27,7 @@ import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.CommonUtil;
 import com.friendly.walking.util.Crypto;
 import com.friendly.walking.util.JWLog;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -192,7 +193,13 @@ public class ProfileActivity extends BaseActivity {
             @Override
             public void onCompleted(boolean result, Object object) {
                 if(result) {
+                    boolean isWalking = PreferencePhoneShared.getIsWalking(getApplicationContext());
+                    if(isWalking) {
+                        PreferencePhoneShared.setIsWalking(getApplicationContext(), !isWalking);
+                        Intent i = new Intent(JWBroadCast.BROAD_CAST_GEOFENCE_STOP);
 
+                        JWBroadCast.sendBroadcast(getApplicationContext(), i);
+                    }
                     FireBaseNetworkManager.getInstance(ProfileActivity.this).deleteUserData(new FireBaseNetworkManager.FireBaseNetworkCallback() {
                         @Override
                         public void onCompleted(boolean result, Object object) {
@@ -268,6 +275,13 @@ public class ProfileActivity extends BaseActivity {
             @Override
             public void onCompleted(boolean result, Object object) {
                 if(result) {
+                    boolean isWalking = PreferencePhoneShared.getIsWalking(getApplicationContext());
+                    if(isWalking) {
+                        PreferencePhoneShared.setIsWalking(getApplicationContext(), !isWalking);
+                        Intent i = new Intent(JWBroadCast.BROAD_CAST_GEOFENCE_STOP);
+
+                        JWBroadCast.sendBroadcast(getApplicationContext(), i);
+                    }
                     if(PreferencePhoneShared.getAutoLoginType(getApplicationContext()) == GlobalConstantID.LOGIN_TYPE_KAKAO) {
                         FireBaseNetworkManager.getInstance(ProfileActivity.this).reset();
                         KakaoLoginManager.getInstance(ProfileActivity.this).requestLogout(new KakaoLoginManager.KakaoLoginManagerCallback() {
@@ -275,6 +289,7 @@ public class ProfileActivity extends BaseActivity {
                             public void onCompleted(boolean result, Object object) {
                                 if(result) {
                                     JWToast.showToast("정상적으로 로그아웃 되었습니다");
+
 
                                     PreferencePhoneShared.setAutoLoginYn(ProfileActivity.this, false);
                                     PreferencePhoneShared.setLoginYn(ProfileActivity.this, false);

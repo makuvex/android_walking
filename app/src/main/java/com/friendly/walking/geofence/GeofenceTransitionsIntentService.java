@@ -34,6 +34,7 @@ import com.friendly.walking.R;
 import com.friendly.walking.broadcast.JWBroadCast;
 import com.friendly.walking.main.MainActivity;
 import com.friendly.walking.notification.NotificationUtil;
+import com.friendly.walking.preference.PreferencePhoneShared;
 import com.friendly.walking.util.JWLog;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
@@ -99,10 +100,15 @@ public class GeofenceTransitionsIntentService extends IntentService {
             // Send notification and log the transition details.
             //sendNotification(geofenceTransitionDetails);
 
+            boolean isWalking = true;
             String msg = JWBroadCast.BROAD_CAST_GEOFENCE_OUT_DETECTED;
             if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
                 msg = JWBroadCast.BROAD_CAST_GEOFENCE_IN_DETECTED;
+                isWalking = false;
             }
+
+            PreferencePhoneShared.setIsWalking(getApplicationContext(), isWalking);
+
             Intent i = new Intent(msg);
             i.putExtra("transition", geofenceTransition);
             JWBroadCast.sendBroadcast(getApplicationContext(), i);

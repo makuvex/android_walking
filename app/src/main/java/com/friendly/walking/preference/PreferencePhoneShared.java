@@ -37,6 +37,8 @@ public class PreferencePhoneShared extends BasePreference {
 
     private static final String KEY_PERMISSION_CHECK_ONCE                   = "KEY_PERMISSION_CHECK_ONCE";
 
+    private static final String KEY_IS_WALKING                              = "KEY_IS_WALKING";
+
 
     public static void setAutoLoginYn(Context cxt, boolean autoLoginYn){
         putBoolean(cxt, PREFERENCE_NAME, KEY_AUTO_LOGIN_YN, autoLoginYn);
@@ -197,4 +199,13 @@ public class PreferencePhoneShared extends BasePreference {
     public static void setPermissionCheckOnce(Context cxt, boolean check){
         putBoolean(cxt, PREFERENCE_NAME, KEY_PERMISSION_CHECK_ONCE, check);
     }
+
+    public static boolean getIsWalking(Context cxt){
+        return getBoolean(cxt, PREFERENCE_NAME, KEY_IS_WALKING, false);
+    }
+
+    public static void setIsWalking(Context cxt, boolean check){
+        putBoolean(cxt, PREFERENCE_NAME, KEY_IS_WALKING, check);
+    }
+
 }
